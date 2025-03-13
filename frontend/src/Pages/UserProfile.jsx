@@ -1,8 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import axios from "axios";
 
 const UserProfile = () => {
   // This would come from API/context in a real app
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [user, setUser] = useState({
     id: 101,
     name: "Jasmine Wong",
@@ -89,6 +93,24 @@ const UserProfile = () => {
     },
   ]);
 
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get("http://localhost:8080/api/users");
+        setUsers(response.data); // Ensure response.data is an array
+        setError(null);
+      } catch (err) {
+        setError("Failed to fetch users: " + err.message);
+        console.error("Error fetching users:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUsers();
+  }, []);
+
   // Toggle follow state
   const handleFollow = () => {
     setIsFollowing(!isFollowing);
@@ -149,6 +171,19 @@ const UserProfile = () => {
                       <p className="text-sm sm:text-base font-medium text-indigo-600">
                         {user.title}
                       </p>
+                      <div>
+                        {loading ? (
+                          <p>Loading...</p>
+                        ) : error ? (
+                          <p>{error}</p>
+                        ) : (
+                          <ul>
+                            {users.map((user) => (
+                              <li key={user._id}>{user.username}</li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
                       <div className="mt-1 flex flex-wrap items-center justify-center sm:justify-start text-sm text-gray-500 gap-x-4 gap-y-1">
                         <span className="flex items-center">
                           <svg
