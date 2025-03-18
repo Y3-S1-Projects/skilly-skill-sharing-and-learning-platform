@@ -17,6 +17,7 @@ public class User {
     private String email;
     private String profilePic;
     private List<String> following;
+    private List<String> followers;
 
     @Override
     public String toString() {
