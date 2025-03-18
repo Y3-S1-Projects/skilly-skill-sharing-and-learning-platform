@@ -16,5 +16,7 @@ public class Post {
     private String userId; 
     private String content;
     private List<String> mediaUrls; 
+    private List<String> likes;
+    private List<String> sharedBy;
     private Date createdAt = new Date();
 }
