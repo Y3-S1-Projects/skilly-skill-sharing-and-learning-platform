@@ -8,6 +8,7 @@ import Login from "./Pages/Login";
 import Register from "./Pages/Register";
 import SocialFeed from "./Pages/SocialFeed";
 import UserProfile from "./Pages/UserProfile";
+import Auth from "./Pages/Auth";
 function App() {
   return (
     <Router>
@@ -16,7 +17,7 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/socialfeed" element={<SocialFeed />} />
         <Route path="/userprofile" element={<UserProfile />} />
-
+        <Route path="/auth" element={<Auth />} />
         {/*Components */}
         <Route path="/header" element={<Header />} />
       </Routes>
