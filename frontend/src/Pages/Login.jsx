@@ -41,15 +41,11 @@ const Login = () => {
     if (validate()) {
       setIsLoading(true);
       try {
-        // Implement your email/password login
         const response = await axios.post(
           "http://localhost:8080/auth/login",
-          formData
+          formData,
+          { withCredentials: true } // Ensure cookies are sent
         );
-
-        // Save authentication data
-        localStorage.setItem("token", response.data.token);
-        localStorage.setItem("user", JSON.stringify(response.data.user));
 
         // Redirect to dashboard
         navigate("/socialfeed");
@@ -65,18 +61,16 @@ const Login = () => {
   const handleGoogleSuccess = async (response) => {
     setIsLoading(true);
     try {
-      const res = await axios.post(
-        "http://localhost:8080/api/auth/google",
-        { token: response.credential },
-        { withCredentials: true }
-      );
+      const res = await axios.post("http://localhost:8080/api/auth/google", {
+        token: response.credential,
+      });
 
-      // Save authentication data
-      localStorage.setItem("token", res.data.token);
-      localStorage.setItem("user", JSON.stringify(res.data.user));
+      if (res.data && res.data.token) {
+        localStorage.setItem("authToken", res.data.token);
+      }
 
       // Redirect to dashboard
-      navigate("/socialfeed");
+      navigate("/profile");
     } catch (error) {
       console.error("Google Login Error:", error);
       setErrors({ general: "Google login failed. Please try again." });

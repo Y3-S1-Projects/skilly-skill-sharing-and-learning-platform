@@ -11,46 +11,52 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
-    @Autowired
-    private CustomOAuth2UserService oAuth2UserService;
+        @Autowired
+        private CustomOAuth2UserService oAuth2UserService;
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-            .csrf(csrf -> csrf.disable())  // Disable CSRF
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))  // Enable CORS
-            .authorizeHttpRequests(authz -> authz
-                .requestMatchers("/", "/login/**", "/oauth2/**", "/api/auth/google").permitAll()  // Allow access to these URLs
-                .requestMatchers("/**").permitAll()  // Allow all requests (for testing)
-                .anyRequest().authenticated()  // Any other request must be authenticated
-            )
-            .oauth2Login(oauth2 -> oauth2
-                .userInfoEndpoint(userInfo -> userInfo
-                    .userService(oAuth2UserService)  // Use custom OAuth2UserService
-                )
-            )
-            .logout(logout -> logout
-                .logoutSuccessUrl("/")  // Redirect to the homepage after logout
-            );
-        return http.build();
-    }
+        @Bean
+        public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+                http
+                                .csrf(csrf -> csrf.disable()) // Disable CSRF
+                                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Enable CORS
+                                .authorizeHttpRequests(authz -> authz
+                                                .requestMatchers("/", "/login/**", "/oauth2/**", "/api/auth/google")
+                                                .permitAll() // Allow access
+                                                             // to these
+                                                             // URLs
+                                                .requestMatchers("/**").permitAll() // Allow all requests (for testing)
+                                                .anyRequest().authenticated() // Any other request must be authenticated
+                                )
+                                .oauth2Login(oauth2 -> oauth2
+                                                .userInfoEndpoint(userInfo -> userInfo
+                                                                .userService(oAuth2UserService) // Use custom
+                                                                                                // OAuth2UserService
+                                                ))
+                                .logout(logout -> logout
+                                                .logoutSuccessUrl("/") // Redirect to the homepage after logout
+                                );
+                return http.build();
+        }
 
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:5173"));  // Allow requests from this origin
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));  // Allow these HTTP methods
-        configuration.setAllowedHeaders(List.of("*"));  // Allow all headers
-        configuration.setAllowCredentials(true);  // Allow credentials (e.g., cookies)
+        @Bean
+        public CorsConfigurationSource corsConfigurationSource() {
+                CorsConfiguration configuration = new CorsConfiguration();
+                configuration.setAllowedOrigins(List.of("http://localhost:5173")); // Allow requests from this origin
+                configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS")); // Allow these HTTP
+                                                                                                     // methods
+                // configuration.setAllowedHeaders(List.of("*")); // Allow all headers
+                configuration.setAllowCredentials(true); // Allow credentials (e.g., cookies)
+                configuration.setAllowedHeaders(Arrays.asList("*"));
 
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);  // Apply this configuration to all paths
-        return source;
-    }
+                UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+                source.registerCorsConfiguration("/**", configuration); // Apply this configuration to all paths
+                return source;
+        }
 }

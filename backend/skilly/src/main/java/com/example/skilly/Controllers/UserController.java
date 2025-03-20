@@ -2,6 +2,8 @@ package com.example.skilly.Controllers;
 
 import com.example.skilly.Models.User;
 import com.example.skilly.Services.UserService;
+import com.example.skilly.Utils.JwtUtil;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -33,5 +35,22 @@ public class UserController {
     @DeleteMapping("/{id}")
     public void deleteUser(@PathVariable String id) {
         userService.deleteUser(id);
+    }
+
+    @Autowired
+    private JwtUtil jwtUtil;
+
+    @GetMapping("/id")
+    public String getUserId(@RequestHeader("Authorization") String token) {
+        // Remove "Bearer " prefix from the token
+        String jwtToken = token.substring(7);
+        return jwtUtil.getUserIdFromToken(jwtToken);
+    }
+
+    @GetMapping("/role")
+    public String getUserRole(@RequestHeader("Authorization") String token) {
+        // Remove "Bearer " prefix from the token
+        String jwtToken = token.substring(7);
+        return jwtUtil.getUserRoleFromToken(jwtToken);
     }
 }

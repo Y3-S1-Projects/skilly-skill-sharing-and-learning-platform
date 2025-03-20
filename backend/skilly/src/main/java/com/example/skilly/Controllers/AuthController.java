@@ -7,6 +7,11 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
+
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -19,6 +24,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Map;
+import io.jsonwebtoken.Claims;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -26,42 +32,99 @@ public class AuthController {
 
     @Autowired
     private UserRepository userRepository;
-    
+
     @Autowired
     private JwtService jwtService;
-    
+
     @Value("${spring.security.oauth2.client.registration.google.client-id}")
     private String googleClientId;
 
     @GetMapping("/user")
     public Map<String, Object> user(@AuthenticationPrincipal OAuth2User principal) {
         return Map.of(
-            "name", principal.getAttribute("name"),
-            "email", principal.getAttribute("email"),
-            "picture", principal.getAttribute("picture")
-        );
+                "name", principal.getAttribute("name"),
+                "email", principal.getAttribute("email"),
+                "picture", principal.getAttribute("picture"));
     }
-    
+
+    @GetMapping("/user-details")
+    public ResponseEntity<?> getUserDetails(
+            HttpServletRequest request,
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
+
+        // Don't use @CookieValue to avoid problems with Google's cookies
+        String token = null;
+
+        System.out.println("Checking cookies in user-details request:");
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie c : cookies) {
+                System.out.println("Cookie: " + c.getName() + " = " + c.getValue());
+            }
+        } else {
+            System.out.println("No cookies found in user-details request");
+        }
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("auth_token".equals(cookie.getName())) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+
+        // Try to extract token from Authorization header if cookie is not present
+        if (token == null && authHeader != null && authHeader.startsWith("Bearer ")) {
+            token = authHeader.substring(7);
+            System.out.println("Using token from Authorization header");
+        }
+
+        System.out.println("Token status: " + (token != null ? "Present" : "Not present"));
+
+        if (token == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        try {
+            // Validate the token and extract user ID and role
+            String userId = jwtService.extractUserId(token);
+            String userRole = jwtService.extractUserRole(token);
+
+            if (userId == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
+
+            return ResponseEntity.ok(Map.of(
+                    "userId", userId,
+                    "userRole", userRole));
+        } catch (Exception e) {
+            System.out.println("Token validation error: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+    }
+
     @PostMapping("/google")
-    public ResponseEntity<?> authenticateGoogle(@RequestBody GoogleTokenRequest request) {
+    public ResponseEntity<?> authenticateGoogle(@RequestBody GoogleTokenRequest request, HttpServletResponse response,
+            HttpServletRequest servletRequest) {
+
         try {
             // Verify the Google token
             GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(
                     new NetHttpTransport(), new GsonFactory())
                     .setAudience(Collections.singletonList(googleClientId))
                     .build();
-            
+
             GoogleIdToken idToken = verifier.verify(request.getToken());
             if (idToken == null) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token or expired token");
             }
-            
+
             // Extract user info
             GoogleIdToken.Payload payload = idToken.getPayload();
             String email = payload.getEmail();
             String name = (String) payload.get("name");
             String pictureUrl = (String) payload.get("picture");
-            
+
             // Find or create user
             User user = userRepository.findByEmail(email);
             if (user == null) {
@@ -76,14 +139,27 @@ public class AuthController {
                 user.setSkills(new ArrayList<>());
                 userRepository.save(user);
             }
-            
+
             // Generate JWT token
             String jwtToken = jwtService.generateToken(user);
-            
-            return ResponseEntity.ok(Map.of("token", jwtToken, "user", user));
+
+            // Use a different name for your cookie to avoid conflicts
+            // Cookie authCookie = new Cookie("auth_token", jwtToken);
+            // authCookie.setHttpOnly(true);
+            // authCookie.setPath("/");
+            // authCookie.setMaxAge(7 * 24 * 60 * 60); // 7 days
+
+            // authCookie.setSecure(false); // Set to true if using HTTPS
+
+            // response.addCookie(authCookie);
+
+            return ResponseEntity.ok(Map.of(
+                    "user", user,
+                    "token", jwtToken));
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Authentication failed: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Authentication failed: " + e.getMessage());
         }
     }
 }
@@ -91,11 +167,11 @@ public class AuthController {
 // DTO for Google token request
 class GoogleTokenRequest {
     private String token;
-    
+
     public String getToken() {
         return token;
     }
-    
+
     public void setToken(String token) {
         this.token = token;
     }
