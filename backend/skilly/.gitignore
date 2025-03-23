@@ -84,3 +84,5 @@ docker-compose.override.yml
 # MacOS and Windows
 .DS_Store
 Thumbs.db
+
+.idea

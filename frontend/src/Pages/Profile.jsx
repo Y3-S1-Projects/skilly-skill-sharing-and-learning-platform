@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { getUserId, getUserRole, getToken } from "../util/auth";
+import { getUserId, getUserRole, getToken, logout } from "../util/auth";
 
 const Profile = () => {
   const [user, setUser] = useState(null);
@@ -19,7 +19,8 @@ const Profile = () => {
           return;
         }
 
-        let userId, role;
+        let role;
+        let userId;
 
         // Try to get user role and handle errors
         try {
@@ -27,7 +28,6 @@ const Profile = () => {
           console.log("User role:", role);
         } catch (roleError) {
           console.error("Failed to get user role:", roleError);
-          // Continue execution - we might still be able to get the user ID
         }
 
         // Try to get user ID and handle errors
@@ -61,6 +61,9 @@ const Profile = () => {
           );
 
           setUser(response.data);
+          if (!user) {
+            setError("User not found. Please check your credentials.");
+          }
         } catch (fetchError) {
           console.error("Failed to fetch user details:", fetchError);
           setError("Failed to load user profile. Please try again later.");
@@ -94,7 +97,7 @@ const Profile = () => {
         <p className="text-red-700">{error}</p>
         <button
           className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-          onClick={() => (window.location.href = "/login")}
+          onClick={() => (window.location.href = "/")}
         >
           Go to Login
         </button>
@@ -102,22 +105,22 @@ const Profile = () => {
     );
   }
 
-  if (!user) {
-    return (
-      <div className="max-w-md mx-auto mt-10 p-6 bg-yellow-50 border border-yellow-200 rounded-lg">
-        <h2 className="text-xl font-bold text-yellow-600 mb-2">
-          User Not Found
-        </h2>
-        <p>We couldn't find your user profile. Please try logging in again.</p>
-        <button
-          className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-          onClick={() => (window.location.href = "/login")}
-        >
-          Go to Login
-        </button>
-      </div>
-    );
-  }
+  // if (!user) {
+  //   return (
+  //     <div className="max-w-md mx-auto mt-10 p-6 bg-yellow-50 border border-yellow-200 rounded-lg">
+  //       <h2 className="text-xl font-bold text-yellow-600 mb-2">
+  //         User Not Found
+  //       </h2>
+  //       <p>We couldn't find your user profile. Please try logging in again.</p>
+  //       <button
+  //         className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+  //         onClick={() => (window.location.href = "/login")}
+  //       >
+  //         Go to Login
+  //       </button>
+  //     </div>
+  //   );
+  // }
 
   return (
     <div className="max-w-md mx-auto mt-10 p-6 bg-white shadow-md rounded-lg">
@@ -138,7 +141,15 @@ const Profile = () => {
         <p>
           <strong>ID:</strong> {user.id}
         </p>
-        {/* Add more fields as needed */}
+        <div className="mt-4 ">
+          <button
+            className="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded"
+            onClick={logout}
+          >
+            {" "}
+            Logout
+          </button>
+        </div>
       </div>
     </div>
   );

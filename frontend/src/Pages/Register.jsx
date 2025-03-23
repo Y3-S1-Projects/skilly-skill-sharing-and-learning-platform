@@ -1,7 +1,9 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const Register = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -10,8 +12,10 @@ const Register = () => {
     confirmPassword: "",
     agreeTerms: false,
   });
-
+  const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
+  const [serverError, setServerError] = useState("");
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -19,6 +23,16 @@ const Register = () => {
       ...prevData,
       [name]: type === "checkbox" ? checked : value,
     }));
+
+    // Clear field error when user starts typing
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: "" }));
+    }
+
+    // Clear server error when user makes any change
+    if (serverError) {
+      setServerError("");
+    }
   };
 
   const validate = () => {
@@ -49,8 +63,50 @@ const Register = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (validate()) {
-      // TODO: Add actual registration API call
-      console.log("Registration form submitted:", formData);
+      setIsLoading(true);
+      setServerError("");
+
+      fetch(`${API_BASE_URL}/api/users/create`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username: formData.firstName + " " + formData.lastName,
+          email: formData.email,
+          password: formData.password,
+        }),
+      })
+        .then(async (response) => {
+          const data = await response.json();
+
+          if (!response.ok) {
+            // Handle known error responses from our API
+            if (data && data.message) {
+              throw new Error(data.message);
+            }
+            throw new Error("Registration failed. Please try again.");
+          }
+
+          return data;
+        })
+        .then((data) => {
+          toast.success("Account created successfully! Please log in.");
+          navigate("/login");
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+
+          // Handle email already exists error specifically
+          if (error.message.includes("email already")) {
+            setErrors({ email: "This email is already registered" });
+          } else {
+            setServerError(error.message);
+          }
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
     }
   };
 
@@ -65,6 +121,30 @@ const Register = () => {
             Join our skill-sharing community
           </p>
         </div>
+
+        {serverError && (
+          <div className="bg-red-50 border-l-4 border-red-400 p-4">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <svg
+                  className="h-5 w-5 text-red-400"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <p className="text-sm text-red-700">{serverError}</p>
+              </div>
+            </div>
+          </div>
+        )}
+
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="rounded-md -space-y-px">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -232,9 +312,40 @@ const Register = () => {
           <div>
             <button
               type="submit"
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              disabled={isLoading}
+              className={`group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white ${
+                isLoading
+                  ? "bg-indigo-400"
+                  : "bg-indigo-600 hover:bg-indigo-700"
+              } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`}
             >
-              Create Account
+              {isLoading ? (
+                <>
+                  <svg
+                    className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                  Creating Account...
+                </>
+              ) : (
+                "Create Account"
+              )}
             </button>
           </div>
         </form>

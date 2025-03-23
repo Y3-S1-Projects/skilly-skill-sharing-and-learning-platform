@@ -42,13 +42,17 @@ const Login = () => {
       setIsLoading(true);
       try {
         const response = await axios.post(
-          "http://localhost:8080/auth/login",
-          formData,
-          { withCredentials: true } // Ensure cookies are sent
+          "http://localhost:8080/api/auth/login",
+          {
+            ...formData, // Spread formData directly if it contains email/password
+          }
         );
 
+        // Store token properly
+        localStorage.setItem("authToken", response.data.token);
+
         // Redirect to dashboard
-        navigate("/socialfeed");
+        navigate("/profile");
       } catch (error) {
         console.error("Login failed:", error);
         setErrors({ general: "Login failed. Please check your credentials." });
