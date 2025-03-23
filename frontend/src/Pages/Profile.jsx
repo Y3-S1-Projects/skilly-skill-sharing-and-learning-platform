@@ -32,7 +32,7 @@ const Profile = () => {
 
         // Try to get user ID and handle errors
         try {
-          userId = await getUserId();
+          userId = await getUserId(); // Assuming this now returns the string value after your fix
           console.log("User ID:", userId);
         } catch (idError) {
           console.error("Failed to get user ID:", idError);
@@ -59,11 +59,9 @@ const Profile = () => {
               },
             }
           );
+          console.log("Full response:", JSON.stringify(response));
 
           setUser(response.data);
-          if (!user) {
-            setError("User not found. Please check your credentials.");
-          }
         } catch (fetchError) {
           console.error("Failed to fetch user details:", fetchError);
           setError("Failed to load user profile. Please try again later.");
