@@ -62,7 +62,6 @@ public class JwtService {
     // Extract the user ID from the token
     public String extractUserId(String token) {
         Claims claims = extractAllClaims(token);
-        System.out.println("Extracted Claims: " + claims);
         return claims.get("id", String.class);
     }
 

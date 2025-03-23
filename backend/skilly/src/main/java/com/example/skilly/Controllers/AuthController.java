@@ -1,5 +1,6 @@
 package com.example.skilly.Controllers;
 
+import com.example.skilly.DTOs.LoginRequest;
 import com.example.skilly.Models.User;
 import com.example.skilly.Repositories.UserRepository;
 import com.example.skilly.Services.JwtService;
@@ -17,6 +18,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
 
@@ -35,6 +37,9 @@ public class AuthController {
 
     @Autowired
     private JwtService jwtService;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @Value("${spring.security.oauth2.client.registration.google.client-id}")
     private String googleClientId;
@@ -162,6 +167,31 @@ public class AuthController {
                     .body("Authentication failed: " + e.getMessage());
         }
     }
+
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest, HttpServletResponse response) {
+        try {
+            // Find user by email
+            User user = userRepository.findByEmail(loginRequest.getEmail());
+
+            if (user == null || !passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password");
+            }
+
+            // Generate JWT token
+            String jwtToken = jwtService.generateToken(user);
+
+            // Send token in response
+            return ResponseEntity.ok(Map.of(
+                    "user", user,
+                    "token", jwtToken));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Login failed: " + e.getMessage());
+        }
+    }
+
 }
 
 // DTO for Google token request

@@ -33,14 +33,16 @@ export async function getUserId(tokenParam) {
       }
     }
 
-    const userId = await response.text();
-    return userId;
+    // Parse the JSON response
+    const data = await response.json();
+
+    // Extract the userId from the JSON object
+    return data.userId;
   } catch (error) {
     console.error("Error fetching user ID:", error);
     throw error;
   }
 }
-
 // Function to get user role
 export async function getUserRole(tokenParam) {
   // Use provided token or get from storage
@@ -76,3 +78,7 @@ export async function getUserRole(tokenParam) {
     throw error;
   }
 }
+export const logout = () => {
+  localStorage.removeItem("authToken");
+  window.location.href = "/"; // Redirect user
+};
