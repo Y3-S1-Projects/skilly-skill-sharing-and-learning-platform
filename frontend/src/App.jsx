@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 
 //Components
 import Header from "./Components/Header";
-
+import GitHubCallback from "./Components/GithubCallback";
 import Login from "./Pages/Login";
 import Register from "./Pages/Register";
 import SocialFeed from "./Pages/SocialFeed";
@@ -15,6 +15,7 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<Login />} />
+        <Route path="/auth/github/callback" element={<GitHubCallback />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/socialfeed" element={<SocialFeed />} />
