@@ -1,63 +1,34 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
+import Header from "../Components/Header";
+import CreatePostModal from "../Components/Modals/CreatePost";
 
 const UserProfile = () => {
   // This would come from API/context in a real app
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showCreatePostModal, setShowCreatePostModal] = useState(false);
   const [user, setUser] = useState({
-    id: 101,
-    name: "Jasmine Wong",
-    title: "UX Designer & Frontend Developer",
-    avatar: "/api/placeholder/120/120",
-    coverPhoto: "/api/placeholder/1200/300",
-    bio: "Passionate about creating beautiful, functional interfaces and constantly learning new skills. Currently exploring 3D modeling and animation.",
-    location: "San Francisco, CA",
-    joinDate: "March 2024",
+    id: "",
+    name: "",
+    title: "", // Optional: could be generated from role or left blank
+    avatar: "", // From user.profilePicUrl or user.profilePic
+    coverPhoto: "/api/placeholder/1200/300", // Static or separate API
+    bio: "",
+    location: "", // If you add this in backend later
+    joinDate: "",
     stats: {
-      followers: 248,
-      following: 186,
-      skillsLearned: 17,
-      skillsInProgress: 3,
-      achievements: 8,
+      followers: 0,
+      following: 0,
+      skillsLearned: 0,
+      skillsInProgress: 0,
+      achievements: 0,
     },
-    skills: [
-      { name: "UI Design", level: "Expert", endorsements: 42 },
-      { name: "React", level: "Advanced", endorsements: 38 },
-      { name: "User Research", level: "Intermediate", endorsements: 27 },
-      { name: "Figma", level: "Expert", endorsements: 35 },
-      { name: "JavaScript", level: "Advanced", endorsements: 31 },
-      { name: "CSS/Sass", level: "Advanced", endorsements: 29 },
-      { name: "User Testing", level: "Intermediate", endorsements: 18 },
-      { name: "Blender 3D", level: "Beginner", endorsements: 5 },
-    ],
-    learningGoals: [
-      { id: 1, name: "Three.js", progress: 45, category: "Web Development" },
-      { id: 2, name: "Advanced Animation", progress: 20, category: "Design" },
-      { id: 3, name: "WebGL Shaders", progress: 10, category: "Programming" },
-    ],
-    certifications: [
-      {
-        name: "Professional UX Design",
-        issuer: "Google",
-        date: "Dec 2024",
-        verified: true,
-      },
-      {
-        name: "Frontend Development",
-        issuer: "Meta",
-        date: "Aug 2024",
-        verified: true,
-      },
-      {
-        name: "Design Systems",
-        issuer: "Figma",
-        date: "May 2024",
-        verified: true,
-      },
-    ],
+    skills: [],
+    learningGoals: [],
+    certifications: [],
   });
 
   const [isFollowing, setIsFollowing] = useState(false);
@@ -92,38 +63,103 @@ const UserProfile = () => {
       likes: 18,
     },
   ]);
-
   useEffect(() => {
-    const fetchUsers = async () => {
+    const fetchUserDetails = async () => {
       try {
         setLoading(true);
-        const response = await axios.get("http://localhost:8080/api/users");
-        setUsers(response.data); // Ensure response.data is an array
+        const token = localStorage.getItem("authToken");
+
+        if (!token) {
+          setError("No token found");
+          return;
+        }
+
+        const response = await axios.get(
+          "http://localhost:8080/api/users/details",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        const data = response.data;
+
+        setUser({
+          id: data.id,
+          name: data.username,
+          title: data.role === "ADMIN" ? "Administrator" : "Member", // Optional logic
+          avatar:
+            data.profilePicUrl || data.profilePic || "/api/placeholder/120/120",
+          coverPhoto: "/api/placeholder/1200/300", // Keep static or use backend if available
+          bio: data.bio || "",
+          location: "", // Add location if available in backend
+          joinDate: new Date(data.registrationDate).toLocaleString("default", {
+            month: "long",
+            year: "numeric",
+          }),
+          stats: {
+            followers: data.followers?.length || 0,
+            following: data.following?.length || 0,
+            skillsLearned: data.skills?.length || 0,
+            skillsInProgress: 0, // Update if you start tracking progress
+            achievements: 0, // Update if backend supports achievements
+          },
+          skills:
+            data.skills?.map((skill) => ({
+              name: skill,
+              level: "Beginner", // Default level until supported
+              endorsements: Math.floor(Math.random() * 40), // Mock data
+            })) || [],
+          learningGoals: [], // Empty unless you fetch from a goal API
+          certifications: [], // Empty unless you fetch from a cert API
+        });
+
         setError(null);
       } catch (err) {
-        setError("Failed to fetch users: " + err.message);
-        console.error("Error fetching users:", err);
+        setError("Failed to fetch user details: " + err.message);
+        console.error("Error fetching user details:", err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchUsers();
+    fetchUserDetails();
   }, []);
-
-  // Toggle follow state
-  const handleFollow = () => {
-    setIsFollowing(!isFollowing);
-    setUser((prev) => ({
-      ...prev,
-      stats: {
-        ...prev.stats,
-        followers: isFollowing
-          ? prev.stats.followers - 1
-          : prev.stats.followers + 1,
-      },
-    }));
+  const getInitials = (name) => {
+    if (!name) return "?";
+    return name.charAt(0).toUpperCase();
   };
+  const getColorClass = (userId) => {
+    const colors = [
+      "bg-blue-200 text-blue-600",
+      "bg-green-200 text-green-600",
+      "bg-purple-200 text-purple-600",
+      "bg-pink-200 text-pink-600",
+      "bg-yellow-200 text-yellow-600",
+      "bg-indigo-200 text-indigo-600",
+    ];
+
+    // Use the user ID to select a consistent color
+    const index = userId
+      ? parseInt(userId.toString().charAt(0), 10) % colors.length
+      : 0;
+    return colors[index];
+  };
+
+  // // Toggle follow state
+  // const handleFollow = () => {
+  //   setIsFollowing(!isFollowing);
+  //   setUser((prev) => ({
+  //     ...prev,
+  //     stats: {
+  //       ...prev.stats,
+  //       followers: isFollowing
+  //         ? prev.stats.followers - 1
+  //         : prev.stats.followers + 1,
+  //     },
+  //   }));
+  // };
 
   // Handle skill endorsement
   const handleEndorse = (skillName) => {
@@ -136,9 +172,10 @@ const UserProfile = () => {
       ),
     }));
   };
-
+  console.log(user.avatar);
   return (
     <div className="min-h-screen bg-gray-50">
+      <Header user={user} />
       {/* Cover Photo & Profile Summary */}
       <div className="relative">
         {/* Cover Photo */}
@@ -158,11 +195,18 @@ const UserProfile = () => {
                 <div className="sm:flex sm:items-center sm:justify-between">
                   <div className="sm:flex sm:space-x-5">
                     <div className="flex-shrink-0">
-                      <img
-                        src={user.avatar}
-                        alt={user.name}
-                        className="mx-auto h-20 w-20 sm:h-28 sm:w-28 rounded-full border-4 border-white shadow-md"
-                      />
+                      {user?.avatar &&
+                      !user.avatar.includes("/api/placeholder/") ? (
+                        <img
+                          className="h-8 w-8 rounded-full"
+                          src={user.avatar}
+                          alt={user?.name || "User"}
+                        />
+                      ) : (
+                        <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 font-medium">
+                          {getInitials(user?.name)}
+                        </div>
+                      )}
                     </div>
                     <div className="mt-4 sm:mt-0 text-center sm:text-left sm:flex-1">
                       <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
@@ -228,7 +272,6 @@ const UserProfile = () => {
                   </div>
                   <div className="mt-5 sm:mt-0 flex justify-center">
                     <button
-                      onClick={handleFollow}
                       className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
                         isFollowing
                           ? "bg-gray-100 text-gray-800 hover:bg-gray-200"
@@ -259,6 +302,7 @@ const UserProfile = () => {
                     </div>
                     <div className="text-xs text-gray-500">Following</div>
                   </div>
+
                   <div className="bg-gray-50 rounded-lg py-2 px-4">
                     <div className="text-2xl font-bold text-indigo-600">
                       {user.stats.skillsLearned}
@@ -445,6 +489,86 @@ const UserProfile = () => {
             {/* Tabs */}
             <div className="mb-6 bg-white rounded-xl shadow-sm overflow-hidden">
               <div className="border-b border-gray-200">
+                {/* Post Creation Card (Facebook style) */}
+                <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-6 border border-gray-200">
+                  <div className="p-4">
+                    <div
+                      onClick={() => setShowCreatePostModal(true)}
+                      className="flex items-center space-x-3 cursor-pointer"
+                    >
+                      <img
+                        src={user.avatar}
+                        alt={user.name}
+                        className="h-10 w-10 rounded-full"
+                      />
+                      <div className="bg-gray-100 rounded-full px-4 py-2.5 flex-grow text-gray-500 hover:bg-gray-200">
+                        What's on your mind, {user.name?.split(" ")[0]}?
+                      </div>
+                    </div>
+
+                    <div className="mt-3 pt-3 border-t border-gray-100 flex justify-between">
+                      <button
+                        onClick={() => setShowCreatePostModal(true)}
+                        className="flex items-center space-x-2 text-sm text-gray-500 hover:bg-gray-100 rounded-lg px-3 py-1.5"
+                      >
+                        <svg
+                          className="h-5 w-5 text-red-400"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={1.5}
+                            d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
+                          />
+                        </svg>
+                        <span>Photo/Video</span>
+                      </button>
+
+                      <button
+                        onClick={() => setShowCreatePostModal(true)}
+                        className="flex items-center space-x-2 text-sm text-gray-500 hover:bg-gray-100 rounded-lg px-3 py-1.5"
+                      >
+                        <svg
+                          className="h-5 w-5 text-green-400"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={1.5}
+                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                          />
+                        </svg>
+                        <span>Learning Update</span>
+                      </button>
+
+                      <button
+                        onClick={() => setShowCreatePostModal(true)}
+                        className="flex items-center space-x-2 text-sm text-gray-500 hover:bg-gray-100 rounded-lg px-3 py-1.5"
+                      >
+                        <svg
+                          className="h-5 w-5 text-blue-400"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={1.5}
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                          />
+                        </svg>
+                        <span>Learning Plan</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
                 <nav className="flex" aria-label="Tabs">
                   <button
                     onClick={() => setActiveTab("activity")}
@@ -620,6 +744,12 @@ const UserProfile = () => {
           </div>
         </div>
       </div>
+      {showCreatePostModal && (
+        <CreatePostModal
+          isOpen={showCreatePostModal}
+          onClose={() => setShowCreatePostModal(false)}
+        />
+      )}
     </div>
   );
 };
