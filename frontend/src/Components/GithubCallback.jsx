@@ -12,6 +12,7 @@ const GitHubCallback = () => {
     const handleGitHubCallback = async () => {
       const searchParams = new URLSearchParams(location.search);
       const code = searchParams.get("code");
+      console.log("Processing GitHub callback with code:", code);
 
       if (!code) {
         setError("No authorization code found in the URL");
@@ -19,10 +20,12 @@ const GitHubCallback = () => {
       }
 
       try {
+        console.log("Sending code to backend...");
         const response = await axios.post(
           "http://localhost:8080/api/auth/github",
           { code }
         );
+        console.log("Backend response:", response.data);
 
         if (response.data && response.data.token) {
           localStorage.setItem("authToken", response.data.token);

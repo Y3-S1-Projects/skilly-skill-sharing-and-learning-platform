@@ -18,18 +18,6 @@ const Login = () => {
   const githubClientId = import.meta.env.VITE_GITHUB_CLIENT_ID;
   const githubRedirectUri = import.meta.env.VITE_GITHUB_REDIRECT_URI;
 
-  // Parse URL params for GitHub OAuth flow
-  useEffect(() => {
-    const code = new URLSearchParams(window.location.search).get("code");
-    if (code) {
-      // Add a flag to avoid double calls
-      if (!called.current) {
-        called.current = true;
-        exchangeGithubCode(code); // your API call
-      }
-    }
-  }, []);
-
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData((prevData) => ({
@@ -68,7 +56,7 @@ const Login = () => {
         localStorage.setItem("authToken", response.data.token);
 
         // Redirect to dashboard
-        navigate("/profile");
+        navigate("/userprofile");
       } catch (error) {
         console.error("Login failed:", error);
         setErrors({ general: "Login failed. Please check your credentials." });
@@ -90,7 +78,7 @@ const Login = () => {
       }
 
       // Redirect to dashboard
-      navigate("/profile");
+      navigate("/userprofile");
     } catch (error) {
       console.error("Google Login Error:", error);
       setErrors({ general: "Google login failed. Please try again." });
@@ -99,30 +87,14 @@ const Login = () => {
     }
   };
 
+  // const handleGithubLogin = () => {
+  //   const redirectUri = encodeURIComponent(
+  //     "http://localhost:5173/auth/github/callback"
+  //   );
+  //   window.location.href = `https://github.com/login/oauth/authorize?client_id=${githubClientId}&redirect_uri=${redirectUri}&scope=user:email%20read:user`;
+  // };
   const handleGithubLogin = () => {
-    const redirectUri = encodeURIComponent(
-      "http://localhost:5173/auth/github/callback"
-    );
-    window.location.href = `https://github.com/login/oauth/authorize?client_id=${githubClientId}&redirect_uri=${redirectUri}&scope=user:email%20read:user`;
-  };
-
-  const handleGithubCallback = async (code) => {
-    setIsLoading(true);
-    try {
-      const res = await axios.post("http://localhost:8080/api/auth/github", {
-        code: code,
-      });
-
-      if (res.data && res.data.token) {
-        localStorage.setItem("authToken", res.data.token);
-        navigate("/profile");
-      }
-    } catch (error) {
-      console.error("GitHub Login Error:", error);
-      setErrors({ general: "GitHub login failed. Please try again." });
-    } finally {
-      setIsLoading(false);
-    }
+    window.location.href = "http://localhost:8080/oauth2/authorization/github";
   };
 
   return (
