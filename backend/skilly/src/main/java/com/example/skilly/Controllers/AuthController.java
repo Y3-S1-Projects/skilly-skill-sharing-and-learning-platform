@@ -1,5 +1,39 @@
 package com.example.skilly.Controllers;
 
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.ClientHttpResponse;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.DefaultResponseErrorHandler;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestTemplate;
+
 import com.example.skilly.DTOs.GithubTokenRequest;
 import com.example.skilly.DTOs.LoginRequest;
 import com.example.skilly.Models.User;
@@ -10,29 +44,9 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
 
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.*;
-import org.springframework.http.client.ClientHttpResponse;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.core.user.OAuth2User;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.bind.annotation.*;
-
-import java.io.IOException;
-import java.time.LocalDateTime;
-import java.util.*;
-
-import io.jsonwebtoken.Claims;
-import org.springframework.web.client.DefaultResponseErrorHandler;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestTemplate;
+import jakarta.servlet.http.HttpServletResponse;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -185,10 +199,9 @@ public class AuthController {
 
     private Set<String> usedCodes = Collections.synchronizedSet(new HashSet<>());
 
-
     @PostMapping("/github")
     public ResponseEntity<?> authenticateGithub(@RequestBody GithubTokenRequest request,
-                                                HttpServletResponse response) {
+            HttpServletResponse response) {
         String code = request.getCode();
 
         if (usedCodes.contains(code)) {
@@ -196,7 +209,6 @@ public class AuthController {
                     .body(Map.of("error", "code_already_used",
                             "message", "This authorization code has already been used. Please try logging in again."));
         }
-
 
         try {
             // Exchange the code for an access token
@@ -272,8 +284,7 @@ public class AuthController {
                     "https://github.com/login/oauth/access_token",
                     HttpMethod.POST,
                     requestEntity,
-                    Map.class
-            );
+                    Map.class);
 
             System.out.println("Full GitHub token response: " + response.getBody());
 
@@ -320,8 +331,7 @@ public class AuthController {
                     "https://api.github.com/user/emails",
                     HttpMethod.GET,
                     requestEntity,
-                    List.class
-            );
+                    List.class);
 
             List<Map<String, Object>> emails = emailsResponse.getBody();
             System.out.println("Emails fetched: " + emails);
