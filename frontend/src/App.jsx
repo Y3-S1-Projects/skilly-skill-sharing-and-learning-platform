@@ -10,6 +10,8 @@ import SocialFeed from "./Pages/SocialFeed";
 import UserProfile from "./Pages/UserProfile";
 import Auth from "./Pages/Auth";
 import Profile from "./Pages/Profile";
+// import SearchResults from "./Components/SearchResults";
+import SearchResults from "./Components/SearchResults ";
 function App() {
   return (
     <Router>
@@ -22,6 +24,8 @@ function App() {
         <Route path="/userprofile" element={<UserProfile />} />
         <Route path="/auth" element={<Auth />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/search" element={<SearchResults />} />
+
         {/*Components */}
         <Route path="/header" element={<Header />} />
       </Routes>

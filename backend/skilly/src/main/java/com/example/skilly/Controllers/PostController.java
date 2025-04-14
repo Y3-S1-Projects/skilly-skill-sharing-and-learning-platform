@@ -67,6 +67,8 @@ public class PostController {
 
         Post post = new Post();
         post.setUserId(userId);
+        post.setTitle(title);
+        post.setPostType(postType);
         post.setContent(description);
         post.setCreatedAt(new Date());
         post.setLikes(new ArrayList<>());
