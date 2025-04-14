@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 
 import Header from "../Components/Header";
 const SocialFeed = () => {
-  // Sample data - would be fetched from API in real implementation
+  const [user, setUser] = useState({});
   const [posts, setPosts] = useState([
     {
       id: 1,
@@ -102,7 +102,7 @@ const SocialFeed = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-indigo-50 to-white">
-      <Header />
+      <Header user={user} />
       <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Skill Community</h1>
