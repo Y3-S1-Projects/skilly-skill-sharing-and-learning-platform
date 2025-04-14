@@ -115,7 +115,6 @@ const UserProfile = () => {
           learningGoals: [], // Empty unless you fetch from a goal API
           certifications: [], // Empty unless you fetch from a cert API
         });
-        console.log(data.id);
         const postsResponse = await axios.get(
           `http://localhost:8080/api/posts/user/${data.id}`,
           {
@@ -126,7 +125,6 @@ const UserProfile = () => {
         );
 
         setPosts(postsResponse.data);
-
         setError(null);
       } catch (err) {
         setError("Failed to fetch user details: " + err.message);
@@ -138,6 +136,7 @@ const UserProfile = () => {
 
     fetchUserDetailsAndPosts();
   }, []);
+
   const getInitials = (name) => {
     if (!name) return "?";
     return name.charAt(0).toUpperCase();
@@ -157,6 +156,40 @@ const UserProfile = () => {
       ? parseInt(userId.toString().charAt(0), 10) % colors.length
       : 0;
     return colors[index];
+  };
+
+  const handleLike = async (postId) => {
+    try {
+      const token = localStorage.getItem("authToken");
+      const userId = user.id;
+
+      // Find the post in the current state
+      const postToUpdate = posts.find((p) => p.id === postId);
+
+      if (!postToUpdate) {
+        console.error("Post not found in current state");
+        return;
+      }
+
+      // Check if user already liked the post
+      const isLiked = postToUpdate.likes.includes(userId);
+
+      // Make API request
+      const endpoint = isLiked ? "unlike" : "like";
+      const response = await axios.put(
+        `http://localhost:8080/api/posts/${postId}/${endpoint}/${userId}`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      // Update the posts state
+      setPosts(
+        posts.map((post) => (post.id === postId ? response.data : post))
+      );
+    } catch (err) {
+      console.error("Error liking post:", err);
+      // You might want to show a user-friendly error message here
+    }
   };
 
   const formatDate = (dateString) => {
@@ -199,7 +232,6 @@ const UserProfile = () => {
       ),
     }));
   };
-  console.log(user.avatar);
   return (
     <div className="min-h-screen bg-gray-50">
       <Header user={user} />
@@ -642,7 +674,7 @@ const UserProfile = () => {
               ) : (
                 posts.map((post) => (
                   <div
-                    key={post._id}
+                    key={post.id}
                     className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200 hover:shadow-md transition-shadow"
                   >
                     <div className="p-4 sm:p-6">
@@ -682,7 +714,14 @@ const UserProfile = () => {
 
                       {/* Post footer with actions */}
                       <div className="mt-4 flex items-center justify-between border-t pt-3">
-                        <button className="flex items-center text-gray-500 hover:text-indigo-600 transition-colors">
+                        <button
+                          onClick={() => handleLike(post.id)}
+                          className={`flex items-center ${
+                            post.likes.includes(user.id)
+                              ? "text-indigo-600"
+                              : "text-gray-500 hover:text-indigo-600"
+                          } transition-colors`}
+                        >
                           <svg
                             className="h-5 w-5 mr-1"
                             fill="none"
