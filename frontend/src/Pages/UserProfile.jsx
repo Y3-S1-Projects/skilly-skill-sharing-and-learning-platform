@@ -36,34 +36,34 @@ const UserProfile = () => {
   const [activeTab, setActiveTab] = useState("activity");
 
   // Sample activity data - would come from API
-  const [activities, _setActivities] = useState([
-    {
-      id: 1,
-      type: "skill_completed",
-      content: "Completed Advanced React Hooks course with 96% score",
-      skillName: "React Hooks",
-      date: "2 days ago",
-      likes: 24,
-    },
-    {
-      id: 2,
-      type: "achievement",
-      content: "Earned Design System Architect badge",
-      achievementName: "Design System Architect",
-      date: "1 week ago",
-      likes: 37,
-    },
-    {
-      id: 3,
-      type: "shared_resource",
-      content:
-        "This course on animation principles changed how I approach UI motion",
-      resourceName: "Animation for UI/UX",
-      resourceLink: "https://example.com/course",
-      date: "2 weeks ago",
-      likes: 18,
-    },
-  ]);
+  // const [activities, _setActivities] = useState([
+  //   {
+  //     id: 1,
+  //     type: "skill_completed",
+  //     content: "Completed Advanced React Hooks course with 96% score",
+  //     skillName: "React Hooks",
+  //     date: "2 days ago",
+  //     likes: 24,
+  //   },
+  //   {
+  //     id: 2,
+  //     type: "achievement",
+  //     content: "Earned Design System Architect badge",
+  //     achievementName: "Design System Architect",
+  //     date: "1 week ago",
+  //     likes: 37,
+  //   },
+  //   {
+  //     id: 3,
+  //     type: "shared_resource",
+  //     content:
+  //       "This course on animation principles changed how I approach UI motion",
+  //     resourceName: "Animation for UI/UX",
+  //     resourceLink: "https://example.com/course",
+  //     date: "2 weeks ago",
+  //     likes: 18,
+  //   },
+  // ]);
   useEffect(() => {
     const fetchUserDetailsAndPosts = async () => {
       try {
@@ -695,8 +695,11 @@ const UserProfile = () => {
                         </div>
                       </div>
 
-                      {/* Post content */}
-                      <p className="text-gray-800 mb-3">{post.content}</p>
+                      <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                        {post.title}
+                      </h2>
+
+                      <p className="text-gray-700 mb-3">{post.content}</p>
 
                       {/* Post media (if any) */}
                       {post.mediaUrls && post.mediaUrls.length > 0 && (
