@@ -8,6 +8,7 @@ import Login from "./Pages/Login";
 import Register from "./Pages/Register";
 import SocialFeed from "./Pages/SocialFeed";
 import UserProfile from "./Pages/UserProfile";
+import PublicProfile from "./Pages/PublicProfile";
 import Auth from "./Pages/Auth";
 import Profile from "./Pages/Profile";
 // import SearchResults from "./Components/SearchResults";
@@ -24,6 +25,8 @@ function App() {
         <Route path="/userprofile" element={<UserProfile />} />
         <Route path="/auth" element={<Auth />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/profile/:userId" element={<PublicProfile />} />
+
         <Route path="/search" element={<SearchResults />} />
 
         {/*Components */}

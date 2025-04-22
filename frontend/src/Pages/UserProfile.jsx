@@ -5,20 +5,19 @@ import Header from "../Components/Header";
 import CreatePostModal from "../Components/Modals/CreatePost";
 
 const UserProfile = () => {
-  // This would come from API/context in a real app
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showCreatePostModal, setShowCreatePostModal] = useState(false);
-  const [posts, setPosts] = useState([]); // New state for posts
+  const [posts, setPosts] = useState([]);
   const [user, setUser] = useState({
     id: "",
     name: "",
-    title: "", // Optional: could be generated from role or left blank
-    avatar: "", // From user.profilePicUrl or user.profilePic
-    coverPhoto: "/api/placeholder/1200/300", // Static or separate API
+    title: "",
+    avatar: "",
+    coverPhoto: "/api/placeholder/1200/300",
     bio: "",
-    location: "", // If you add this in backend later
+    location: "",
     joinDate: "",
     stats: {
       followers: 0,
@@ -35,35 +34,6 @@ const UserProfile = () => {
   const [isFollowing, setIsFollowing] = useState(false);
   const [activeTab, setActiveTab] = useState("activity");
 
-  // Sample activity data - would come from API
-  // const [activities, _setActivities] = useState([
-  //   {
-  //     id: 1,
-  //     type: "skill_completed",
-  //     content: "Completed Advanced React Hooks course with 96% score",
-  //     skillName: "React Hooks",
-  //     date: "2 days ago",
-  //     likes: 24,
-  //   },
-  //   {
-  //     id: 2,
-  //     type: "achievement",
-  //     content: "Earned Design System Architect badge",
-  //     achievementName: "Design System Architect",
-  //     date: "1 week ago",
-  //     likes: 37,
-  //   },
-  //   {
-  //     id: 3,
-  //     type: "shared_resource",
-  //     content:
-  //       "This course on animation principles changed how I approach UI motion",
-  //     resourceName: "Animation for UI/UX",
-  //     resourceLink: "https://example.com/course",
-  //     date: "2 weeks ago",
-  //     likes: 18,
-  //   },
-  // ]);
   useEffect(() => {
     const fetchUserDetailsAndPosts = async () => {
       try {
@@ -89,12 +59,12 @@ const UserProfile = () => {
         setUser({
           id: data.id,
           name: data.username,
-          title: data.role === "ADMIN" ? "Administrator" : "Member", // Optional logic
+          title: data.role === "ADMIN" ? "Administrator" : "Member",
           avatar:
             data.profilePicUrl || data.profilePic || "/api/placeholder/120/120",
-          coverPhoto: "/api/placeholder/1200/300", // Keep static or use backend if available
+          coverPhoto: "/api/placeholder/1200/300",
           bio: data.bio || "",
-          location: "", // Add location if available in backend
+          location: "",
           joinDate: new Date(data.registrationDate).toLocaleString("default", {
             month: "long",
             year: "numeric",
@@ -103,17 +73,17 @@ const UserProfile = () => {
             followers: data.followers?.length || 0,
             following: data.following?.length || 0,
             skillsLearned: data.skills?.length || 0,
-            skillsInProgress: 0, // Update if you start tracking progress
-            achievements: 0, // Update if backend supports achievements
+            skillsInProgress: 0,
+            achievements: 0,
           },
           skills:
             data.skills?.map((skill) => ({
               name: skill,
-              level: "Beginner", // Default level until supported
-              endorsements: Math.floor(Math.random() * 40), // Mock data
+              level: "Beginner",
+              endorsements: Math.floor(Math.random() * 40),
             })) || [],
-          learningGoals: [], // Empty unless you fetch from a goal API
-          certifications: [], // Empty unless you fetch from a cert API
+          learningGoals: [],
+          certifications: [],
         });
         const postsResponse = await axios.get(
           `http://localhost:8080/api/posts/user/${data.id}`,
@@ -188,7 +158,6 @@ const UserProfile = () => {
       );
     } catch (err) {
       console.error("Error liking post:", err);
-      // You might want to show a user-friendly error message here
     }
   };
 
@@ -206,20 +175,6 @@ const UserProfile = () => {
       return `${Math.floor(diffInSeconds / 86400)} days ago`;
     return date.toLocaleDateString();
   };
-
-  // // Toggle follow state
-  // const handleFollow = () => {
-  //   setIsFollowing(!isFollowing);
-  //   setUser((prev) => ({
-  //     ...prev,
-  //     stats: {
-  //       ...prev.stats,
-  //       followers: isFollowing
-  //         ? prev.stats.followers - 1
-  //         : prev.stats.followers + 1,
-  //     },
-  //   }));
-  // };
 
   // Handle skill endorsement
   const handleEndorse = (skillName) => {

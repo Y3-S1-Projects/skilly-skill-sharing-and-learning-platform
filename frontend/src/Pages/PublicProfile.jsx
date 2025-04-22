@@ -1,0 +1,838 @@
+import React, { useState, useEffect } from "react";
+import { Link, useParams } from "react-router-dom";
+import axios from "axios";
+import Header from "../Components/Header";
+
+const PublicProfile = () => {
+  const { userId } = useParams(); // Get userId from URL parameter
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [posts, setPosts] = useState([]);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [activeTab, setActiveTab] = useState("activity");
+  const [user, setUser] = useState({
+    id: "",
+    name: "",
+    title: "",
+    avatar: "",
+    coverPhoto: "/api/placeholder/1200/300",
+    bio: "",
+    location: "",
+    joinDate: "",
+    stats: {
+      followers: 0,
+      following: 0,
+      skillsLearned: 0,
+      skillsInProgress: 0,
+      achievements: 0,
+    },
+    skills: [],
+    learningGoals: [],
+    certifications: [],
+  });
+
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      try {
+        const token = localStorage.getItem("authToken");
+
+        if (!token) {
+          return;
+        }
+
+        const response = await axios.get(
+          "http://localhost:8080/api/users/details",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        setCurrentUser(response.data);
+        // Check if current user follows this profile
+        setIsFollowing(response.data.following?.includes(userId) || false);
+      } catch (err) {
+        console.error("Error fetching current user:", err);
+      }
+    };
+    const fetchUserProfile = async () => {
+      try {
+        setLoading(true);
+        const token = localStorage.getItem("authToken");
+
+        const response = await axios.get(
+          `http://localhost:8080/api/users/${userId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        const data = response.data;
+
+        setUser({
+          id: data.id,
+          name: data.username,
+          title: data.role === "ADMIN" ? "Administrator" : "Member",
+          avatar:
+            data.profilePicUrl || data.profilePic || "/api/placeholder/120/120",
+          coverPhoto: "/api/placeholder/1200/300",
+          bio: data.bio || "",
+          location: data.location || "",
+          joinDate: new Date(data.registrationDate).toLocaleString("default", {
+            month: "long",
+            year: "numeric",
+          }),
+          stats: {
+            followers: data.followers?.length || 0,
+            following: data.following?.length || 0,
+            skillsLearned: data.skills?.length || 0,
+            skillsInProgress: 0,
+            achievements: 0,
+          },
+          skills:
+            data.skills?.map((skill) => ({
+              name: skill,
+              level: "Beginner",
+              endorsements: Math.floor(Math.random() * 40),
+            })) || [],
+          learningGoals: [],
+          certifications: [],
+        });
+
+        // Fetch user posts
+        const postsResponse = await axios.get(
+          `http://localhost:8080/api/posts/user/${data.id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        setPosts(postsResponse.data);
+        setError(null);
+      } catch (err) {
+        setError("Failed to fetch user profile: " + err.message);
+        console.error("Error fetching user profile:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCurrentUser();
+    fetchUserProfile();
+  }, [userId]);
+
+  const getInitials = (name) => {
+    if (!name) return "?";
+    return name.charAt(0).toUpperCase();
+  };
+
+  const getColorClass = (userId) => {
+    const colors = [
+      "bg-blue-200 text-blue-600",
+      "bg-green-200 text-green-600",
+      "bg-purple-200 text-purple-600",
+      "bg-pink-200 text-pink-600",
+      "bg-yellow-200 text-yellow-600",
+      "bg-indigo-200 text-indigo-600",
+    ];
+
+    // Use the user ID to select a consistent color
+    const index = userId
+      ? parseInt(userId.toString().charAt(0), 10) % colors.length
+      : 0;
+    return colors[index];
+  };
+
+  const handleFollowToggle = async () => {
+    try {
+      const token = localStorage.getItem("authToken");
+
+      if (!token || !currentUser) {
+        navigate("/login");
+        return;
+      }
+
+      const endpoint = isFollowing ? "unfollow" : "follow";
+      await axios.post(
+        `http://localhost:8080/api/users/${endpoint}/${userId}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      // Update following state
+      setIsFollowing(!isFollowing);
+
+      // Update follower count
+      setUser((prev) => ({
+        ...prev,
+        stats: {
+          ...prev.stats,
+          followers: isFollowing
+            ? prev.stats.followers - 1
+            : prev.stats.followers + 1,
+        },
+      }));
+    } catch (err) {
+      console.error(
+        `Error ${isFollowing ? "unfollowing" : "following"} user:`,
+        err
+      );
+    }
+  };
+
+  const handleLike = async (postId) => {
+    try {
+      if (!currentUser) return;
+
+      const token = localStorage.getItem("authToken");
+      const userId = currentUser.id;
+
+      // Find the post in the current state
+      const postToUpdate = posts.find((p) => p.id === postId);
+
+      if (!postToUpdate) {
+        console.error("Post not found in current state");
+        return;
+      }
+
+      // Check if user already liked the post
+      const isLiked = postToUpdate.likes.includes(userId);
+
+      // Make API request
+      const endpoint = isLiked ? "unlike" : "like";
+      const response = await axios.put(
+        `http://localhost:8080/api/posts/${postId}/${endpoint}/${userId}`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      // Update the posts state
+      setPosts(
+        posts.map((post) => (post.id === postId ? response.data : post))
+      );
+    } catch (err) {
+      console.error("Error liking post:", err);
+    }
+  };
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInSeconds = Math.floor((now - date) / 1000);
+
+    if (diffInSeconds < 60) return "just now";
+    if (diffInSeconds < 3600)
+      return `${Math.floor(diffInSeconds / 60)} minutes ago`;
+    if (diffInSeconds < 86400)
+      return `${Math.floor(diffInSeconds / 3600)} hours ago`;
+    if (diffInSeconds < 604800)
+      return `${Math.floor(diffInSeconds / 86400)} days ago`;
+    return date.toLocaleDateString();
+  };
+
+  // Handle skill endorsement
+  const handleEndorse = async (skillName) => {
+    try {
+      if (!currentUser) return;
+
+      const token = localStorage.getItem("authToken");
+
+      await axios.put(
+        `http://localhost:8080/api/users/endorse/${userId}/${skillName}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      // Update UI
+      setUser((prev) => ({
+        ...prev,
+        skills: prev.skills.map((skill) =>
+          skill.name === skillName
+            ? { ...skill, endorsements: skill.endorsements + 1 }
+            : skill
+        ),
+      }));
+    } catch (err) {
+      console.error("Error endorsing skill:", err);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex justify-center items-center">
+        Loading...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex justify-center items-center text-red-500">
+        {error}
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Header user={currentUser} />
+
+      {/* Cover Photo & Profile Summary */}
+      <div className="relative">
+        {/* Cover Photo */}
+        <div className="h-48 sm:h-64 w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 overflow-hidden">
+          <img
+            src={user.coverPhoto}
+            alt="Cover"
+            className="w-full h-full object-cover opacity-70"
+          />
+        </div>
+
+        {/* Profile Summary Card */}
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="relative -mt-12 sm:-mt-16 mb-6">
+            <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+              <div className="p-4 sm:p-6">
+                <div className="sm:flex sm:items-center sm:justify-between">
+                  <div className="sm:flex sm:space-x-5">
+                    <div className="flex-shrink-0">
+                      {user?.avatar &&
+                      !user.avatar.includes("/api/placeholder/") ? (
+                        <img
+                          className="h-20 w-20 rounded-full object-cover border-4 border-white"
+                          src={user.avatar}
+                          alt={user?.name || "User"}
+                        />
+                      ) : (
+                        <div className="h-20 w-20 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 font-medium text-xl border-4 border-white">
+                          {getInitials(user?.name)}
+                        </div>
+                      )}
+                    </div>
+                    <div className="mt-4 sm:mt-0 text-center sm:text-left sm:flex-1">
+                      <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
+                        {user.name}
+                      </h1>
+                      <p className="text-sm sm:text-base font-medium text-indigo-600">
+                        {user.title}
+                      </p>
+                      <div className="mt-1 flex flex-wrap items-center justify-center sm:justify-start text-sm text-gray-500 gap-x-4 gap-y-1">
+                        {user.location && (
+                          <span className="flex items-center">
+                            <svg
+                              className="h-4 w-4 mr-1"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                              />
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                              />
+                            </svg>
+                            {user.location}
+                          </span>
+                        )}
+                        <span className="flex items-center">
+                          <svg
+                            className="h-4 w-4 mr-1"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                            />
+                          </svg>
+                          Joined {user.joinDate}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  {currentUser && currentUser.id !== user.id && (
+                    <div className="mt-5 sm:mt-0 flex justify-center">
+                      <button
+                        onClick={handleFollowToggle}
+                        className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                          isFollowing
+                            ? "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                            : "bg-indigo-600 text-white hover:bg-indigo-700"
+                        }`}
+                      >
+                        {isFollowing ? "Following" : "Follow"}
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Bio */}
+                <div className="mt-4 text-sm text-gray-700">
+                  <p>{user.bio}</p>
+                </div>
+
+                {/* User Stats */}
+                <div className="mt-6 grid grid-cols-3 lg:grid-cols-5 gap-4 text-center">
+                  <div className="bg-gray-50 rounded-lg py-2 px-4">
+                    <div className="text-2xl font-bold text-indigo-600">
+                      {user.stats.followers}
+                    </div>
+                    <div className="text-xs text-gray-500">Followers</div>
+                  </div>
+                  <div className="bg-gray-50 rounded-lg py-2 px-4">
+                    <div className="text-2xl font-bold text-indigo-600">
+                      {user.stats.following}
+                    </div>
+                    <div className="text-xs text-gray-500">Following</div>
+                  </div>
+
+                  <div className="bg-gray-50 rounded-lg py-2 px-4">
+                    <div className="text-2xl font-bold text-indigo-600">
+                      {user.stats.skillsLearned}
+                    </div>
+                    <div className="text-xs text-gray-500">Skills</div>
+                  </div>
+                  <div className="bg-gray-50 rounded-lg py-2 px-4">
+                    <div className="text-2xl font-bold text-indigo-600">
+                      {user.stats.skillsInProgress}
+                    </div>
+                    <div className="text-xs text-gray-500">Learning</div>
+                  </div>
+                  <div className="bg-gray-50 rounded-lg py-2 px-4 col-span-3 lg:col-span-1">
+                    <div className="text-2xl font-bold text-indigo-600">
+                      {user.stats.achievements}
+                    </div>
+                    <div className="text-xs text-gray-500">Achievements</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content Area */}
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+        <div className="flex flex-col md:flex-row gap-6">
+          {/* Left Column - Skills, Badges, etc. */}
+          <div className="md:w-1/3">
+            {/* Skills Section */}
+            <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
+              <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
+                <h3 className="text-lg font-medium leading-6 text-gray-900">
+                  Skills
+                </h3>
+                <p className="mt-1 max-w-2xl text-sm text-gray-500">
+                  Verified skills with community endorsements
+                </p>
+              </div>
+              <div className="px-4 py-3 sm:px-6">
+                {user.skills.length === 0 ? (
+                  <div className="py-3 text-center text-gray-500">
+                    No skills listed yet
+                  </div>
+                ) : (
+                  <ul className="divide-y divide-gray-200">
+                    {user.skills.map((skill, index) => (
+                      <li key={index} className="py-3">
+                        <div className="flex justify-between">
+                          <div>
+                            <h4 className="text-sm font-medium text-gray-900">
+                              {skill.name}
+                            </h4>
+                            <div className="mt-1 flex items-center">
+                              <span
+                                className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                                  skill.level === "Expert"
+                                    ? "bg-green-100 text-green-800"
+                                    : skill.level === "Advanced"
+                                    ? "bg-blue-100 text-blue-800"
+                                    : skill.level === "Intermediate"
+                                    ? "bg-indigo-100 text-indigo-800"
+                                    : "bg-purple-100 text-purple-800"
+                                }`}
+                              >
+                                {skill.level}
+                              </span>
+                            </div>
+                          </div>
+                          {currentUser && currentUser.id !== user.id && (
+                            <button
+                              onClick={() => handleEndorse(skill.name)}
+                              className="inline-flex items-center text-sm text-gray-500 hover:text-indigo-600"
+                            >
+                              <svg
+                                className="h-5 w-5 mr-1"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={1.5}
+                                  d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"
+                                />
+                              </svg>
+                              <span>{skill.endorsements}</span>
+                            </button>
+                          )}
+                          {(!currentUser || currentUser.id === user.id) && (
+                            <div className="inline-flex items-center text-sm text-gray-500">
+                              <svg
+                                className="h-5 w-5 mr-1"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={1.5}
+                                  d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"
+                                />
+                              </svg>
+                              <span>{skill.endorsements}</span>
+                            </div>
+                          )}
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </div>
+
+            {/* Certifications Section */}
+            <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+              <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
+                <h3 className="text-lg font-medium leading-6 text-gray-900">
+                  Certifications
+                </h3>
+                <p className="mt-1 max-w-2xl text-sm text-gray-500">
+                  Verified achievements and credentials
+                </p>
+              </div>
+              <div className="px-4 py-3 sm:px-6">
+                {user.certifications.length === 0 ? (
+                  <div className="py-3 text-center text-gray-500">
+                    No certifications listed yet
+                  </div>
+                ) : (
+                  <ul className="divide-y divide-gray-200">
+                    {user.certifications.map((cert, index) => (
+                      <li key={index} className="py-3">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <h4 className="text-sm font-medium text-gray-900">
+                              {cert.name}
+                            </h4>
+                            <p className="text-xs text-gray-500 mt-1">
+                              Issued by {cert.issuer} • {cert.date}
+                            </p>
+                          </div>
+                          {cert.verified && (
+                            <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
+                              <svg
+                                className="mr-1 h-3 w-3 text-green-500"
+                                fill="currentColor"
+                                viewBox="0 0 20 20"
+                              >
+                                <path
+                                  fillRule="evenodd"
+                                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                  clipRule="evenodd"
+                                />
+                              </svg>
+                              Verified
+                            </span>
+                          )}
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column - Activities Feed */}
+          <div className="md:w-2/3">
+            {/* Tabs */}
+            <div className="mb-6 bg-white rounded-xl shadow-sm overflow-hidden">
+              <div className="border-b border-gray-200">
+                <nav className="flex" aria-label="Tabs">
+                  <button
+                    onClick={() => setActiveTab("activity")}
+                    className={`w-1/3 py-4 px-1 text-center border-b-2 font-medium text-sm ${
+                      activeTab === "activity"
+                        ? "border-indigo-500 text-indigo-600"
+                        : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                    }`}
+                  >
+                    Activity
+                  </button>
+                  <button
+                    onClick={() => setActiveTab("shared")}
+                    className={`w-1/3 py-4 px-1 text-center border-b-2 font-medium text-sm ${
+                      activeTab === "shared"
+                        ? "border-indigo-500 text-indigo-600"
+                        : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                    }`}
+                  >
+                    Resources
+                  </button>
+                  <button
+                    onClick={() => setActiveTab("achievements")}
+                    className={`w-1/3 py-4 px-1 text-center border-b-2 font-medium text-sm ${
+                      activeTab === "achievements"
+                        ? "border-indigo-500 text-indigo-600"
+                        : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                    }`}
+                  >
+                    Achievements
+                  </button>
+                </nav>
+              </div>
+            </div>
+
+            {/* Activities Feed */}
+            {activeTab === "activity" && (
+              <div className="space-y-6">
+                {posts.length === 0 ? (
+                  <div className="bg-white rounded-xl shadow-sm overflow-hidden p-6 text-center text-gray-500">
+                    No posts yet from this user
+                  </div>
+                ) : (
+                  posts.map((post) => (
+                    <div
+                      key={post.id}
+                      className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200 hover:shadow-md transition-shadow"
+                    >
+                      <div className="p-4 sm:p-6">
+                        {/* Post header with user info */}
+                        <div className="flex items-center mb-4">
+                          {user?.avatar &&
+                          !user.avatar.includes("/api/placeholder/") ? (
+                            <img
+                              src={user.avatar}
+                              alt={user.name}
+                              className="h-10 w-10 rounded-full mr-3"
+                            />
+                          ) : (
+                            <div
+                              className={`h-10 w-10 rounded-full flex items-center justify-center ${getColorClass(
+                                user.id
+                              )} mr-3`}
+                            >
+                              {getInitials(user.name)}
+                            </div>
+                          )}
+                          <div>
+                            <h3 className="font-medium text-gray-900">
+                              {user.name}
+                            </h3>
+                            <p className="text-xs text-gray-500">
+                              {formatDate(post.createdAt)}
+                            </p>
+                          </div>
+                        </div>
+
+                        <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                          {post.title}
+                        </h2>
+
+                        <p className="text-gray-700 mb-3">{post.content}</p>
+
+                        {/* Post media (if any) */}
+                        {post.mediaUrls && post.mediaUrls.length > 0 && (
+                          <div className="mt-3 grid grid-cols-2 gap-2">
+                            {post.mediaUrls.map((url, index) => (
+                              <img
+                                key={index}
+                                src={url}
+                                alt={`Post media ${index}`}
+                                className="rounded-lg object-cover w-full h-48"
+                              />
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Post footer with actions */}
+                        <div className="mt-4 flex items-center justify-between border-t pt-3">
+                          {currentUser ? (
+                            <button
+                              onClick={() => handleLike(post.id)}
+                              className={`flex items-center ${
+                                post.likes.includes(currentUser.id)
+                                  ? "text-indigo-600"
+                                  : "text-gray-500 hover:text-indigo-600"
+                              } transition-colors`}
+                            >
+                              <svg
+                                className="h-5 w-5 mr-1"
+                                fill={
+                                  post.likes.includes(currentUser.id)
+                                    ? "currentColor"
+                                    : "none"
+                                }
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={1.5}
+                                  d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"
+                                />
+                              </svg>
+                              <span>{post.likes?.length || 0} Likes</span>
+                            </button>
+                          ) : (
+                            <div className="flex items-center text-gray-500">
+                              <svg
+                                className="h-5 w-5 mr-1"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={1.5}
+                                  d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"
+                                />
+                              </svg>
+                              <span>{post.likes?.length || 0} Likes</span>
+                            </div>
+                          )}
+                          <button className="flex items-center text-gray-500 hover:text-indigo-600 transition-colors">
+                            <svg
+                              className="h-5 w-5 mr-1"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={1.5}
+                                d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
+                              />
+                            </svg>
+                            <span>{post.comments?.length || 0} Comments</span>
+                          </button>
+                          <Link
+                            to={`/post/${post.id}`}
+                            className="flex items-center text-gray-500 hover:text-indigo-600 transition-colors"
+                          >
+                            <svg
+                              className="h-5 w-5 mr-1"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={1.5}
+                                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                              />
+                            </svg>
+                            <span>View Details</span>
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
+
+            {/* Resources Tab */}
+            {activeTab === "shared" && (
+              <div className="bg-white rounded-xl shadow-sm overflow-hidden p-6">
+                <div className="text-center text-gray-500 py-6">
+                  <svg
+                    className="mx-auto h-12 w-12 text-gray-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={1}
+                      d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                    />
+                  </svg>
+                  <h3 className="mt-2 text-sm font-medium text-gray-900">
+                    No resources yet
+                  </h3>
+                  <p className="mt-1 text-sm text-gray-500">
+                    This user hasn't shared any learning resources, guides, or
+                    materials yet.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Achievements Tab */}
+            {activeTab === "achievements" && (
+              <div className="bg-white rounded-xl shadow-sm overflow-hidden p-6">
+                <div className="text-center text-gray-500 py-6">
+                  <svg
+                    className="mx-auto h-12 w-12 text-gray-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={1}
+                      d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
+                    />
+                  </svg>
+                  <h3 className="mt-2 text-sm font-medium text-gray-900">
+                    No achievements yet
+                  </h3>
+                  <p className="mt-1 text-sm text-gray-500">
+                    This user hasn't earned any badges or achievements yet in
+                    their learning journey.
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default PublicProfile;
