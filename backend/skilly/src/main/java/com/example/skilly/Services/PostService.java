@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -14,6 +15,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.example.skilly.Models.Comment;
 import com.example.skilly.Models.Post;
 import com.example.skilly.Repositories.PostRepository;
 
@@ -89,5 +91,46 @@ public class PostService {
 
         // Return the URL or path that can be used to access the file
         return "/uploads/" + filename;
+    }
+    
+    // Comment operations
+    public Optional<Post> addComment(String postId, String userId, String content) {
+        return postRepository.findById(postId).map(post -> {
+            Comment comment = new Comment();
+            comment.setId(UUID.randomUUID().toString());
+            comment.setUserId(userId);
+            comment.setContent(content);
+            comment.setCreatedAt(new Date());
+            
+            if (post.getComments() == null) {
+                post.setComments(List.of(comment));
+            } else {
+                post.getComments().add(comment);
+            }
+            
+            return postRepository.save(post);
+        });
+    }
+    
+    public Optional<Post> updateComment(String postId, String commentId, String userId, String content) {
+        return postRepository.findById(postId).map(post -> {
+            for (Comment comment : post.getComments()) {
+                if (comment.getId().equals(commentId) && comment.getUserId().equals(userId)) {
+                    comment.setContent(content);
+                    comment.setUpdatedAt(new Date());
+                    break;
+                }
+            }
+            return postRepository.save(post);
+        });
+    }
+    
+    public Optional<Post> deleteComment(String postId, String commentId, String userId) {
+        return postRepository.findById(postId).map(post -> {
+            post.setComments(post.getComments().stream()
+                .filter(comment -> !(comment.getId().equals(commentId) && comment.getUserId().equals(userId)))
+                .toList());
+            return postRepository.save(post);
+        });
     }
 }

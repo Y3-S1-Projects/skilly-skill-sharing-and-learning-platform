@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.example.skilly.DTOs.CommentRequest;
 import com.example.skilly.Models.Post;
 import com.example.skilly.Services.PostService;
 import com.example.skilly.Utils.JwtUtil;
@@ -73,6 +74,7 @@ public class PostController {
         post.setCreatedAt(new Date());
         post.setLikes(new ArrayList<>());
         post.setSharedBy(new ArrayList<>());
+        post.setComments(new ArrayList<>());
 
         // Handle file uploads and save URLs
         List<String> mediaUrls = new ArrayList<>();
@@ -124,6 +126,47 @@ public class PostController {
     @PutMapping("/{id}/share/{userId}")
     public ResponseEntity<Post> sharePost(@PathVariable String id, @PathVariable String userId) {
         return postService.sharePost(id, userId)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+    
+    // Comment endpoints
+    @PostMapping("/{id}/comments")
+    public ResponseEntity<Post> addComment(
+            @PathVariable String id,
+            @RequestBody CommentRequest commentRequest,
+            @RequestHeader("Authorization") String token) {
+        
+        String userId = jwtUtil.getUserIdFromToken(token.replace("Bearer ", ""));
+        
+        return postService.addComment(id, userId, commentRequest.getContent())
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+    
+    @PutMapping("/{id}/comments/{commentId}")
+    public ResponseEntity<Post> updateComment(
+            @PathVariable String id,
+            @PathVariable String commentId,
+            @RequestBody CommentRequest commentRequest,
+            @RequestHeader("Authorization") String token) {
+        
+        String userId = jwtUtil.getUserIdFromToken(token.replace("Bearer ", ""));
+        
+        return postService.updateComment(id, commentId, userId, commentRequest.getContent())
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+    
+    @DeleteMapping("/{id}/comments/{commentId}")
+    public ResponseEntity<Post> deleteComment(
+            @PathVariable String id,
+            @PathVariable String commentId,
+            @RequestHeader("Authorization") String token) {
+        
+        String userId = jwtUtil.getUserIdFromToken(token.replace("Bearer ", ""));
+        
+        return postService.deleteComment(id, commentId, userId)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }

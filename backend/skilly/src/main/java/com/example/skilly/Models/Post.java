@@ -1,5 +1,6 @@
 package com.example.skilly.Models;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -24,5 +25,6 @@ public class Post {
     private List<String> mediaUrls;
     private List<String> likes;
     private List<String> sharedBy;
+    private List<Comment> comments = new ArrayList<>();
     private Date createdAt = new Date();
 }
