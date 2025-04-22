@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import useUser from "../hooks/useUser";
 import Header from "./Header";
 
@@ -58,6 +58,7 @@ const SearchResults = () => {
     fetchResults();
   }, [searchQuery]);
 
+  // In SearchResults.js, update the renderUserResults function:
   const renderUserResults = () => {
     if (users.length === 0) {
       return (
@@ -78,16 +79,19 @@ const SearchResults = () => {
           >
             <img
               src={user.avatar || "/api/placeholder/64/64"}
-              alt={user.name}
+              alt={user.username}
               className="w-16 h-16 rounded-full object-cover"
             />
             <div className="ml-4">
-              <h3 className="font-medium text-gray-900">{user.name}</h3>
+              <h3 className="font-medium text-gray-900">{user.username}</h3>
               <p className="text-sm text-gray-500">{user.title}</p>
               <div className="mt-2">
-                <button className="text-sm bg-indigo-50 text-indigo-600 px-3 py-1 rounded-full hover:bg-indigo-100">
+                <Link
+                  to={`/profile/${user.id}`}
+                  className="text-sm bg-indigo-50 text-indigo-600 px-3 py-1 rounded-full hover:bg-indigo-100"
+                >
                   View Profile
-                </button>
+                </Link>
               </div>
             </div>
           </div>

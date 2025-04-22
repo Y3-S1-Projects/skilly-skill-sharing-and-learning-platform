@@ -155,4 +155,87 @@ public class UserController {
         }
     }
 
+    @PostMapping("/follow/{targetUserId}")
+    public ResponseEntity<?> followUser(
+            @PathVariable String targetUserId,
+            @RequestHeader(value = "Authorization") String token) {
+        try {
+            if (token == null || !token.startsWith("Bearer ")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(new MessageResponse("Invalid or missing token"));
+            }
+
+            String jwtToken = token.substring(7);
+            String authenticatedUserId = jwtUtil.getUserIdFromToken(jwtToken);
+
+            userService.followUser(authenticatedUserId, targetUserId);
+            return ResponseEntity.ok(new MessageResponse("Successfully followed user"));
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new MessageResponse(e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new MessageResponse(e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new MessageResponse("Error following user: " + e.getMessage()));
+        }
+    }
+
+    @PostMapping("/unfollow/{targetUserId}")
+    public ResponseEntity<?> unfollowUser(
+            @PathVariable String targetUserId,
+            @RequestHeader(value = "Authorization") String token) {
+        try {
+            // Validate token
+            if (token == null || !token.startsWith("Bearer ")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(new MessageResponse("Invalid or missing token"));
+            }
+
+            String jwtToken = token.substring(7);
+            String authenticatedUserId = jwtUtil.getUserIdFromToken(jwtToken);
+
+            userService.unfollowUser(authenticatedUserId, targetUserId);
+            return ResponseEntity.ok(new MessageResponse("Successfully unfollowed user"));
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new MessageResponse(e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new MessageResponse(e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new MessageResponse("Error unfollowing user: " + e.getMessage()));
+        }
+    }
+
+    @GetMapping("/{userId}/followers")
+    public ResponseEntity<?> getFollowers(@PathVariable String userId) {
+        try {
+            List<User> followers = userService.getFollowers(userId);
+            return ResponseEntity.ok(followers);
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new MessageResponse(e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new MessageResponse("Error retrieving followers: " + e.getMessage()));
+        }
+    }
+
+    @GetMapping("/{userId}/following")
+    public ResponseEntity<?> getFollowing(@PathVariable String userId) {
+        try {
+            List<User> following = userService.getFollowing(userId);
+            return ResponseEntity.ok(following);
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new MessageResponse(e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new MessageResponse("Error retrieving following list: " + e.getMessage()));
+        }
+    }
+
 }

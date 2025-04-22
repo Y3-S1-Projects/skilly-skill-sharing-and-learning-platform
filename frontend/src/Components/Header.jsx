@@ -4,7 +4,6 @@ const Header = ({ user, onLogout }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
   const [searchQuery, setSearchQuery] = useState("");
-
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
