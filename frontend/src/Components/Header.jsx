@@ -1,9 +1,69 @@
 import React, { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
-const Header = ({ user, onLogout }) => {
+const Header = ({ onLogout }) => {
+  const [currentUser, setCurrentUser] = useState(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      try {
+        const token = localStorage.getItem("authToken");
+        if (!token) return;
+
+        const response = await axios.get(
+          "http://localhost:8080/api/users/details",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        const data = response.data;
+
+        setCurrentUser({
+          id: data.id,
+          name: data.username,
+          title: data.role === "ADMIN" ? "Administrator" : "Member",
+          avatar:
+            data.profilePicUrl || data.profilePic || "/api/placeholder/120/120",
+          coverPhoto: "/api/placeholder/1200/300",
+          bio: data.bio || "",
+          location: "",
+          joinDate: new Date(data.registrationDate).toLocaleString("default", {
+            month: "long",
+            year: "numeric",
+          }),
+          stats: {
+            followers: data.followers?.length || 0,
+            following: data.following?.length || 0,
+            skillsLearned: data.skills?.length || 0,
+            skillsInProgress: 0,
+            achievements: 0,
+          },
+          skills:
+            data.skills?.map((skill) => ({
+              name: skill,
+              level: "Beginner",
+              endorsements: Math.floor(Math.random() * 40),
+            })) || [],
+          learningGoals: [],
+          certifications: [],
+          // Keep raw API data accessible if needed
+          rawData: data,
+        });
+      } catch (err) {
+        console.error("Error fetching current user:", err);
+      }
+    };
+
+    fetchCurrentUser();
+  }, []);
+
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -17,6 +77,32 @@ const Header = ({ user, onLogout }) => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  // Helper functions
+  const getInitials = (name) => {
+    if (!name) return "?";
+    const names = name.split(" ");
+    let initials = names[0].charAt(0).toUpperCase();
+    if (names.length > 1) {
+      initials += names[names.length - 1].charAt(0).toUpperCase();
+    }
+    return initials;
+  };
+
+  const getColorClass = (userId) => {
+    const colors = [
+      "bg-blue-200 text-blue-600",
+      "bg-green-200 text-green-600",
+      "bg-purple-200 text-purple-600",
+      "bg-pink-200 text-pink-600",
+      "bg-yellow-200 text-yellow-600",
+      "bg-indigo-200 text-indigo-600",
+    ];
+    const index = userId
+      ? parseInt(userId.toString().charAt(0), 10) % colors.length
+      : 0;
+    return colors[index];
+  };
 
   const toggleDropdown = () => {
     setIsDropdownOpen(!isDropdownOpen);
@@ -37,7 +123,6 @@ const Header = ({ user, onLogout }) => {
     // Close dropdown
     setIsDropdownOpen(false);
   };
-
   return (
     <header className="bg-white shadow-sm border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -45,9 +130,9 @@ const Header = ({ user, onLogout }) => {
           {/* Logo and navigation */}
           <div className="flex">
             <div className="flex-shrink-0 flex items-center">
-              <img className="h-8 w-auto" src="/logo.svg" alt="SkillShare" />
+              {/* <img className="h-8 w-auto" src="/logo.svg" alt="Skilly" /> */}
               <span className="ml-2 text-xl font-bold text-indigo-600">
-                SkillShare
+                Skilly
               </span>
             </div>
             <nav className="hidden sm:ml-6 sm:flex sm:space-x-8">
@@ -162,12 +247,12 @@ const Header = ({ user, onLogout }) => {
                   <span className="sr-only">Open user menu</span>
                   <img
                     className="h-8 w-8 rounded-full"
-                    src={user?.avatar || "/api/placeholder/40/40"}
-                    alt={user?.name || "User"}
+                    src={currentUser?.avatar || "/api/placeholder/40/40"}
+                    alt={currentUser?.name || "User"}
                   />
-                  {user?.name && (
+                  {currentUser?.name && (
                     <span className="ml-2 text-sm font-medium text-gray-700 hidden md:block">
-                      {user.name}
+                      {currentUser.name}
                     </span>
                   )}
                   <svg
@@ -196,10 +281,10 @@ const Header = ({ user, onLogout }) => {
                 >
                   <div className="px-4 py-2 border-b border-gray-100">
                     <p className="text-sm font-medium text-gray-900 truncate">
-                      {user?.name || "Guest"}
+                      {currentUser?.name || "Guest"}
                     </p>
                     <p className="text-xs text-gray-500 truncate">
-                      {user?.title || "Member"}
+                      {currentUser?.title || "Member"}
                     </p>
                   </div>
                   <a

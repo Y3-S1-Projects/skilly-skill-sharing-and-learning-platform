@@ -2,6 +2,10 @@ import React, { useState, useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
 import axios from "axios";
 import Header from "../Components/Header";
+import { Share } from "lucide-react";
+import PostComponent from "../Components/Post";
+import DocsIcon from "@/public/icons/DocsIcon";
+import StarsIcon from "@/public/icons/StarsIcon";
 
 const PublicProfile = () => {
   const { userId } = useParams(); // Get userId from URL parameter
@@ -36,27 +40,19 @@ const PublicProfile = () => {
     const fetchCurrentUser = async () => {
       try {
         const token = localStorage.getItem("authToken");
-
-        if (!token) {
-          return;
-        }
-
         const response = await axios.get(
           "http://localhost:8080/api/users/details",
           {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
+            headers: { Authorization: `Bearer ${token}` },
           }
         );
 
         setCurrentUser(response.data);
-        // Check if current user follows this profile
-        setIsFollowing(response.data.following?.includes(userId) || false);
       } catch (err) {
         console.error("Error fetching current user:", err);
       }
     };
+
     const fetchUserProfile = async () => {
       try {
         setLoading(true);
@@ -619,177 +615,20 @@ const PublicProfile = () => {
                 </nav>
               </div>
             </div>
-
-            {/* Activities Feed */}
             {activeTab === "activity" && (
-              <div className="space-y-6">
-                {posts.length === 0 ? (
-                  <div className="bg-white rounded-xl shadow-sm overflow-hidden p-6 text-center text-gray-500">
-                    No posts yet from this user
-                  </div>
-                ) : (
-                  posts.map((post) => (
-                    <div
-                      key={post.id}
-                      className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200 hover:shadow-md transition-shadow"
-                    >
-                      <div className="p-4 sm:p-6">
-                        {/* Post header with user info */}
-                        <div className="flex items-center mb-4">
-                          {user?.avatar &&
-                          !user.avatar.includes("/api/placeholder/") ? (
-                            <img
-                              src={user.avatar}
-                              alt={user.name}
-                              className="h-10 w-10 rounded-full mr-3"
-                            />
-                          ) : (
-                            <div
-                              className={`h-10 w-10 rounded-full flex items-center justify-center ${getColorClass(
-                                user.id
-                              )} mr-3`}
-                            >
-                              {getInitials(user.name)}
-                            </div>
-                          )}
-                          <div>
-                            <h3 className="font-medium text-gray-900">
-                              {user.name}
-                            </h3>
-                            <p className="text-xs text-gray-500">
-                              {formatDate(post.createdAt)}
-                            </p>
-                          </div>
-                        </div>
-
-                        <h2 className="text-xl font-semibold text-gray-900 mb-2">
-                          {post.title}
-                        </h2>
-
-                        <p className="text-gray-700 mb-3">{post.content}</p>
-
-                        {/* Post media (if any) */}
-                        {post.mediaUrls && post.mediaUrls.length > 0 && (
-                          <div className="mt-3 grid grid-cols-2 gap-2">
-                            {post.mediaUrls.map((url, index) => (
-                              <img
-                                key={index}
-                                src={url}
-                                alt={`Post media ${index}`}
-                                className="rounded-lg object-cover w-full h-48"
-                              />
-                            ))}
-                          </div>
-                        )}
-
-                        {/* Post footer with actions */}
-                        <div className="mt-4 flex items-center justify-between border-t pt-3">
-                          {currentUser ? (
-                            <button
-                              onClick={() => handleLike(post.id)}
-                              className={`flex items-center ${
-                                post.likes.includes(currentUser.id)
-                                  ? "text-indigo-600"
-                                  : "text-gray-500 hover:text-indigo-600"
-                              } transition-colors`}
-                            >
-                              <svg
-                                className="h-5 w-5 mr-1"
-                                fill={
-                                  post.likes.includes(currentUser.id)
-                                    ? "currentColor"
-                                    : "none"
-                                }
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={1.5}
-                                  d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"
-                                />
-                              </svg>
-                              <span>{post.likes?.length || 0} Likes</span>
-                            </button>
-                          ) : (
-                            <div className="flex items-center text-gray-500">
-                              <svg
-                                className="h-5 w-5 mr-1"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={1.5}
-                                  d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"
-                                />
-                              </svg>
-                              <span>{post.likes?.length || 0} Likes</span>
-                            </div>
-                          )}
-                          <button className="flex items-center text-gray-500 hover:text-indigo-600 transition-colors">
-                            <svg
-                              className="h-5 w-5 mr-1"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={1.5}
-                                d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
-                              />
-                            </svg>
-                            <span>{post.comments?.length || 0} Comments</span>
-                          </button>
-                          <Link
-                            to={`/post/${post.id}`}
-                            className="flex items-center text-gray-500 hover:text-indigo-600 transition-colors"
-                          >
-                            <svg
-                              className="h-5 w-5 mr-1"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={1.5}
-                                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                              />
-                            </svg>
-                            <span>View Details</span>
-                          </Link>
-                        </div>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
+              <PostComponent
+                posts={posts}
+                currentUser={currentUser}
+                onLike={handleLike}
+                authorInfo={user}
+                context="profile"
+              />
             )}
-
             {/* Resources Tab */}
             {activeTab === "shared" && (
               <div className="bg-white rounded-xl shadow-sm overflow-hidden p-6">
                 <div className="text-center text-gray-500 py-6">
-                  <svg
-                    className="mx-auto h-12 w-12 text-gray-400"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={1}
-                      d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                    />
-                  </svg>
+                  <DocsIcon />
                   <h3 className="mt-2 text-sm font-medium text-gray-900">
                     No resources yet
                   </h3>
@@ -800,24 +639,11 @@ const PublicProfile = () => {
                 </div>
               </div>
             )}
-
             {/* Achievements Tab */}
             {activeTab === "achievements" && (
               <div className="bg-white rounded-xl shadow-sm overflow-hidden p-6">
                 <div className="text-center text-gray-500 py-6">
-                  <svg
-                    className="mx-auto h-12 w-12 text-gray-400"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={1}
-                      d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
-                    />
-                  </svg>
+                  <StarsIcon />
                   <h3 className="mt-2 text-sm font-medium text-gray-900">
                     No achievements yet
                   </h3>
