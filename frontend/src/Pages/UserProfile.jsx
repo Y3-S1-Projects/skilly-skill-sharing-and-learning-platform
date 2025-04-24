@@ -3,7 +3,8 @@ import { Link } from "react-router-dom";
 import axios from "axios";
 import Header from "../Components/Header";
 import CreatePostModal from "../Components/Modals/CreatePost";
-
+import CreatePostCard from "../Components/CreatePostCard";
+import EditIcon from "@/public/icons/EditIcon";
 const UserProfile = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -286,13 +287,15 @@ const UserProfile = () => {
                   </div>
                   <div className="mt-5 sm:mt-0 flex justify-center">
                     <button
-                      className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                        isFollowing
-                          ? "bg-gray-100 text-gray-800 hover:bg-gray-200"
-                          : "bg-indigo-600 text-white hover:bg-indigo-700"
-                      }`}
+                      className="px-5 py-2.5 text-sm font-medium rounded-xl
+                      bg-gradient-to-r from-indigo-500 to-purple-500 text-white
+                      flex items-center justify-center gap-2 
+                      shadow-md hover:shadow-lg transition-all duration-300
+                      hover:translate-y-px
+                      focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-opacity-75"
                     >
-                      {isFollowing ? "Following" : "Follow"}
+                      <EditIcon />
+                      Edit Profile
                     </button>
                   </div>
                 </div>
@@ -503,86 +506,11 @@ const UserProfile = () => {
             {/* Tabs */}
             <div className="mb-6 bg-white rounded-xl shadow-sm overflow-hidden">
               <div className="border-b border-gray-200">
-                {/* Post Creation Card (Facebook style) */}
-                <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-6 border border-gray-200">
-                  <div className="p-4">
-                    <div
-                      onClick={() => setShowCreatePostModal(true)}
-                      className="flex items-center space-x-3 cursor-pointer"
-                    >
-                      <img
-                        src={user.avatar}
-                        alt={user.name}
-                        className="h-10 w-10 rounded-full"
-                      />
-                      <div className="bg-gray-100 rounded-full px-4 py-2.5 flex-grow text-gray-500 hover:bg-gray-200">
-                        What's on your mind, {user.name?.split(" ")[0]}?
-                      </div>
-                    </div>
-
-                    <div className="mt-3 pt-3 border-t border-gray-100 flex justify-between">
-                      <button
-                        onClick={() => setShowCreatePostModal(true)}
-                        className="flex items-center space-x-2 text-sm text-gray-500 hover:bg-gray-100 rounded-lg px-3 py-1.5"
-                      >
-                        <svg
-                          className="h-5 w-5 text-red-400"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={1.5}
-                            d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
-                          />
-                        </svg>
-                        <span>Photo/Video</span>
-                      </button>
-
-                      <button
-                        onClick={() => setShowCreatePostModal(true)}
-                        className="flex items-center space-x-2 text-sm text-gray-500 hover:bg-gray-100 rounded-lg px-3 py-1.5"
-                      >
-                        <svg
-                          className="h-5 w-5 text-green-400"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={1.5}
-                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                          />
-                        </svg>
-                        <span>Learning Update</span>
-                      </button>
-
-                      <button
-                        onClick={() => setShowCreatePostModal(true)}
-                        className="flex items-center space-x-2 text-sm text-gray-500 hover:bg-gray-100 rounded-lg px-3 py-1.5"
-                      >
-                        <svg
-                          className="h-5 w-5 text-blue-400"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={1.5}
-                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                          />
-                        </svg>
-                        <span>Learning Plan</span>
-                      </button>
-                    </div>
-                  </div>
-                </div>
+                {/* Post Creation Card */}
+                <CreatePostCard
+                  user={user}
+                  setShowCreatePostModal={setShowCreatePostModal}
+                />
                 <nav className="flex" aria-label="Tabs">
                   <button
                     onClick={() => setActiveTab("activity")}
