@@ -10,6 +10,7 @@ import SocialFeed from "./Pages/SocialFeed";
 import UserProfile from "./Pages/UserProfile";
 import PublicProfile from "./Pages/PublicProfile";
 import Auth from "./Pages/Auth";
+import NotificationSystem from "./Components/NotificationSystem";
 import Profile from "./Pages/Profile";
 // import SearchResults from "./Components/SearchResults";
 import SearchResults from "./Components/SearchResults ";
@@ -26,6 +27,7 @@ function App() {
         <Route path="/auth" element={<Auth />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/profile/:userId" element={<PublicProfile />} />
+        <Route path="/notification" element={<NotificationSystem />} />
 
         <Route path="/search" element={<SearchResults />} />
 

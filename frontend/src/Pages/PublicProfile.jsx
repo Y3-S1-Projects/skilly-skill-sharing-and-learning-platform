@@ -6,6 +6,10 @@ import { Share } from "lucide-react";
 import PostComponent from "../Components/Post";
 import DocsIcon from "@/public/icons/DocsIcon";
 import StarsIcon from "@/public/icons/StarsIcon";
+import {
+  connectWebSocket,
+  disconnectWebSocket,
+} from "../services/webSocketService";
 
 const PublicProfile = () => {
   const { userId } = useParams(); // Get userId from URL parameter
@@ -15,6 +19,7 @@ const PublicProfile = () => {
   const [currentUser, setCurrentUser] = useState(null);
   const [isFollowing, setIsFollowing] = useState(false);
   const [activeTab, setActiveTab] = useState("activity");
+  const [followLoading, setFollowLoading] = useState(false);
   const [user, setUser] = useState({
     id: "",
     name: "",
@@ -69,6 +74,7 @@ const PublicProfile = () => {
 
         const data = response.data;
 
+        // Set user data
         setUser({
           id: data.id,
           name: data.username,
@@ -98,6 +104,25 @@ const PublicProfile = () => {
           learningGoals: [],
           certifications: [],
         });
+
+        // Check if the current user is following this profile user
+        const token2 = localStorage.getItem("authToken");
+        if (token2) {
+          const currentUserResponse = await axios.get(
+            "http://localhost:8080/api/users/details",
+            {
+              headers: { Authorization: `Bearer ${token2}` },
+            }
+          );
+
+          if (currentUserResponse.data && data.followers) {
+            // Check if current user's ID is in the followers array
+            const isUserFollowing = data.followers.includes(
+              currentUserResponse.data.id
+            );
+            setIsFollowing(isUserFollowing);
+          }
+        }
 
         // Fetch user posts
         const postsResponse = await axios.get(
@@ -147,12 +172,18 @@ const PublicProfile = () => {
 
   const handleFollowToggle = async () => {
     try {
+      // If already processing a request, ignore additional clicks
+      if (followLoading) return;
+
       const token = localStorage.getItem("authToken");
 
       if (!token || !currentUser) {
         navigate("/login");
         return;
       }
+
+      // Set loading state to true to prevent additional clicks
+      setFollowLoading(true);
 
       const endpoint = isFollowing ? "unfollow" : "follow";
       await axios.post(
@@ -183,6 +214,9 @@ const PublicProfile = () => {
         `Error ${isFollowing ? "unfollowing" : "following"} user:`,
         err
       );
+    } finally {
+      // Reset loading state when done
+      setFollowLoading(false);
     }
   };
 
@@ -216,6 +250,16 @@ const PublicProfile = () => {
       setPosts(
         posts.map((post) => (post.id === postId ? response.data : post))
       );
+
+      // Send WebSocket notification if the post owner is not the current user
+      if (postToUpdate.userId !== userId) {
+        const action = isLiked ? "UNLIKE" : "LIKE";
+        const notification = {
+          postId: postId,
+          senderId: userId,
+          action: action,
+        };
+      }
     } catch (err) {
       console.error("Error liking post:", err);
     }
@@ -374,13 +418,20 @@ const PublicProfile = () => {
                     <div className="mt-5 sm:mt-0 flex justify-center">
                       <button
                         onClick={handleFollowToggle}
+                        disabled={followLoading}
                         className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                          isFollowing
+                          followLoading
+                            ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                            : isFollowing
                             ? "bg-gray-100 text-gray-800 hover:bg-gray-200"
                             : "bg-indigo-600 text-white hover:bg-indigo-700"
                         }`}
                       >
-                        {isFollowing ? "Following" : "Follow"}
+                        {followLoading
+                          ? "Processing..."
+                          : isFollowing
+                          ? "Following"
+                          : "Follow"}
                       </button>
                     </div>
                   )}

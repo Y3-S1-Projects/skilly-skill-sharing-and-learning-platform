@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import com.example.skilly.DTOs.LikeNotification;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -37,6 +38,10 @@ public class PostController {
 
     @Autowired
     private JwtUtil jwtUtil;
+
+    @Autowired
+    private NotificationController notificationController;
+
 
     @GetMapping
     public ResponseEntity<List<Post>> getAllPosts() {
@@ -112,14 +117,44 @@ public class PostController {
     @PutMapping("/{id}/like/{userId}")
     public ResponseEntity<Post> likePost(@PathVariable String id, @PathVariable String userId) {
         return postService.likePost(id, userId)
-                .map(ResponseEntity::ok)
+                .map(post -> {
+                    // Only send notification if the post owner is not the same person who liked
+                    if (!post.getUserId().equals(userId)) {
+                        try {
+                            LikeNotification notification = new LikeNotification();
+                            notification.setPostId(id);
+                            notification.setSenderId(userId);
+                            notification.setAction("LIKE");
+                            notificationController.sendNotificationToUser(post.getUserId(), notification);
+                        } catch (Exception e) {
+                            // Log error but don't prevent the like from being processed
+                            System.err.println("Error sending notification: " + e.getMessage());
+                        }
+                    }
+                    return ResponseEntity.ok(post);
+                })
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @PutMapping("/{id}/unlike/{userId}")
     public ResponseEntity<Post> unlikePost(@PathVariable String id, @PathVariable String userId) {
         return postService.unlikePost(id, userId)
-                .map(ResponseEntity::ok)
+                .map(post -> {
+                    // Only send notification if the post owner is not the same person who unliked
+                    if (!post.getUserId().equals(userId)) {
+                        try {
+                            LikeNotification notification = new LikeNotification();
+                            notification.setPostId(id);
+                            notification.setSenderId(userId);
+                            notification.setAction("UNLIKE");
+                            notificationController.sendNotificationToUser(post.getUserId(), notification);
+                        } catch (Exception e) {
+                            // Log error but don't prevent the unlike from being processed
+                            System.err.println("Error sending notification: " + e.getMessage());
+                        }
+                    }
+                    return ResponseEntity.ok(post);
+                })
                 .orElse(ResponseEntity.notFound().build());
     }
 
