@@ -5,7 +5,6 @@ import Header from "../Components/Header";
 import CreatePostModal from "../Components/Modals/CreatePost";
 import CreatePostCard from "../Components/CreatePostCard";
 import EditIcon from "@/public/icons/EditIcon";
-
 const UserProfile = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -32,11 +31,6 @@ const UserProfile = () => {
     learningGoals: [],
     certifications: [],
   });
-
-  // Comment states
-  const [commentInputs, setCommentInputs] = useState({});
-  const [editingCommentId, setEditingCommentId] = useState(null);
-  const [editCommentContent, setEditCommentContent] = useState("");
 
   const [isFollowing, setIsFollowing] = useState(false);
   const [activeTab, setActiveTab] = useState("activity");
@@ -92,7 +86,6 @@ const UserProfile = () => {
           learningGoals: [],
           certifications: [],
         });
-        
         const postsResponse = await axios.get(
           `http://localhost:8080/api/posts/user/${data.id}`,
           {
@@ -103,14 +96,6 @@ const UserProfile = () => {
         );
 
         setPosts(postsResponse.data);
-        
-        // Initialize comment inputs
-        const initialCommentInputs = {};
-        postsResponse.data.forEach(post => {
-          initialCommentInputs[post.id] = "";
-        });
-        setCommentInputs(initialCommentInputs);
-        
         setError(null);
       } catch (err) {
         setError("Failed to fetch user details: " + err.message);
@@ -127,7 +112,6 @@ const UserProfile = () => {
     if (!name) return "?";
     return name.charAt(0).toUpperCase();
   };
-
   const getColorClass = (userId) => {
     const colors = [
       "bg-blue-200 text-blue-600",
@@ -138,6 +122,7 @@ const UserProfile = () => {
       "bg-indigo-200 text-indigo-600",
     ];
 
+    // Use the user ID to select a consistent color
     const index = userId
       ? parseInt(userId.toString().charAt(0), 10) % colors.length
       : 0;
@@ -149,6 +134,7 @@ const UserProfile = () => {
       const token = localStorage.getItem("authToken");
       const userId = user.id;
 
+      // Find the post in the current state
       const postToUpdate = posts.find((p) => p.id === postId);
 
       if (!postToUpdate) {
@@ -156,8 +142,10 @@ const UserProfile = () => {
         return;
       }
 
+      // Check if user already liked the post
       const isLiked = postToUpdate.likes.includes(userId);
 
+      // Make API request
       const endpoint = isLiked ? "unlike" : "like";
       const response = await axios.put(
         `http://localhost:8080/api/posts/${postId}/${endpoint}/${userId}`,
@@ -165,6 +153,7 @@ const UserProfile = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
+      // Update the posts state
       setPosts(
         posts.map((post) => (post.id === postId ? response.data : post))
       );
@@ -188,6 +177,7 @@ const UserProfile = () => {
     return date.toLocaleDateString();
   };
 
+  // Handle skill endorsement
   const handleEndorse = (skillName) => {
     setUser((prev) => ({
       ...prev,
@@ -198,90 +188,6 @@ const UserProfile = () => {
       ),
     }));
   };
-
-  // Comment handlers
-  const handleCommentInputChange = (postId, value) => {
-    setCommentInputs(prev => ({
-      ...prev,
-      [postId]: value
-    }));
-  };
-
-  const handleAddComment = async (postId) => {
-    try {
-      const token = localStorage.getItem("authToken");
-      const content = commentInputs[postId];
-
-      if (!content.trim()) return;
-
-      const response = await axios.post(
-        `http://localhost:8080/api/posts/${postId}/comments`,
-        { content },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      setPosts(posts.map(post => 
-        post.id === postId ? response.data : post
-      ));
-
-      // Clear the comment input
-      setCommentInputs(prev => ({
-        ...prev,
-        [postId]: ""
-      }));
-    } catch (err) {
-      console.error("Error adding comment:", err);
-    }
-  };
-
-  const startEditingComment = (comment) => {
-    setEditingCommentId(comment.id);
-    setEditCommentContent(comment.content);
-  };
-
-  const cancelEditingComment = () => {
-    setEditingCommentId(null);
-    setEditCommentContent("");
-  };
-
-  const handleUpdateComment = async (postId, commentId) => {
-    try {
-      const token = localStorage.getItem("authToken");
-
-      const response = await axios.put(
-        `http://localhost:8080/api/posts/${postId}/comments/${commentId}`,
-        { content: editCommentContent },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      setPosts(posts.map(post => 
-        post.id === postId ? response.data : post
-      ));
-
-      setEditingCommentId(null);
-      setEditCommentContent("");
-    } catch (err) {
-      console.error("Error updating comment:", err);
-    }
-  };
-
-  const handleDeleteComment = async (postId, commentId) => {
-    try {
-      const token = localStorage.getItem("authToken");
-
-      const response = await axios.delete(
-        `http://localhost:8080/api/posts/${postId}/comments/${commentId}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      setPosts(posts.map(post => 
-        post.id === postId ? response.data : post
-      ));
-    } catch (err) {
-      console.error("Error deleting comment:", err);
-    }
-  };
-
   return (
     <div className="min-h-screen bg-gray-50">
       <Header user={user} />
@@ -731,7 +637,7 @@ const UserProfile = () => {
                               d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
                             />
                           </svg>
-                          <span>{post.comments?.length || 0} Comments</span>
+                          <span>Comment</span>
                         </button>
                         <button className="flex items-center text-gray-500 hover:text-indigo-600 transition-colors">
                           <svg
@@ -749,117 +655,6 @@ const UserProfile = () => {
                           </svg>
                           <span>Share</span>
                         </button>
-                      </div>
-
-                      {/* Comments section */}
-                      <div className="mt-4 border-t pt-4">
-                        {/* Comment input */}
-                        <div className="flex items-start space-x-3 mb-4">
-                          <div className="flex-shrink-0">
-                            {user?.avatar &&
-                            !user.avatar.includes("/api/placeholder/") ? (
-                              <img
-                                className="h-8 w-8 rounded-full"
-                                src={user.avatar}
-                                alt={user?.name || "User"}
-                              />
-                            ) : (
-                              <div className={`h-8 w-8 rounded-full flex items-center justify-center ${getColorClass(user.id)} font-medium`}>
-                                {getInitials(user?.name)}
-                              </div>
-                            )}
-                          </div>
-                          <div className="flex-1">
-                            <div className="flex">
-                              <input
-                                type="text"
-                                value={commentInputs[post.id] || ""}
-                                onChange={(e) => handleCommentInputChange(post.id, e.target.value)}
-                                placeholder="Write a comment..."
-                                className="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
-                              />
-                              <button
-                                onClick={() => handleAddComment(post.id)}
-                                className="ml-2 px-3 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 text-sm"
-                              >
-                                Post
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Comments list */}
-                        {post.comments && post.comments.length > 0 && (
-                          <div className="space-y-3">
-                            {post.comments.map((comment) => (
-                              <div key={comment.id} className="flex items-start space-x-3">
-                                <div className="flex-shrink-0">
-                                  <div className={`h-8 w-8 rounded-full flex items-center justify-center ${getColorClass(comment.userId)} font-medium`}>
-                                    {getInitials(comment.userId === user.id ? user.name : "U")}
-                                  </div>
-                                </div>
-                                <div className="flex-1">
-                                  <div className="bg-gray-50 rounded-lg p-3">
-                                    {editingCommentId === comment.id ? (
-                                      <div className="space-y-2">
-                                        <textarea
-                                          value={editCommentContent}
-                                          onChange={(e) => setEditCommentContent(e.target.value)}
-                                          className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
-                                          rows="2"
-                                        />
-                                        <div className="flex space-x-2">
-                                          <button
-                                            onClick={() => handleUpdateComment(post.id, comment.id)}
-                                            className="px-3 py-1 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 text-sm"
-                                          >
-                                            Save
-                                          </button>
-                                          <button
-                                            onClick={cancelEditingComment}
-                                            className="px-3 py-1 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 text-sm"
-                                          >
-                                            Cancel
-                                          </button>
-                                        </div>
-                                      </div>
-                                    ) : (
-                                      <>
-                                        <div className="flex justify-between items-start">
-                                          <p className="text-sm font-medium text-gray-900">
-                                            {comment.userId === user.id ? "You" : "User"}
-                                          </p>
-                                          <p className="text-xs text-gray-500">
-                                            {formatDate(comment.createdAt)}
-                                          </p>
-                                        </div>
-                                        <p className="text-sm text-gray-700 mt-1">
-                                          {comment.content}
-                                        </p>
-                                        {comment.userId === user.id && (
-                                          <div className="flex space-x-2 mt-2">
-                                            <button
-                                              onClick={() => startEditingComment(comment)}
-                                              className="text-xs text-indigo-600 hover:text-indigo-800"
-                                            >
-                                              Edit
-                                            </button>
-                                            <button
-                                              onClick={() => handleDeleteComment(post.id, comment.id)}
-                                              className="text-xs text-red-600 hover:text-red-800"
-                                            >
-                                              Delete
-                                            </button>
-                                          </div>
-                                        )}
-                                      </>
-                                    )}
-                                  </div>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
                       </div>
                     </div>
                   </div>
