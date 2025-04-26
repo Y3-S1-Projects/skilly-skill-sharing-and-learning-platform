@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import com.example.skilly.DTOs.LikeNotification;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,7 +43,6 @@ public class PostController {
     @Autowired
     private NotificationController notificationController;
 
-
     @GetMapping
     public ResponseEntity<List<Post>> getAllPosts() {
         return ResponseEntity.ok(postService.findAll());
@@ -50,9 +50,9 @@ public class PostController {
 
     @GetMapping("/{id}")
     public ResponseEntity<Post> getPostById(@PathVariable String id) {
-        return postService.findById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        Optional<Post> post = postService.findById(id);
+        return post.map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @GetMapping("/user/{userId}")
@@ -68,7 +68,6 @@ public class PostController {
             @RequestParam(value = "images", required = false) MultipartFile[] images,
             @RequestHeader("Authorization") String token) throws IOException {
 
-        // Extract userId from token (typically would use a JWT service)
         String userId = jwtUtil.getUserIdFromToken(token.replace("Bearer ", ""));
 
         Post post = new Post();
@@ -81,7 +80,6 @@ public class PostController {
         post.setSharedBy(new ArrayList<>());
         post.setComments(new ArrayList<>());
 
-        // Handle file uploads and save URLs
         List<String> mediaUrls = new ArrayList<>();
         if (images != null) {
             for (MultipartFile image : images) {
@@ -94,31 +92,62 @@ public class PostController {
         return ResponseEntity.status(HttpStatus.CREATED).body(postService.save(post));
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<Post> updatePost(@PathVariable String id, @RequestBody Post post) {
-        return postService.findById(id)
-                .map(existingPost -> {
-                    post.setId(id);
-                    return ResponseEntity.ok(postService.save(post));
-                })
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Post> updatePost(
+            @PathVariable String id,
+            @RequestParam(value = "postType", required = false) String postType,
+            @RequestParam(value = "title", required = false) String title,
+            @RequestParam(value = "description", required = false) String description,
+            @RequestParam(value = "images", required = false) MultipartFile[] images,
+            @RequestHeader("Authorization") String token) throws IOException {
+
+        String userId = jwtUtil.getUserIdFromToken(token.replace("Bearer ", ""));
+        Optional<Post> existingPost = postService.findById(id);
+
+        if (existingPost.isEmpty() || !existingPost.get().getUserId().equals(userId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        Post updatedPost = new Post();
+        updatedPost.setId(id);
+        updatedPost.setTitle(title != null ? title : existingPost.get().getTitle());
+        updatedPost.setContent(description != null ? description : existingPost.get().getContent());
+        updatedPost.setPostType(postType != null ? postType : existingPost.get().getPostType());
+
+        return postService.updatePost(id, updatedPost, images)
+                .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletePost(@PathVariable String id) {
-        return postService.findById(id)
-                .map(post -> {
-                    postService.deleteById(id);
-                    return ResponseEntity.noContent().<Void>build();
-                })
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<Void> deletePost(
+            @PathVariable String id,
+            @RequestHeader("Authorization") String token) {
+
+        String userId = jwtUtil.getUserIdFromToken(token.replace("Bearer ", ""));
+        Optional<Post> post = postService.findById(id);
+
+        if (post.isEmpty() || !post.get().getUserId().equals(userId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        postService.deleteById(id);
+        return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/{id}/like/{userId}")
-    public ResponseEntity<Post> likePost(@PathVariable String id, @PathVariable String userId) {
+    public ResponseEntity<Post> likePost(
+            @PathVariable String id,
+            @PathVariable String userId,
+            @RequestHeader("Authorization") String token) {
+
+        String tokenUserId = jwtUtil.getUserIdFromToken(token.replace("Bearer ", ""));
+        if (!userId.equals(tokenUserId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
         return postService.likePost(id, userId)
                 .map(post -> {
-                    // Only send notification if the post owner is not the same person who liked
                     if (!post.getUserId().equals(userId)) {
                         try {
                             LikeNotification notification = new LikeNotification();
@@ -127,7 +156,6 @@ public class PostController {
                             notification.setAction("LIKE");
                             notificationController.sendNotificationToUser(post.getUserId(), notification);
                         } catch (Exception e) {
-                            // Log error but don't prevent the like from being processed
                             System.err.println("Error sending notification: " + e.getMessage());
                         }
                     }
@@ -137,10 +165,18 @@ public class PostController {
     }
 
     @PutMapping("/{id}/unlike/{userId}")
-    public ResponseEntity<Post> unlikePost(@PathVariable String id, @PathVariable String userId) {
+    public ResponseEntity<Post> unlikePost(
+            @PathVariable String id,
+            @PathVariable String userId,
+            @RequestHeader("Authorization") String token) {
+
+        String tokenUserId = jwtUtil.getUserIdFromToken(token.replace("Bearer ", ""));
+        if (!userId.equals(tokenUserId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
         return postService.unlikePost(id, userId)
                 .map(post -> {
-                    // Only send notification if the post owner is not the same person who unliked
                     if (!post.getUserId().equals(userId)) {
                         try {
                             LikeNotification notification = new LikeNotification();
@@ -149,7 +185,6 @@ public class PostController {
                             notification.setAction("UNLIKE");
                             notificationController.sendNotificationToUser(post.getUserId(), notification);
                         } catch (Exception e) {
-                            // Log error but don't prevent the unlike from being processed
                             System.err.println("Error sending notification: " + e.getMessage());
                         }
                     }
@@ -159,48 +194,56 @@ public class PostController {
     }
 
     @PutMapping("/{id}/share/{userId}")
-    public ResponseEntity<Post> sharePost(@PathVariable String id, @PathVariable String userId) {
+    public ResponseEntity<Post> sharePost(
+            @PathVariable String id,
+            @PathVariable String userId,
+            @RequestHeader("Authorization") String token) {
+
+        String tokenUserId = jwtUtil.getUserIdFromToken(token.replace("Bearer ", ""));
+        if (!userId.equals(tokenUserId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
         return postService.sharePost(id, userId)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
-    
-    // Comment endpoints
+
     @PostMapping("/{id}/comments")
     public ResponseEntity<Post> addComment(
             @PathVariable String id,
             @RequestBody CommentRequest commentRequest,
             @RequestHeader("Authorization") String token) {
-        
+
         String userId = jwtUtil.getUserIdFromToken(token.replace("Bearer ", ""));
-        
+
         return postService.addComment(id, userId, commentRequest.getContent())
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
-    
+
     @PutMapping("/{id}/comments/{commentId}")
     public ResponseEntity<Post> updateComment(
             @PathVariable String id,
             @PathVariable String commentId,
             @RequestBody CommentRequest commentRequest,
             @RequestHeader("Authorization") String token) {
-        
+
         String userId = jwtUtil.getUserIdFromToken(token.replace("Bearer ", ""));
-        
+
         return postService.updateComment(id, commentId, userId, commentRequest.getContent())
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
-    
+
     @DeleteMapping("/{id}/comments/{commentId}")
     public ResponseEntity<Post> deleteComment(
             @PathVariable String id,
             @PathVariable String commentId,
             @RequestHeader("Authorization") String token) {
-        
+
         String userId = jwtUtil.getUserIdFromToken(token.replace("Bearer ", ""));
-        
+
         return postService.deleteComment(id, commentId, userId)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
