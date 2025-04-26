@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import axios from "axios";
 import Header from "../Components/Header";
 import CreatePostModal from "../Components/Modals/CreatePost";
@@ -389,14 +390,37 @@ const UserProfile = () => {
 
             {/* Learning Goals Section */}
             <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
-              <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
-                <h3 className="text-lg font-medium leading-6 text-gray-900">
-                  Learning Goals
-                </h3>
-                <p className="mt-1 max-w-2xl text-sm text-gray-500">
-                  Skills currently in progress
-                </p>
-              </div>
+              <Link
+                to="/learning-plans"
+                className="block w-full p-4 rounded-lg transition-all 
+                hover:bg-gray-50 hover:shadow-sm 
+                focus:outline-none focus:ring-2 focus:ring-blue-500
+                group" // Added group for child hover effects
+                aria-label="View Learning Plans"
+              >
+                <div className="transition-all group-hover:translate-x-1">
+                  <h3 className="text-lg font-medium leading-6 text-gray-900 flex items-center">
+                    Learning Plans
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5 ml-1 text-gray-400 group-hover:text-blue-500 transition-colors"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 5l7 7-7 7"
+                      />
+                    </svg>
+                  </h3>
+                  <p className="mt-1 max-w-2xl text-sm text-gray-500 group-hover:text-gray-700">
+                    Skills currently in progress - Click to view details
+                  </p>
+                </div>
+              </Link>
               <div className="px-4 py-3 sm:px-6">
                 <ul className="divide-y divide-gray-200">
                   {user.learningGoals.map((goal) => (
