@@ -95,11 +95,16 @@ public class PostController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Post> updatePost(@PathVariable String id, @RequestBody Post post) {
+    public ResponseEntity<Post> updatePost(
+            @PathVariable String id,
+            @RequestParam("title") String title,
+            @RequestParam("description") String description) {
+
         return postService.findById(id)
                 .map(existingPost -> {
-                    post.setId(id);
-                    return ResponseEntity.ok(postService.save(post));
+                    existingPost.setTitle(title);
+                    existingPost.setContent(description);
+                    return ResponseEntity.ok(postService.save(existingPost));
                 })
                 .orElse(ResponseEntity.notFound().build());
     }
