@@ -1,17 +1,92 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 
 const PostCard = ({ post, currentUser, onPostUpdate, onPostDelete }) => {
   const [commentInput, setCommentInput] = useState("");
   const [editingCommentId, setEditingCommentId] = useState(null);
+  const [postOwner, setPostOwner] = useState(null);
+  const [commentOwner, setCommentOwner] = useState(null);
+  const [commentOwners, setCommentOwners] = useState({});
+  const [loggedInUser, setLoggedInUser] = useState(null);
   const [editCommentContent, setEditCommentContent] = useState("");
-
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({
     title: post.title,
     content: post.content,
     mediaUrls: post.mediaUrls || [],
   });
+
+  useEffect(() => {
+    const fetchPostOwnerDetails = async () => {
+      try {
+        const token = localStorage.getItem("authToken");
+        const ownerId = post.userId;
+        4;
+        if (ownerId) {
+          // Only fetch if ownerId exists
+          const response = await axios.get(
+            `${API_BASE_URL}/api/users/${ownerId}`,
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          );
+          setPostOwner(response.data);
+        }
+      } catch (err) {
+        console.error("Error fetching user details:", err);
+      }
+    };
+
+    const fetchLoggedInUserDetails = async () => {
+      try {
+        const token = localStorage.getItem("authToken");
+        const response = await axios.get(`${API_BASE_URL}/api/users/details`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setLoggedInUser(response.data);
+      } catch (err) {
+        console.error("Error fetching user details:", err);
+      }
+    };
+
+    const fetchAllCommentOwners = async () => {
+      if (post?.comments && post.comments.length > 0) {
+        // Create a set of unique user IDs to avoid duplicate requests
+        const userIds = new Set(post.comments.map((comment) => comment.userId));
+
+        // Fetch details for each unique user ID
+        userIds.forEach((userId) => {
+          fetchUserDetails(userId);
+        });
+      }
+    };
+
+    fetchLoggedInUserDetails();
+    fetchPostOwnerDetails();
+    fetchAllCommentOwners();
+    setCommentOwner(post?.comments.userID);
+  }, [post.userID]);
+  console.log(post);
+  console.log("commentOwner userId", post?.comments[0].userId); // For the first comment
+
+  const fetchUserDetails = async (userId) => {
+    if (!userId || commentOwners[userId]) return; // Skip if already fetched
+
+    try {
+      const token = localStorage.getItem("authToken");
+      const response = await axios.get(`${API_BASE_URL}/api/users/${userId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      setCommentOwners((prev) => ({
+        ...prev,
+        [userId]: response.data,
+      }));
+    } catch (err) {
+      console.error(`Error fetching user details for ${userId}:`, err);
+    }
+  };
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -53,7 +128,8 @@ const PostCard = ({ post, currentUser, onPostUpdate, onPostDelete }) => {
   const handleLike = async () => {
     try {
       const token = localStorage.getItem("authToken");
-      const userId = currentUser.id;
+      const userId = loggedInUser.id;
+      console.log("User ID:", userId);
       const isLiked = post.likes.includes(userId);
 
       const endpoint = isLiked ? "unlike" : "like";
@@ -116,6 +192,8 @@ const PostCard = ({ post, currentUser, onPostUpdate, onPostDelete }) => {
     }
   };
 
+  console.log("loggedInUser", loggedInUser?.profilePicUrl);
+
   // Comment operations
   const handleAddComment = async () => {
     try {
@@ -145,6 +223,8 @@ const PostCard = ({ post, currentUser, onPostUpdate, onPostDelete }) => {
     setEditingCommentId(null);
     setEditCommentContent("");
   };
+
+  console.log("comment owners", commentOwners);
 
   const handleUpdateComment = async (commentId) => {
     try {
@@ -178,18 +258,16 @@ const PostCard = ({ post, currentUser, onPostUpdate, onPostDelete }) => {
       console.error("Error deleting comment:", err);
     }
   };
-
-  const isPostOwner = post.userId === currentUser.id;
-
+  const isPostOwner = post.userId === loggedInUser?.id;
   return (
     <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200 hover:shadow-md transition-shadow">
       <div className="p-4 sm:p-6">
         {/* Post Header */}
         <div className="flex items-center mb-4">
-          {post.user?.avatar ? (
+          {postOwner?.profilePicUrl ? (
             <img
-              src={post.user.avatar}
-              alt={post.user?.name || "User"}
+              src={postOwner.profilePicUrl}
+              alt={postOwner?.name || "User"}
               className="h-10 w-10 rounded-full mr-3"
             />
           ) : (
@@ -198,14 +276,12 @@ const PostCard = ({ post, currentUser, onPostUpdate, onPostDelete }) => {
                 post.userId
               )} font-medium`}
             >
-              {getInitials(post.user?.name || "User")}
+              {getInitials(postOwner?.username || "User")}
             </div>
           )}
           <div>
             <h3 className="font-medium text-gray-900">
-              {post.userId === currentUser.id
-                ? "You"
-                : post.user?.name || "User"}
+              {post.userId === currentUser.id ? currentUser.name : "User"}
             </h3>
             <p className="text-xs text-gray-500">
               {formatDate(post.createdAt)}
@@ -448,19 +524,19 @@ const PostCard = ({ post, currentUser, onPostUpdate, onPostDelete }) => {
           {/* Comment input */}
           <div className="flex items-start space-x-3 mb-4">
             <div className="flex-shrink-0">
-              {currentUser?.avatar ? (
+              {loggedInUser?.profilePicUrl ? (
                 <img
                   className="h-8 w-8 rounded-full"
-                  src={currentUser.avatar}
-                  alt={currentUser?.name || "User"}
+                  src={loggedInUser?.profilePicUrl}
+                  alt={loggedInUser?.name || "User"}
                 />
               ) : (
                 <div
                   className={`h-8 w-8 rounded-full flex items-center justify-center ${getColorClass(
-                    currentUser.id
+                    loggedInUser?.id
                   )} font-medium`}
                 >
-                  {getInitials(currentUser?.name)}
+                  {getInitials(loggedInUser?.name)}
                 </div>
               )}
             </div>
@@ -487,23 +563,36 @@ const PostCard = ({ post, currentUser, onPostUpdate, onPostDelete }) => {
           {post.comments && post.comments.length > 0 && (
             <div className="space-y-3">
               {post.comments.map((comment) => (
-                <div key={comment.id} className="flex items-start space-x-3">
+                <div
+                  key={comment.id || comment._id}
+                  className="flex items-start space-x-3"
+                >
+                  {/* Avatar section */}
                   <div className="flex-shrink-0">
-                    <div
-                      className={`h-8 w-8 rounded-full flex items-center justify-center ${getColorClass(
-                        comment.userId
-                      )} font-medium`}
-                    >
-                      {getInitials(
-                        comment.userId === currentUser.id
-                          ? currentUser.name
-                          : "U"
-                      )}
-                    </div>
+                    {commentOwners[comment.userId]?.profilePicUrl ? (
+                      <img
+                        className="h-8 w-8 rounded-full"
+                        src={commentOwners[comment.userId].profilePicUrl}
+                        alt={commentOwners[comment.userId]?.username || "User"}
+                      />
+                    ) : (
+                      <div
+                        className={`h-8 w-8 rounded-full flex items-center justify-center ${getColorClass(
+                          comment.userId
+                        )} font-medium`}
+                      >
+                        {getInitials(
+                          commentOwners[comment.userId]?.username || "U"
+                        )}
+                      </div>
+                    )}
                   </div>
+
+                  {/* Comment content section */}
                   <div className="flex-1">
                     <div className="bg-gray-50 rounded-lg p-3">
-                      {editingCommentId === comment.id ? (
+                      {editingCommentId === comment.id ||
+                      editingCommentId === comment._id ? (
                         <div className="space-y-2">
                           <textarea
                             value={editCommentContent}
@@ -515,7 +604,9 @@ const PostCard = ({ post, currentUser, onPostUpdate, onPostDelete }) => {
                           />
                           <div className="flex space-x-2">
                             <button
-                              onClick={() => handleUpdateComment(comment.id)}
+                              onClick={() =>
+                                handleUpdateComment(comment.id || comment._id)
+                              }
                               className="px-3 py-1 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 text-sm"
                             >
                               Save
@@ -531,10 +622,12 @@ const PostCard = ({ post, currentUser, onPostUpdate, onPostDelete }) => {
                       ) : (
                         <>
                           <div className="flex justify-between items-start">
+                            {/* Username from comment owner data */}
                             <p className="text-sm font-medium text-gray-900">
-                              {comment.userId === currentUser.id
-                                ? "You"
-                                : "User"}
+                              {commentOwners[comment.userId]?.username ||
+                                (comment.userId === currentUser.id
+                                  ? currentUser.name
+                                  : "User")}
                             </p>
                             <p className="text-xs text-gray-500">
                               {formatDate(comment.createdAt)}
@@ -543,7 +636,7 @@ const PostCard = ({ post, currentUser, onPostUpdate, onPostDelete }) => {
                           <p className="text-sm text-gray-700 mt-1">
                             {comment.content}
                           </p>
-                          {comment.userId === currentUser.id && (
+                          {comment.userId === loggedInUser?.id && (
                             <div className="flex space-x-2 mt-2">
                               <button
                                 onClick={() => startEditingComment(comment)}
@@ -552,7 +645,9 @@ const PostCard = ({ post, currentUser, onPostUpdate, onPostDelete }) => {
                                 Edit
                               </button>
                               <button
-                                onClick={() => handleDeleteComment(comment.id)}
+                                onClick={() =>
+                                  handleDeleteComment(comment.id || comment._id)
+                                }
                                 className="text-xs text-red-600 hover:text-red-800"
                               >
                                 Delete
