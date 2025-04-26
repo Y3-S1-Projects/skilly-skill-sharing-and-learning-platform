@@ -45,10 +45,6 @@ function NotificationSystem({ currentUser }) {
       );
 
       setNotifications(sortedNotifications);
-      if (response.data.read) {
-        console.log("read");
-      }
-      console.log("Fetched notifications:", response.data); // Add this line
 
       // Calculate unread count based on isRead status from backend
       const unread = sortedNotifications.filter((n) => !n.read).length;
@@ -136,43 +132,35 @@ function NotificationSystem({ currentUser }) {
   };
 
   const handleNotificationClick = async (notification) => {
-    // Mark as read if unread
-    if (!notification.read) {
-      // First update the UI immediately for better user experience
+    // Early return if already handling this notification
+    if (notification.isHandling) return;
+
+    try {
+      // Mark as processing
       setNotifications((prev) =>
-        prev.map((n) => (n.id === notification.id ? { ...n, read: true } : n))
+        prev.map((n) =>
+          n.id === notification.id ? { ...n, isHandling: true } : n
+        )
       );
-      setUnreadCount((prev) => Math.max(0, prev - 1));
 
-      // Then update the backend
-      try {
-        const token = localStorage.getItem("authToken");
-        await axios.put(
-          `http://localhost:8080/api/notifications/${notification.id}/read`,
-          {},
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-      } catch (error) {
-        console.error("Failed to mark notification as read:", error);
-        // Rollback UI changes if the backend update fails
-        setNotifications((prev) =>
-          prev.map((n) =>
-            n.id === notification.id ? { ...n, read: false } : n
-          )
-        );
-        setUnreadCount((prev) => prev + 1);
+      if (!notification.read) {
+        await markAsRead(notification.id);
       }
-    }
 
-    // Navigate to the relevant content
-    if (notification.postId) {
-      window.location.href = `/posts/${notification.postId}`;
-    } else if (notification.profileId) {
-      window.location.href = `/profile/${notification.profileId}`;
+      // Navigate
+      if (notification.postId) {
+        navigate(`/posts/${notification.postId}`); // Using react-router
+      } else if (notification.profileId) {
+        navigate(`/profile/${notification.profileId}`);
+      }
+    } finally {
+      setNotifications((prev) =>
+        prev.map((n) =>
+          n.id === notification.id ? { ...n, isHandling: false } : n
+        )
+      );
+      setShowDropdown(false);
     }
-
-    // Close dropdown
-    setShowDropdown(false);
   };
 
   // Format relative time

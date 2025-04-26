@@ -116,20 +116,29 @@ public class PostController {
 
     @PutMapping("/{id}/like/{userId}")
     public ResponseEntity<Post> likePost(@PathVariable String id, @PathVariable String userId) {
+        System.out.println("Like request received: Post=" + id + ", User=" + userId);
+
         return postService.likePost(id, userId)
                 .map(post -> {
                     // Only send notification if the post owner is not the same person who liked
                     if (!post.getUserId().equals(userId)) {
                         try {
+                            System.out.println("Sending LIKE notification from " + userId + " to " + post.getUserId());
+
                             LikeNotification notification = new LikeNotification();
                             notification.setPostId(id);
                             notification.setSenderId(userId);
                             notification.setAction("LIKE");
+
                             notificationController.sendNotificationToUser(post.getUserId(), notification);
+                            System.out.println("Notification sent successfully");
                         } catch (Exception e) {
                             // Log error but don't prevent the like from being processed
                             System.err.println("Error sending notification: " + e.getMessage());
+                            e.printStackTrace();
                         }
+                    } else {
+                        System.out.println("No notification needed - user liked their own post");
                     }
                     return ResponseEntity.ok(post);
                 })
