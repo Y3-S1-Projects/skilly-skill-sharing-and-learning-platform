@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { v4 } from "uuid";
+import { v4 as uuidv4 } from "uuid";
 
 const LearningPlanForm = ({ plan, onSubmit, onCancel }) => {
   const [formData, setFormData] = useState({
@@ -134,11 +134,263 @@ const LearningPlanForm = ({ plan, onSubmit, onCancel }) => {
     onSubmit(formattedData);
   };
 
+  // Styles
+  const styles = {
+    form: {
+      maxWidth: "800px",
+      margin: "0 auto",
+      padding: "2rem",
+      backgroundColor: "#ffffff",
+      borderRadius: "12px",
+      boxShadow: "0 4px 20px rgba(0, 0, 0, 0.08)",
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif"
+    },
+    formHeader: {
+      textAlign: "center",
+      marginBottom: "2rem",
+      paddingBottom: "1.5rem",
+      borderBottom: "1px solid #f0f0f0"
+    },
+    formTitle: {
+      color: "#4f46e5",
+      fontSize: "1.75rem",
+      marginBottom: "0.5rem",
+      fontWeight: "700"
+    },
+    formSubtitle: {
+      color: "#6b7280",
+      fontSize: "1rem"
+    },
+    formSection: {
+      marginBottom: "1.5rem"
+    },
+    label: {
+      display: "block",
+      fontWeight: "500",
+      color: "#374151",
+      fontSize: "0.95rem",
+      marginBottom: "0.5rem"
+    },
+    requiredStar: {
+      color: "#ef4444",
+      marginLeft: "2px"
+    },
+    input: {
+      display: "block",
+      width: "100%",
+      padding: "0.75rem 1rem",
+      marginTop: "0.5rem",
+      border: "1px solid #d1d5db",
+      borderRadius: "8px",
+      backgroundColor: "#f9fafb",
+      fontSize: "0.95rem",
+      transition: "all 0.2s ease"
+    },
+    textarea: {
+      display: "block",
+      width: "100%",
+      padding: "0.75rem 1rem",
+      marginTop: "0.5rem",
+      border: "1px solid #d1d5db",
+      borderRadius: "8px",
+      backgroundColor: "#f9fafb",
+      fontSize: "0.95rem",
+      resize: "vertical",
+      minHeight: "100px"
+    },
+    checkbox: {
+      width: "18px",
+      height: "18px",
+      marginRight: "10px",
+      accentColor: "#4f46e5"
+    },
+    checkboxContainer: {
+      display: "flex",
+      alignItems: "center",
+      marginBottom: "1.5rem"
+    },
+    checkboxLabel: {
+      fontSize: "0.95rem",
+      color: "#374151"
+    },
+    sectionHeader: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: "1.25rem"
+    },
+    sectionTitle: {
+      fontSize: "1.25rem",
+      fontWeight: "600",
+      color: "#111827",
+      margin: "0"
+    },
+    subsectionTitle: {
+      fontSize: "1rem",
+      fontWeight: "600",
+      color: "#4b5563",
+      margin: "0"
+    },
+    addButton: {
+      backgroundColor: "#4f46e5",
+      color: "white",
+      border: "none",
+      borderRadius: "6px",
+      padding: "0.5rem 1rem",
+      fontSize: "0.875rem",
+      fontWeight: "500",
+      cursor: "pointer",
+      display: "flex",
+      alignItems: "center"
+    },
+    addResourceButton: {
+      backgroundColor: "#6366f1",
+      color: "white",
+      border: "none",
+      borderRadius: "6px",
+      padding: "0.4rem 0.75rem",
+      fontSize: "0.8rem",
+      fontWeight: "500",
+      cursor: "pointer",
+      display: "flex",
+      alignItems: "center"
+    },
+    topicsSection: {
+      marginTop: "2rem"
+    },
+    emptyState: {
+      textAlign: "center",
+      padding: "2rem",
+      backgroundColor: "#f9fafb",
+      borderRadius: "8px",
+      border: "1px dashed #d1d5db",
+      color: "#6b7280",
+      marginBottom: "1.5rem"
+    },
+    topicCard: {
+      border: "1px solid #e5e7eb",
+      borderRadius: "10px",
+      padding: "1.5rem",
+      marginBottom: "1.5rem",
+      backgroundColor: "#f9fafb",
+      boxShadow: "0 2px 5px rgba(0, 0, 0, 0.05)"
+    },
+    topicHeader: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: "1.25rem",
+      paddingBottom: "0.75rem",
+      borderBottom: "1px solid #e5e7eb"
+    },
+    topicTitle: {
+      fontSize: "1.125rem",
+      fontWeight: "600",
+      color: "#111827",
+      margin: "0"
+    },
+    removeButton: {
+      backgroundColor: "transparent",
+      color: "#ef4444",
+      border: "1px solid #ef4444",
+      borderRadius: "6px",
+      padding: "0.4rem 0.75rem",
+      fontSize: "0.8rem",
+      cursor: "pointer"
+    },
+    resourcesSection: {
+      marginTop: "1.5rem",
+      paddingTop: "1rem",
+      borderTop: "1px dashed #e5e7eb"
+    },
+    resourceCard: {
+      backgroundColor: "white",
+      border: "1px solid #e5e7eb",
+      borderRadius: "8px",
+      padding: "1rem",
+      marginBottom: "1rem"
+    },
+    resourceHeader: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: "1rem"
+    },
+    resourceTitle: {
+      fontSize: "0.875rem",
+      fontWeight: "600",
+      color: "#4b5563",
+      margin: "0"
+    },
+    resourceGrid: {
+      display: "grid",
+      gridTemplateColumns: "1fr 1fr",
+      gap: "1rem"
+    },
+    resourceField: {
+      marginBottom: "0.75rem"
+    },
+    fullWidth: {
+      gridColumn: "span 2"
+    },
+    select: {
+      display: "block",
+      width: "100%",
+      padding: "0.75rem 1rem",
+      marginTop: "0.5rem",
+      border: "1px solid #d1d5db",
+      borderRadius: "8px",
+      backgroundColor: "#f9fafb",
+      fontSize: "0.95rem",
+      appearance: "none",
+      backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E\")",
+      backgroundRepeat: "no-repeat",
+      backgroundPosition: "right 0.75rem center",
+      backgroundSize: "16px 12px",
+      paddingRight: "2.5rem"
+    },
+    formActions: {
+      display: "flex",
+      justifyContent: "flex-end",
+      gap: "1rem",
+      marginTop: "2rem",
+      paddingTop: "1.5rem",
+      borderTop: "1px solid #f0f0f0"
+    },
+    cancelButton: {
+      backgroundColor: "white",
+      color: "#4b5563",
+      border: "1px solid #d1d5db",
+      borderRadius: "6px",
+      padding: "0.75rem 1.5rem",
+      fontSize: "0.95rem",
+      fontWeight: "500",
+      cursor: "pointer"
+    },
+    submitButton: {
+      backgroundColor: "#4f46e5",
+      color: "white",
+      border: "none",
+      borderRadius: "6px",
+      padding: "0.75rem 1.5rem",
+      fontSize: "0.95rem",
+      fontWeight: "500",
+      cursor: "pointer",
+      boxShadow: "0 2px 4px rgba(79, 70, 229, 0.2)"
+    }
+  };
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div>
-        <label htmlFor="title" className="block text-sm font-medium text-gray-700">
-          Title
+    <form onSubmit={handleSubmit} style={styles.form}>
+      <div style={styles.formHeader}>
+        <h2 style={styles.formTitle}>{plan ? "Update" : "Create"} Your Learning Journey</h2>
+        <p style={styles.formSubtitle}>Design a structured path to achieve your learning goals</p>
+      </div>
+
+      <div style={styles.formSection}>
+        <label htmlFor="title" style={styles.label}>
+          <span>Title</span>
+          <span style={styles.requiredStar}>*</span>
         </label>
         <input
           type="text"
@@ -147,13 +399,14 @@ const LearningPlanForm = ({ plan, onSubmit, onCancel }) => {
           value={formData.title}
           onChange={handleChange}
           required
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+          placeholder="e.g., Mastering React Development"
+          style={styles.input}
         />
       </div>
 
-      <div>
-        <label htmlFor="description" className="block text-sm font-medium text-gray-700">
-          Description
+      <div style={styles.formSection}>
+        <label htmlFor="description" style={styles.label}>
+          <span>Description</span>
         </label>
         <textarea
           id="description"
@@ -161,27 +414,28 @@ const LearningPlanForm = ({ plan, onSubmit, onCancel }) => {
           rows="3"
           value={formData.description}
           onChange={handleChange}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+          placeholder="Describe your learning goals and what you hope to achieve..."
+          style={styles.textarea}
         ></textarea>
       </div>
 
-      <div className="flex items-center">
+      <div style={styles.checkboxContainer}>
         <input
           type="checkbox"
           id="isPublic"
           name="isPublic"
           checked={formData.isPublic}
           onChange={handleChange}
-          className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+          style={styles.checkbox}
         />
-        <label htmlFor="isPublic" className="ml-2 block text-sm text-gray-700">
+        <label htmlFor="isPublic" style={styles.checkboxLabel}>
           Make this learning plan public
         </label>
       </div>
 
-      <div>
-        <label htmlFor="completionDeadline" className="block text-sm font-medium text-gray-700">
-          Completion Deadline
+      <div style={styles.formSection}>
+        <label htmlFor="completionDeadline" style={styles.label}>
+          <span>Completion Deadline</span>
         </label>
         <input
           type="date"
@@ -189,108 +443,125 @@ const LearningPlanForm = ({ plan, onSubmit, onCancel }) => {
           name="completionDeadline"
           value={formData.completionDeadline}
           onChange={handleChange}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+          style={styles.input}
         />
       </div>
 
-      <div className="space-y-4">
-        <div className="flex justify-between items-center">
-          <h3 className="text-lg font-medium text-gray-900">Topics</h3>
+      <div style={styles.topicsSection}>
+        <div style={styles.sectionHeader}>
+          <h3 style={styles.sectionTitle}>Topics</h3>
           <button
             type="button"
             onClick={handleAddTopic}
-            className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            style={styles.addButton}
           >
-            Add Topic
+            <span style={{ marginRight: "4px" }}>+</span> Add Topic
           </button>
         </div>
 
+        {formData.topics.length === 0 && (
+          <div style={styles.emptyState}>
+            <p>No topics added yet. Add your first learning topic to get started!</p>
+          </div>
+        )}
+
         {formData.topics.map((topic, topicIndex) => (
-          <div key={topic.id} className="border border-gray-200 rounded-md p-4">
-            <div className="flex justify-between items-center mb-4">
-              <h4 className="text-md font-medium text-gray-700">Topic {topicIndex + 1}</h4>
+          <div key={topic.id} style={styles.topicCard}>
+            <div style={styles.topicHeader}>
+              <h4 style={styles.topicTitle}>Topic {topicIndex + 1}</h4>
               <button
                 type="button"
                 onClick={() => handleRemoveTopic(topic.id)}
-                className="text-red-600 hover:text-red-800"
+                style={styles.removeButton}
               >
                 Remove
               </button>
             </div>
 
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Topic Name
+            <div>
+              <div style={styles.formSection}>
+                <label style={styles.label}>
+                  <span>Topic Name</span>
+                  <span style={styles.requiredStar}>*</span>
                 </label>
                 <input
                   type="text"
                   value={topic.name}
                   onChange={(e) => handleTopicChange(topic.id, "name", e.target.value)}
                   required
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                  placeholder="e.g., React Hooks"
+                  style={styles.input}
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Description
+              <div style={styles.formSection}>
+                <label style={styles.label}>
+                  <span>Description</span>
                 </label>
                 <textarea
                   rows="2"
                   value={topic.description}
                   onChange={(e) => handleTopicChange(topic.id, "description", e.target.value)}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                  placeholder="What will you learn in this topic?"
+                  style={styles.textarea}
                 ></textarea>
               </div>
 
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <h5 className="text-sm font-medium text-gray-700">Resources</h5>
+              <div style={styles.resourcesSection}>
+                <div style={styles.sectionHeader}>
+                  <h5 style={styles.subsectionTitle}>Resources</h5>
                   <button
                     type="button"
                     onClick={() => handleAddResource(topic.id)}
-                    className="inline-flex items-center px-2 py-1 border border-transparent text-xs font-medium rounded text-indigo-700 bg-indigo-50 hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                    style={styles.addResourceButton}
                   >
-                    Add Resource
+                    <span style={{ marginRight: "4px" }}>+</span> Add Resource
                   </button>
                 </div>
 
+                {(!topic.resources || topic.resources.length === 0) && (
+                  <div style={{ ...styles.emptyState, padding: "1.5rem" }}>
+                    <p>No resources added yet. Add materials to help you learn this topic.</p>
+                  </div>
+                )}
+
                 {topic.resources && topic.resources.map((resource, resourceIndex) => (
-                  <div key={resource.id} className="border border-gray-100 rounded p-3 bg-gray-50">
-                    <div className="flex justify-between items-center mb-2">
-                      <h6 className="text-xs font-medium text-gray-700">Resource {resourceIndex + 1}</h6>
+                  <div key={resource.id} style={styles.resourceCard}>
+                    <div style={styles.resourceHeader}>
+                      <h6 style={styles.resourceTitle}>Resource {resourceIndex + 1}</h6>
                       <button
                         type="button"
                         onClick={() => handleRemoveResource(topic.id, resource.id)}
-                        className="text-red-600 hover:text-red-800 text-xs"
+                        style={{ ...styles.removeButton, padding: "0.25rem 0.5rem", fontSize: "0.75rem" }}
                       >
                         Remove
                       </button>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-xs font-medium text-gray-700">
-                          Title
+                    <div style={styles.resourceGrid}>
+                      <div style={styles.resourceField}>
+                        <label style={{ ...styles.label, fontSize: "0.9rem" }}>
+                          <span>Title</span>
+                          <span style={styles.requiredStar}>*</span>
                         </label>
                         <input
                           type="text"
                           value={resource.title}
                           onChange={(e) => handleResourceChange(topic.id, resource.id, "title", e.target.value)}
                           required
-                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-xs"
+                          placeholder="e.g., React Hooks Tutorial"
+                          style={{ ...styles.input, fontSize: "0.875rem", padding: "0.6rem 0.8rem" }}
                         />
                       </div>
 
-                      <div>
-                        <label className="block text-xs font-medium text-gray-700">
-                          Type
+                      <div style={styles.resourceField}>
+                        <label style={{ ...styles.label, fontSize: "0.9rem" }}>
+                          <span>Type</span>
                         </label>
                         <select
                           value={resource.type}
                           onChange={(e) => handleResourceChange(topic.id, resource.id, "type", e.target.value)}
-                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-xs"
+                          style={styles.select}
                         >
                           <option value="article">Article</option>
                           <option value="video">Video</option>
@@ -300,15 +571,16 @@ const LearningPlanForm = ({ plan, onSubmit, onCancel }) => {
                         </select>
                       </div>
 
-                      <div className="md:col-span-2">
-                        <label className="block text-xs font-medium text-gray-700">
-                          URL
+                      <div style={{ ...styles.resourceField, ...styles.fullWidth }}>
+                        <label style={{ ...styles.label, fontSize: "0.9rem" }}>
+                          <span>URL</span>
                         </label>
                         <input
                           type="url"
                           value={resource.url}
                           onChange={(e) => handleResourceChange(topic.id, resource.id, "url", e.target.value)}
-                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-xs"
+                          placeholder="https://example.com/resource"
+                          style={{ ...styles.input, fontSize: "0.875rem", padding: "0.6rem 0.8rem" }}
                         />
                       </div>
                     </div>
@@ -320,17 +592,17 @@ const LearningPlanForm = ({ plan, onSubmit, onCancel }) => {
         ))}
       </div>
 
-      <div className="flex justify-end space-x-3">
+      <div style={styles.formActions}>
         <button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          style={styles.cancelButton}
         >
           Cancel
         </button>
         <button
           type="submit"
-          className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          style={styles.submitButton}
         >
           {plan ? "Update" : "Create"} Learning Plan
         </button>
