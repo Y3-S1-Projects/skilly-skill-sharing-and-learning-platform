@@ -1,19 +1,19 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import axios from "axios"
-import Header from "../Components/Header"
-import CreatePostModal from "../Components/Modals/CreatePost"
-import CreatePostCard from "../Components/CreatePostCard"
-import EditIcon from "@/public/icons/EditIcon"
-
+import { useState, useEffect } from "react";
+import axios from "axios";
+import Header from "../Components/Header";
+import CreatePostModal from "../Components/Modals/CreatePost";
+import CreatePostCard from "../Components/CreatePostCard";
+import EditIcon from "@/public/icons/EditIcon";
+import { useNavigate } from "react-router-dom";
 const UserProfile = () => {
   const navigate = useNavigate();
-  const [users, setUsers] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-  const [showCreatePostModal, setShowCreatePostModal] = useState(false)
-  const [posts, setPosts] = useState([])
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [showCreatePostModal, setShowCreatePostModal] = useState(false);
+  const [posts, setPosts] = useState([]);
   const [learningPlans, setLearningPlans] = useState([]);
   const [user, setUser] = useState({
     id: "",
@@ -43,6 +43,13 @@ const UserProfile = () => {
 
   const [isFollowing, setIsFollowing] = useState(false);
   const [activeTab, setActiveTab] = useState("activity");
+
+  const [editingPostId, setEditingPostId] = useState(null);
+  const [editPostData, setEditPostData] = useState({
+    title: "",
+    content: "",
+    mediaUrls: [],
+  });
 
   useEffect(() => {
     const fetchUserDetailsAndPosts = async () => {
@@ -94,24 +101,27 @@ const UserProfile = () => {
             })) || [],
           learningGoals: [],
           certifications: [],
-        })
+        });
 
-        const postsResponse = await axios.get(`http://localhost:8080/api/posts/user/${data.id}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        })
+        const postsResponse = await axios.get(
+          `http://localhost:8080/api/posts/user/${data.id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
-        setPosts(postsResponse.data)
+        setPosts(postsResponse.data);
 
         // Initialize comment inputs
-        const initialCommentInputs = {}
+        const initialCommentInputs = {};
         postsResponse.data.forEach((post) => {
-          initialCommentInputs[post.id] = ""
-        })
-        setCommentInputs(initialCommentInputs)
+          initialCommentInputs[post.id] = "";
+        });
+        setCommentInputs(initialCommentInputs);
 
-        setError(null)
+        setError(null);
       } catch (err) {
         setError("Failed to fetch user details: " + err.message);
         console.error("Error fetching user details:", err);
@@ -142,6 +152,23 @@ const UserProfile = () => {
       ? parseInt(userId.toString().charAt(0), 10) % colors.length
       : 0;
     return colors[index];
+  };
+
+  const handleDeletePost = async (postId) => {
+    try {
+      const token = localStorage.getItem("authToken");
+
+      await axios.delete(`http://localhost:8080/api/posts/${postId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      // Remove the deleted post from state
+      setPosts(posts.filter((post) => post.id !== postId));
+    } catch (err) {
+      console.error("Error deleting post:", err);
+    }
   };
 
   const handleLike = async (postId) => {
@@ -201,9 +228,9 @@ const UserProfile = () => {
 
   // Comment handlers
   const handleCommentInputChange = (postId, value) => {
-    setCommentInputs(prev => ({
+    setCommentInputs((prev) => ({
       ...prev,
-      [postId]: value
+      [postId]: value,
     }));
   };
 
@@ -220,15 +247,14 @@ const UserProfile = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      setPosts(posts.map(post =>
-        post.id === postId ? response.data : post
-      ));
-
+      setPosts(
+        posts.map((post) => (post.id === postId ? response.data : post))
+      );
 
       // Clear the comment input
-      setCommentInputs(prev => ({
+      setCommentInputs((prev) => ({
         ...prev,
-        [postId]: ""
+        [postId]: "",
       }));
     } catch (err) {
       console.error("Error adding comment:", err);
@@ -255,11 +281,12 @@ const UserProfile = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
+      setPosts(
+        posts.map((post) => (post.id === postId ? response.data : post))
+      );
 
-      setPosts(posts.map((post) => (post.id === postId ? response.data : post)))
-
-      setEditingCommentId(null)
-      setEditCommentContent("")
+      setEditingCommentId(null);
+      setEditCommentContent("");
     } catch (err) {
       console.error("Error updating comment:", err);
     }
@@ -273,43 +300,68 @@ const UserProfile = () => {
         `http://localhost:8080/api/posts/${postId}/comments/${commentId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setPosts(posts.map((post) => (post.id === postId ? response.data : post)))
+      setPosts(
+        posts.map((post) => (post.id === postId ? response.data : post))
+      );
     } catch (err) {
-      console.error("Error deleting comment:", err)
+      console.error("Error deleting comment:", err);
     }
-  }
+  };
 
   // Add these handler functions after the handleDeleteComment function (around line 200)
   const handleUpdatePost = async (postId) => {
     try {
-      const token = localStorage.getItem("authToken")
-      const formData = new FormData()
+      const token = localStorage.getItem("authToken");
+      const formData = new FormData();
 
-      formData.append("title", editPostData.title)
-      formData.append("description", editPostData.content)
+      formData.append("title", editPostData.title);
+      formData.append("description", editPostData.content);
 
       // If you want to handle new images for updates, you would add them here
       // editPostData.newImages?.forEach((file) => {
       //   formData.append('images', file);
       // });
 
-      const response = await axios.put(`http://localhost:8080/api/posts/${postId}`, formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
-        },
-      })
+      const response = await axios.put(
+        `http://localhost:8080/api/posts/${postId}`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
 
-      setPosts(posts.map((post) => (post.id === postId ? response.data : post)))
-      setEditingPostId(null)
+      setPosts(
+        posts.map((post) => (post.id === postId ? response.data : post))
+      );
+      setEditingPostId(null);
       setEditPostData({
         title: "",
         content: "",
         mediaUrls: [],
-      })
+      });
     } catch (err) {
       console.error("Error deleting comment:", err);
     }
+    const startEditingPost = (post) => {
+      setEditingPostId(post.id);
+      setEditPostData({
+        title: post.title,
+        content: post.content,
+        mediaUrls: post.mediaUrls || [],
+      });
+    };
+
+    const cancelEditingPost = () => {
+      setEditingPostId(null);
+      setEditPostData({
+        title: "",
+        content: "",
+        mediaUrls: [],
+      });
+    };
   };
 
   return (
@@ -693,8 +745,12 @@ const UserProfile = () => {
                           className="h-10 w-10 rounded-full mr-3"
                         />
                         <div>
-                          <h3 className="font-medium text-gray-900">{user.name}</h3>
-                          <p className="text-xs text-gray-500">{formatDate(post.createdAt)}</p>
+                          <h3 className="font-medium text-gray-900">
+                            {user.name}
+                          </h3>
+                          <p className="text-xs text-gray-500">
+                            {formatDate(post.createdAt)}
+                          </p>
                         </div>
                         {/* Add delete and edit buttons in top right */}
                         <div className="ml-auto flex flex-col space-y-2">
@@ -702,7 +758,12 @@ const UserProfile = () => {
                             onClick={() => handleDeletePost(post.id)}
                             className="flex items-center text-gray-500 hover:text-red-600 transition-colors"
                           >
-                            <svg className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg
+                              className="h-5 w-5 mr-1"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
                               <path
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
@@ -716,7 +777,12 @@ const UserProfile = () => {
                             onClick={() => startEditingPost(post)}
                             className="flex items-center text-gray-500 hover:text-indigo-600 transition-colors"
                           >
-                            <svg className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg
+                              className="h-5 w-5 mr-1"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
                               <path
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
@@ -735,7 +801,12 @@ const UserProfile = () => {
                           <input
                             type="text"
                             value={editPostData.title}
-                            onChange={(e) => setEditPostData({ ...editPostData, title: e.target.value })}
+                            onChange={(e) =>
+                              setEditPostData({
+                                ...editPostData,
+                                title: e.target.value,
+                              })
+                            }
                             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                           />
                         ) : (
@@ -747,7 +818,12 @@ const UserProfile = () => {
                         {editingPostId === post.id ? (
                           <textarea
                             value={editPostData.content}
-                            onChange={(e) => setEditPostData({ ...editPostData, content: e.target.value })}
+                            onChange={(e) =>
+                              setEditPostData({
+                                ...editPostData,
+                                content: e.target.value,
+                              })
+                            }
                             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                             rows="3"
                           />
@@ -770,13 +846,23 @@ const UserProfile = () => {
                                 <button
                                   onClick={() => {
                                     // Handle removing this image
-                                    const updatedMediaUrls = [...editPostData.mediaUrls]
-                                    updatedMediaUrls.splice(index, 1)
-                                    setEditPostData({ ...editPostData, mediaUrls: updatedMediaUrls })
+                                    const updatedMediaUrls = [
+                                      ...editPostData.mediaUrls,
+                                    ];
+                                    updatedMediaUrls.splice(index, 1);
+                                    setEditPostData({
+                                      ...editPostData,
+                                      mediaUrls: updatedMediaUrls,
+                                    });
                                   }}
                                   className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
                                 >
-                                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <svg
+                                    className="h-4 w-4"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                  >
                                     <path
                                       strokeLinecap="round"
                                       strokeLinejoin="round"
@@ -815,7 +901,9 @@ const UserProfile = () => {
                                       d="M12 6v6m0 0v6m0-6h6m-6 0H6"
                                     />
                                   </svg>
-                                  <p className="text-sm text-gray-500">Add more images</p>
+                                  <p className="text-sm text-gray-500">
+                                    Add more images
+                                  </p>
                                 </div>
                               </label>
                             </div>
@@ -846,10 +934,17 @@ const UserProfile = () => {
                         <button
                           onClick={() => handleLike(post.id)}
                           className={`flex items-center ${
-                            post.likes.includes(user.id) ? "text-indigo-600" : "text-gray-500 hover:text-indigo-600"
+                            post.likes.includes(user.id)
+                              ? "text-indigo-600"
+                              : "text-gray-500 hover:text-indigo-600"
                           } transition-colors`}
                         >
-                          <svg className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <svg
+                            className="h-5 w-5 mr-1"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
                             <path
                               strokeLinecap="round"
                               strokeLinejoin="round"
@@ -860,7 +955,12 @@ const UserProfile = () => {
                           <span>{post.likes?.length || 0} Likes</span>
                         </button>
                         <button className="flex items-center text-gray-500 hover:text-indigo-600 transition-colors">
-                          <svg className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <svg
+                            className="h-5 w-5 mr-1"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
                             <path
                               strokeLinecap="round"
                               strokeLinejoin="round"
@@ -871,7 +971,12 @@ const UserProfile = () => {
                           <span>{post.comments?.length || 0} Comments</span>
                         </button>
                         <button className="flex items-center text-gray-500 hover:text-indigo-600 transition-colors">
-                          <svg className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <svg
+                            className="h-5 w-5 mr-1"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
                             <path
                               strokeLinecap="round"
                               strokeLinejoin="round"
@@ -888,7 +993,8 @@ const UserProfile = () => {
                         {/* Comment input */}
                         <div className="flex items-start space-x-3 mb-4">
                           <div className="flex-shrink-0">
-                            {user?.avatar && !user.avatar.includes("/api/placeholder/") ? (
+                            {user?.avatar &&
+                            !user.avatar.includes("/api/placeholder/") ? (
                               <img
                                 className="h-8 w-8 rounded-full"
                                 src={user.avatar || "/placeholder.svg"}
@@ -897,7 +1003,7 @@ const UserProfile = () => {
                             ) : (
                               <div
                                 className={`h-8 w-8 rounded-full flex items-center justify-center ${getColorClass(
-                                  user.id,
+                                  user.id
                                 )} font-medium`}
                               >
                                 {getInitials(user?.name)}
@@ -909,7 +1015,12 @@ const UserProfile = () => {
                               <input
                                 type="text"
                                 value={commentInputs[post.id] || ""}
-                                onChange={(e) => handleCommentInputChange(post.id, e.target.value)}
+                                onChange={(e) =>
+                                  handleCommentInputChange(
+                                    post.id,
+                                    e.target.value
+                                  )
+                                }
                                 placeholder="Write a comment..."
                                 className="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
                               />
@@ -927,14 +1038,21 @@ const UserProfile = () => {
                         {post.comments && post.comments.length > 0 && (
                           <div className="space-y-3">
                             {post.comments.map((comment) => (
-                              <div key={comment.id} className="flex items-start space-x-3">
+                              <div
+                                key={comment.id}
+                                className="flex items-start space-x-3"
+                              >
                                 <div className="flex-shrink-0">
                                   <div
                                     className={`h-8 w-8 rounded-full flex items-center justify-center ${getColorClass(
-                                      comment.userId,
+                                      comment.userId
                                     )} font-medium`}
                                   >
-                                    {getInitials(comment.userId === user.id ? user.name : "U")}
+                                    {getInitials(
+                                      comment.userId === user.id
+                                        ? user.name
+                                        : "U"
+                                    )}
                                   </div>
                                 </div>
                                 <div className="flex-1">
@@ -943,13 +1061,22 @@ const UserProfile = () => {
                                       <div className="space-y-2">
                                         <textarea
                                           value={editCommentContent}
-                                          onChange={(e) => setEditCommentContent(e.target.value)}
+                                          onChange={(e) =>
+                                            setEditCommentContent(
+                                              e.target.value
+                                            )
+                                          }
                                           className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
                                           rows="2"
                                         />
                                         <div className="flex space-x-2">
                                           <button
-                                            onClick={() => handleUpdateComment(post.id, comment.id)}
+                                            onClick={() =>
+                                              handleUpdateComment(
+                                                post.id,
+                                                comment.id
+                                              )
+                                            }
                                             className="px-3 py-1 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 text-sm"
                                           >
                                             Save
@@ -966,21 +1093,34 @@ const UserProfile = () => {
                                       <>
                                         <div className="flex justify-between items-start">
                                           <p className="text-sm font-medium text-gray-900">
-                                            {comment.userId === user.id ? "You" : "User"}
+                                            {comment.userId === user.id
+                                              ? "You"
+                                              : "User"}
                                           </p>
-                                          <p className="text-xs text-gray-500">{formatDate(comment.createdAt)}</p>
+                                          <p className="text-xs text-gray-500">
+                                            {formatDate(comment.createdAt)}
+                                          </p>
                                         </div>
-                                        <p className="text-sm text-gray-700 mt-1">{comment.content}</p>
+                                        <p className="text-sm text-gray-700 mt-1">
+                                          {comment.content}
+                                        </p>
                                         {comment.userId === user.id && (
                                           <div className="flex space-x-2 mt-2">
                                             <button
-                                              onClick={() => startEditingComment(comment)}
+                                              onClick={() =>
+                                                startEditingComment(comment)
+                                              }
                                               className="text-xs text-indigo-600 hover:text-indigo-800"
                                             >
                                               Edit
                                             </button>
                                             <button
-                                              onClick={() => handleDeleteComment(post.id, comment.id)}
+                                              onClick={() =>
+                                                handleDeleteComment(
+                                                  post.id,
+                                                  comment.id
+                                                )
+                                              }
                                               className="text-xs text-red-600 hover:text-red-800"
                                             >
                                               Delete
@@ -1021,6 +1161,4 @@ const UserProfile = () => {
   );
 };
 
-
-export default UserProfile
-
+export default UserProfile;
