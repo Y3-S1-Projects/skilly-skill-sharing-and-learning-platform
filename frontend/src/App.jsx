@@ -16,10 +16,13 @@ import LearningPlan from "./Pages/LearningPlan2";
 import LearningPlanCreator from "./Components/LearningPlanCreator2";
 // import SearchResults from "./Components/SearchResults";
 import SearchResults from "./Components/SearchResults ";
+import PostCard from "./Components/PostCard";
+
 import LearningPlans from "./Pages/LearningPlans";
 import LearningPlanDetail from "./Pages/LearningPlanDetail";
 import CreateLearningPlan from "./Pages/CreateLearningPlan";
 import EditLearningPlan from "./Pages/EditLearningPlan";
+
 function App() {
   return (
     <Router>
@@ -36,10 +39,13 @@ function App() {
         <Route path="/notification" element={<NotificationSystem />} />
         <Route path="/learning-plan" element={<LearningPlan />} />
         <Route path="/search" element={<SearchResults />} />
+        <Route path="/postcard" element={<PostCard />} />
+
         <Route path="/learning-plans" element={<LearningPlans />} />
         <Route path="/learning-plans/:id" element={<LearningPlanDetail />} />
         <Route path="/learning-plans/create" element={<CreateLearningPlan />} />
         <Route path="/learning-plans/edit/:id" element={<EditLearningPlan />} />
+
         <Route
           path="/learning-plan-creator"
           element={<LearningPlanCreator />}
