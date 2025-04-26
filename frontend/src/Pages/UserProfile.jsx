@@ -1,17 +1,18 @@
-import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
-import axios from "axios";
-import Header from "../Components/Header";
-import CreatePostModal from "../Components/Modals/CreatePost";
-import CreatePostCard from "../Components/CreatePostCard";
-import EditIcon from "@/public/icons/EditIcon";
+"use client"
+
+import { useState, useEffect } from "react"
+import axios from "axios"
+import Header from "../Components/Header"
+import CreatePostModal from "../Components/Modals/CreatePost"
+import CreatePostCard from "../Components/CreatePostCard"
+import EditIcon from "@/public/icons/EditIcon"
 
 const UserProfile = () => {
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [showCreatePostModal, setShowCreatePostModal] = useState(false);
-  const [posts, setPosts] = useState([]);
+  const [users, setUsers] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [showCreatePostModal, setShowCreatePostModal] = useState(false)
+  const [posts, setPosts] = useState([])
   const [user, setUser] = useState({
     id: "",
     name: "",
@@ -31,44 +32,40 @@ const UserProfile = () => {
     skills: [],
     learningGoals: [],
     certifications: [],
-  });
+  })
 
   // Comment states
-  const [commentInputs, setCommentInputs] = useState({});
-  const [editingCommentId, setEditingCommentId] = useState(null);
-  const [editCommentContent, setEditCommentContent] = useState("");
+  const [commentInputs, setCommentInputs] = useState({})
+  const [editingCommentId, setEditingCommentId] = useState(null)
+  const [editCommentContent, setEditCommentContent] = useState("")
 
-  const [isFollowing, setIsFollowing] = useState(false);
-  const [activeTab, setActiveTab] = useState("activity");
+  const [isFollowing, setIsFollowing] = useState(false)
+  const [activeTab, setActiveTab] = useState("activity")
 
   useEffect(() => {
     const fetchUserDetailsAndPosts = async () => {
       try {
-        setLoading(true);
-        const token = localStorage.getItem("authToken");
+        setLoading(true)
+        const token = localStorage.getItem("authToken")
 
         if (!token) {
-          setError("No token found");
-          return;
+          setError("No token found")
+          return
         }
 
-        const response = await axios.get(
-          "http://localhost:8080/api/users/details",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        const response = await axios.get("http://localhost:8080/api/users/details", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
 
-        const data = response.data;
+        const data = response.data
 
         setUser({
           id: data.id,
           name: data.username,
           title: data.role === "ADMIN" ? "Administrator" : "Member",
-          avatar:
-            data.profilePicUrl || data.profilePic || "/api/placeholder/120/120",
+          avatar: data.profilePicUrl || data.profilePic || "/api/placeholder/120/120",
           coverPhoto: "/api/placeholder/1200/300",
           bio: data.bio || "",
           location: "",
@@ -91,42 +88,39 @@ const UserProfile = () => {
             })) || [],
           learningGoals: [],
           certifications: [],
-        });
-        
-        const postsResponse = await axios.get(
-          `http://localhost:8080/api/posts/user/${data.id}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        })
 
-        setPosts(postsResponse.data);
-        
+        const postsResponse = await axios.get(`http://localhost:8080/api/posts/user/${data.id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+
+        setPosts(postsResponse.data)
+
         // Initialize comment inputs
-        const initialCommentInputs = {};
-        postsResponse.data.forEach(post => {
-          initialCommentInputs[post.id] = "";
-        });
-        setCommentInputs(initialCommentInputs);
-        
-        setError(null);
-      } catch (err) {
-        setError("Failed to fetch user details: " + err.message);
-        console.error("Error fetching user details:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
+        const initialCommentInputs = {}
+        postsResponse.data.forEach((post) => {
+          initialCommentInputs[post.id] = ""
+        })
+        setCommentInputs(initialCommentInputs)
 
-    fetchUserDetailsAndPosts();
-  }, []);
+        setError(null)
+      } catch (err) {
+        setError("Failed to fetch user details: " + err.message)
+        console.error("Error fetching user details:", err)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchUserDetailsAndPosts()
+  }, [])
 
   const getInitials = (name) => {
-    if (!name) return "?";
-    return name.charAt(0).toUpperCase();
-  };
+    if (!name) return "?"
+    return name.charAt(0).toUpperCase()
+  }
 
   const getColorClass = (userId) => {
     const colors = [
@@ -136,151 +130,152 @@ const UserProfile = () => {
       "bg-pink-200 text-pink-600",
       "bg-yellow-200 text-yellow-600",
       "bg-indigo-200 text-indigo-600",
-    ];
+    ]
 
-    const index = userId
-      ? parseInt(userId.toString().charAt(0), 10) % colors.length
-      : 0;
-    return colors[index];
-  };
+    const index = userId ? Number.parseInt(userId.toString().charAt(0), 10) % colors.length : 0
+    return colors[index]
+  }
+  //handleDeletePost
+  const handleDeletePost = async (postId) => {
+    try {
+      const token = localStorage.getItem("authToken")
+
+      await axios.delete(`http://localhost:8080/api/posts/${postId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+
+      // Remove the deleted post from state
+      setPosts(posts.filter((post) => post.id !== postId))
+    } catch (err) {
+      console.error("Error deleting post:", err)
+    }
+  }
 
   const handleLike = async (postId) => {
     try {
-      const token = localStorage.getItem("authToken");
-      const userId = user.id;
+      const token = localStorage.getItem("authToken")
+      const userId = user.id
 
-      const postToUpdate = posts.find((p) => p.id === postId);
+      const postToUpdate = posts.find((p) => p.id === postId)
 
       if (!postToUpdate) {
-        console.error("Post not found in current state");
-        return;
+        console.error("Post not found in current state")
+        return
       }
 
-      const isLiked = postToUpdate.likes.includes(userId);
+      const isLiked = postToUpdate.likes.includes(userId)
 
-      const endpoint = isLiked ? "unlike" : "like";
+      const endpoint = isLiked ? "unlike" : "like"
       const response = await axios.put(
         `http://localhost:8080/api/posts/${postId}/${endpoint}/${userId}`,
         {},
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+        { headers: { Authorization: `Bearer ${token}` } },
+      )
 
-      setPosts(
-        posts.map((post) => (post.id === postId ? response.data : post))
-      );
+      setPosts(posts.map((post) => (post.id === postId ? response.data : post)))
     } catch (err) {
-      console.error("Error liking post:", err);
+      console.error("Error liking post:", err)
     }
-  };
+  }
 
   const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffInSeconds = Math.floor((now - date) / 1000);
+    const date = new Date(dateString)
+    const now = new Date()
+    const diffInSeconds = Math.floor((now - date) / 1000)
 
-    if (diffInSeconds < 60) return "just now";
-    if (diffInSeconds < 3600)
-      return `${Math.floor(diffInSeconds / 60)} minutes ago`;
-    if (diffInSeconds < 86400)
-      return `${Math.floor(diffInSeconds / 3600)} hours ago`;
-    if (diffInSeconds < 604800)
-      return `${Math.floor(diffInSeconds / 86400)} days ago`;
-    return date.toLocaleDateString();
-  };
+    if (diffInSeconds < 60) return "just now"
+    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`
+    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`
+    if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)} days ago`
+    return date.toLocaleDateString()
+  }
 
   const handleEndorse = (skillName) => {
     setUser((prev) => ({
       ...prev,
       skills: prev.skills.map((skill) =>
-        skill.name === skillName
-          ? { ...skill, endorsements: skill.endorsements + 1 }
-          : skill
+        skill.name === skillName ? { ...skill, endorsements: skill.endorsements + 1 } : skill,
       ),
-    }));
-  };
+    }))
+  }
 
   // Comment handlers
   const handleCommentInputChange = (postId, value) => {
-    setCommentInputs(prev => ({
+    setCommentInputs((prev) => ({
       ...prev,
-      [postId]: value
-    }));
-  };
+      [postId]: value,
+    }))
+  }
 
   const handleAddComment = async (postId) => {
     try {
-      const token = localStorage.getItem("authToken");
-      const content = commentInputs[postId];
+      const token = localStorage.getItem("authToken")
+      const content = commentInputs[postId]
 
-      if (!content.trim()) return;
+      if (!content.trim()) return
 
       const response = await axios.post(
         `http://localhost:8080/api/posts/${postId}/comments`,
         { content },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+        { headers: { Authorization: `Bearer ${token}` } },
+      )
 
-      setPosts(posts.map(post => 
-        post.id === postId ? response.data : post
-      ));
+      setPosts(posts.map((post) => (post.id === postId ? response.data : post)))
 
       // Clear the comment input
-      setCommentInputs(prev => ({
+      setCommentInputs((prev) => ({
         ...prev,
-        [postId]: ""
-      }));
+        [postId]: "",
+      }))
     } catch (err) {
-      console.error("Error adding comment:", err);
+      console.error("Error adding comment:", err)
     }
-  };
+  }
 
   const startEditingComment = (comment) => {
-    setEditingCommentId(comment.id);
-    setEditCommentContent(comment.content);
-  };
+    setEditingCommentId(comment.id)
+    setEditCommentContent(comment.content)
+  }
 
   const cancelEditingComment = () => {
-    setEditingCommentId(null);
-    setEditCommentContent("");
-  };
+    setEditingCommentId(null)
+    setEditCommentContent("")
+  }
 
   const handleUpdateComment = async (postId, commentId) => {
     try {
-      const token = localStorage.getItem("authToken");
+      const token = localStorage.getItem("authToken")
 
       const response = await axios.put(
         `http://localhost:8080/api/posts/${postId}/comments/${commentId}`,
         { content: editCommentContent },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+        { headers: { Authorization: `Bearer ${token}` } },
+      )
 
-      setPosts(posts.map(post => 
-        post.id === postId ? response.data : post
-      ));
+      setPosts(posts.map((post) => (post.id === postId ? response.data : post)))
 
-      setEditingCommentId(null);
-      setEditCommentContent("");
+      setEditingCommentId(null)
+      setEditCommentContent("")
     } catch (err) {
-      console.error("Error updating comment:", err);
+      console.error("Error updating comment:", err)
     }
-  };
+  }
 
   const handleDeleteComment = async (postId, commentId) => {
     try {
-      const token = localStorage.getItem("authToken");
+      const token = localStorage.getItem("authToken")
 
-      const response = await axios.delete(
-        `http://localhost:8080/api/posts/${postId}/comments/${commentId}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const response = await axios.delete(`http://localhost:8080/api/posts/${postId}/comments/${commentId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
 
-      setPosts(posts.map(post => 
-        post.id === postId ? response.data : post
-      ));
+      setPosts(posts.map((post) => (post.id === postId ? response.data : post)))
     } catch (err) {
-      console.error("Error deleting comment:", err);
+      console.error("Error deleting comment:", err)
     }
-  };
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -290,7 +285,7 @@ const UserProfile = () => {
         {/* Cover Photo */}
         <div className="h-48 sm:h-64 w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 overflow-hidden">
           <img
-            src={user.coverPhoto}
+            src={user.coverPhoto || "/placeholder.svg"}
             alt="Cover"
             className="w-full h-full object-cover opacity-70"
           />
@@ -304,11 +299,10 @@ const UserProfile = () => {
                 <div className="sm:flex sm:items-center sm:justify-between">
                   <div className="sm:flex sm:space-x-5">
                     <div className="flex-shrink-0">
-                      {user?.avatar &&
-                      !user.avatar.includes("/api/placeholder/") ? (
+                      {user?.avatar && !user.avatar.includes("/api/placeholder/") ? (
                         <img
                           className="h-8 w-8 rounded-full"
-                          src={user.avatar}
+                          src={user.avatar || "/placeholder.svg"}
                           alt={user?.name || "User"}
                         />
                       ) : (
@@ -318,12 +312,8 @@ const UserProfile = () => {
                       )}
                     </div>
                     <div className="mt-4 sm:mt-0 text-center sm:text-left sm:flex-1">
-                      <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
-                        {user.name}
-                      </h1>
-                      <p className="text-sm sm:text-base font-medium text-indigo-600">
-                        {user.title}
-                      </p>
+                      <h1 className="text-xl sm:text-2xl font-bold text-gray-900">{user.name}</h1>
+                      <p className="text-sm sm:text-base font-medium text-indigo-600">{user.title}</p>
                       <div>
                         {loading ? (
                           <p>Loading...</p>
@@ -339,12 +329,7 @@ const UserProfile = () => {
                       </div>
                       <div className="mt-1 flex flex-wrap items-center justify-center sm:justify-start text-sm text-gray-500 gap-x-4 gap-y-1">
                         <span className="flex items-center">
-                          <svg
-                            className="h-4 w-4 mr-1"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
+                          <svg className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path
                               strokeLinecap="round"
                               strokeLinejoin="round"
@@ -361,12 +346,7 @@ const UserProfile = () => {
                           {user.location}
                         </span>
                         <span className="flex items-center">
-                          <svg
-                            className="h-4 w-4 mr-1"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
+                          <svg className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path
                               strokeLinecap="round"
                               strokeLinejoin="round"
@@ -383,7 +363,7 @@ const UserProfile = () => {
                     <button
                       className="px-5 py-2.5 text-sm font-medium rounded-xl
                       bg-gradient-to-r from-indigo-500 to-purple-500 text-white
-                      flex items-center justify-center gap-2 
+                      flex items-center justify-center gap-2
                       shadow-md hover:shadow-lg transition-all duration-300
                       hover:translate-y-px
                       focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-opacity-75"
@@ -402,34 +382,24 @@ const UserProfile = () => {
                 {/* User Stats */}
                 <div className="mt-6 grid grid-cols-3 lg:grid-cols-5 gap-4 text-center">
                   <div className="bg-gray-50 rounded-lg py-2 px-4">
-                    <div className="text-2xl font-bold text-indigo-600">
-                      {user.stats.followers}
-                    </div>
+                    <div className="text-2xl font-bold text-indigo-600">{user.stats.followers}</div>
                     <div className="text-xs text-gray-500">Followers</div>
                   </div>
                   <div className="bg-gray-50 rounded-lg py-2 px-4">
-                    <div className="text-2xl font-bold text-indigo-600">
-                      {user.stats.following}
-                    </div>
+                    <div className="text-2xl font-bold text-indigo-600">{user.stats.following}</div>
                     <div className="text-xs text-gray-500">Following</div>
                   </div>
 
                   <div className="bg-gray-50 rounded-lg py-2 px-4">
-                    <div className="text-2xl font-bold text-indigo-600">
-                      {user.stats.skillsLearned}
-                    </div>
+                    <div className="text-2xl font-bold text-indigo-600">{user.stats.skillsLearned}</div>
                     <div className="text-xs text-gray-500">Skills</div>
                   </div>
                   <div className="bg-gray-50 rounded-lg py-2 px-4">
-                    <div className="text-2xl font-bold text-indigo-600">
-                      {user.stats.skillsInProgress}
-                    </div>
+                    <div className="text-2xl font-bold text-indigo-600">{user.stats.skillsInProgress}</div>
                     <div className="text-xs text-gray-500">Learning</div>
                   </div>
                   <div className="bg-gray-50 rounded-lg py-2 px-4 col-span-3 lg:col-span-1">
-                    <div className="text-2xl font-bold text-indigo-600">
-                      {user.stats.achievements}
-                    </div>
+                    <div className="text-2xl font-bold text-indigo-600">{user.stats.achievements}</div>
                     <div className="text-xs text-gray-500">Achievements</div>
                   </div>
                 </div>
@@ -447,12 +417,8 @@ const UserProfile = () => {
             {/* Skills Section */}
             <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
               <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
-                <h3 className="text-lg font-medium leading-6 text-gray-900">
-                  Skills
-                </h3>
-                <p className="mt-1 max-w-2xl text-sm text-gray-500">
-                  Verified skills with community endorsements
-                </p>
+                <h3 className="text-lg font-medium leading-6 text-gray-900">Skills</h3>
+                <p className="mt-1 max-w-2xl text-sm text-gray-500">Verified skills with community endorsements</p>
               </div>
               <div className="px-4 py-3 sm:px-6">
                 <ul className="divide-y divide-gray-200">
@@ -460,19 +426,17 @@ const UserProfile = () => {
                     <li key={index} className="py-3">
                       <div className="flex justify-between">
                         <div>
-                          <h4 className="text-sm font-medium text-gray-900">
-                            {skill.name}
-                          </h4>
+                          <h4 className="text-sm font-medium text-gray-900">{skill.name}</h4>
                           <div className="mt-1 flex items-center">
                             <span
                               className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
                                 skill.level === "Expert"
                                   ? "bg-green-100 text-green-800"
                                   : skill.level === "Advanced"
-                                  ? "bg-blue-100 text-blue-800"
-                                  : skill.level === "Intermediate"
-                                  ? "bg-indigo-100 text-indigo-800"
-                                  : "bg-purple-100 text-purple-800"
+                                    ? "bg-blue-100 text-blue-800"
+                                    : skill.level === "Intermediate"
+                                      ? "bg-indigo-100 text-indigo-800"
+                                      : "bg-purple-100 text-purple-800"
                               }`}
                             >
                               {skill.level}
@@ -483,12 +447,7 @@ const UserProfile = () => {
                           onClick={() => handleEndorse(skill.name)}
                           className="inline-flex items-center text-sm text-gray-500 hover:text-indigo-600"
                         >
-                          <svg
-                            className="h-5 w-5 mr-1"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
+                          <svg className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path
                               strokeLinecap="round"
                               strokeLinejoin="round"
@@ -508,12 +467,8 @@ const UserProfile = () => {
             {/* Learning Goals Section */}
             <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
               <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
-                <h3 className="text-lg font-medium leading-6 text-gray-900">
-                  Learning Goals
-                </h3>
-                <p className="mt-1 max-w-2xl text-sm text-gray-500">
-                  Skills currently in progress
-                </p>
+                <h3 className="text-lg font-medium leading-6 text-gray-900">Learning Goals</h3>
+                <p className="mt-1 max-w-2xl text-sm text-gray-500">Skills currently in progress</p>
               </div>
               <div className="px-4 py-3 sm:px-6">
                 <ul className="divide-y divide-gray-200">
@@ -521,12 +476,8 @@ const UserProfile = () => {
                     <li key={goal.id} className="py-3">
                       <div>
                         <div className="flex justify-between items-center">
-                          <h4 className="text-sm font-medium text-gray-900">
-                            {goal.name}
-                          </h4>
-                          <span className="text-xs text-gray-500">
-                            {goal.category}
-                          </span>
+                          <h4 className="text-sm font-medium text-gray-900">{goal.name}</h4>
+                          <span className="text-xs text-gray-500">{goal.category}</span>
                         </div>
                         <div className="mt-2">
                           <div className="flex items-center justify-between">
@@ -536,9 +487,7 @@ const UserProfile = () => {
                                 style={{ width: `${goal.progress}%` }}
                               ></div>
                             </div>
-                            <span className="text-xs font-medium text-gray-500">
-                              {goal.progress}%
-                            </span>
+                            <span className="text-xs font-medium text-gray-500">{goal.progress}%</span>
                           </div>
                         </div>
                       </div>
@@ -551,12 +500,8 @@ const UserProfile = () => {
             {/* Certifications Section */}
             <div className="bg-white rounded-xl shadow-sm overflow-hidden">
               <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
-                <h3 className="text-lg font-medium leading-6 text-gray-900">
-                  Certifications
-                </h3>
-                <p className="mt-1 max-w-2xl text-sm text-gray-500">
-                  Verified achievements and credentials
-                </p>
+                <h3 className="text-lg font-medium leading-6 text-gray-900">Certifications</h3>
+                <p className="mt-1 max-w-2xl text-sm text-gray-500">Verified achievements and credentials</p>
               </div>
               <div className="px-4 py-3 sm:px-6">
                 <ul className="divide-y divide-gray-200">
@@ -564,20 +509,14 @@ const UserProfile = () => {
                     <li key={index} className="py-3">
                       <div className="flex justify-between items-start">
                         <div>
-                          <h4 className="text-sm font-medium text-gray-900">
-                            {cert.name}
-                          </h4>
+                          <h4 className="text-sm font-medium text-gray-900">{cert.name}</h4>
                           <p className="text-xs text-gray-500 mt-1">
                             Issued by {cert.issuer} • {cert.date}
                           </p>
                         </div>
                         {cert.verified && (
                           <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
-                            <svg
-                              className="mr-1 h-3 w-3 text-green-500"
-                              fill="currentColor"
-                              viewBox="0 0 20 20"
-                            >
+                            <svg className="mr-1 h-3 w-3 text-green-500" fill="currentColor" viewBox="0 0 20 20">
                               <path
                                 fillRule="evenodd"
                                 d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
@@ -601,10 +540,7 @@ const UserProfile = () => {
             <div className="mb-6 bg-white rounded-xl shadow-sm overflow-hidden">
               <div className="border-b border-gray-200">
                 {/* Post Creation Card */}
-                <CreatePostCard
-                  user={user}
-                  setShowCreatePostModal={setShowCreatePostModal}
-                />
+                <CreatePostCard user={user} setShowCreatePostModal={setShowCreatePostModal} />
                 <nav className="flex" aria-label="Tabs">
                   <button
                     onClick={() => setActiveTab("activity")}
@@ -626,6 +562,7 @@ const UserProfile = () => {
                   >
                     Resources
                   </button>
+
                   <button
                     onClick={() => setActiveTab("achievements")}
                     className={`w-1/3 py-4 px-1 text-center border-b-2 font-medium text-sm ${
@@ -658,23 +595,34 @@ const UserProfile = () => {
                       {/* Post header with user info */}
                       <div className="flex items-center mb-4">
                         <img
-                          src={user.avatar}
+                          src={user.avatar || "/placeholder.svg"}
                           alt={user.name}
                           className="h-10 w-10 rounded-full mr-3"
                         />
                         <div>
-                          <h3 className="font-medium text-gray-900">
-                            {user.name}
-                          </h3>
-                          <p className="text-xs text-gray-500">
-                            {formatDate(post.createdAt)}
-                          </p>
+                          <h3 className="font-medium text-gray-900">{user.name}</h3>
+                          <p className="text-xs text-gray-500">{formatDate(post.createdAt)}</p>
+                        </div>
+                        {/* Add delete button in top right */}
+                        <div className="ml-auto">
+                          <button
+                            onClick={() => handleDeletePost(post.id)}
+                            className="flex items-center text-gray-500 hover:text-red-600 transition-colors"
+                          >
+                            <svg className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={1.5}
+                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                              />
+                            </svg>
+                            <span>Delete</span>
+                          </button>
                         </div>
                       </div>
 
-                      <h2 className="text-xl font-semibold text-gray-900 mb-2">
-                        {post.title}
-                      </h2>
+                      <h2 className="text-xl font-semibold text-gray-900 mb-2">{post.title}</h2>
 
                       <p className="text-gray-700 mb-3">{post.content}</p>
 
@@ -684,7 +632,7 @@ const UserProfile = () => {
                           {post.mediaUrls.map((url, index) => (
                             <img
                               key={index}
-                              src={url}
+                              src={url || "/placeholder.svg"}
                               alt={`Post media ${index}`}
                               className="rounded-lg object-cover w-full h-48"
                             />
@@ -697,17 +645,10 @@ const UserProfile = () => {
                         <button
                           onClick={() => handleLike(post.id)}
                           className={`flex items-center ${
-                            post.likes.includes(user.id)
-                              ? "text-indigo-600"
-                              : "text-gray-500 hover:text-indigo-600"
+                            post.likes.includes(user.id) ? "text-indigo-600" : "text-gray-500 hover:text-indigo-600"
                           } transition-colors`}
                         >
-                          <svg
-                            className="h-5 w-5 mr-1"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
+                          <svg className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path
                               strokeLinecap="round"
                               strokeLinejoin="round"
@@ -718,12 +659,7 @@ const UserProfile = () => {
                           <span>{post.likes?.length || 0} Likes</span>
                         </button>
                         <button className="flex items-center text-gray-500 hover:text-indigo-600 transition-colors">
-                          <svg
-                            className="h-5 w-5 mr-1"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
+                          <svg className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path
                               strokeLinecap="round"
                               strokeLinejoin="round"
@@ -734,12 +670,7 @@ const UserProfile = () => {
                           <span>{post.comments?.length || 0} Comments</span>
                         </button>
                         <button className="flex items-center text-gray-500 hover:text-indigo-600 transition-colors">
-                          <svg
-                            className="h-5 w-5 mr-1"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
+                          <svg className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path
                               strokeLinecap="round"
                               strokeLinejoin="round"
@@ -756,15 +687,16 @@ const UserProfile = () => {
                         {/* Comment input */}
                         <div className="flex items-start space-x-3 mb-4">
                           <div className="flex-shrink-0">
-                            {user?.avatar &&
-                            !user.avatar.includes("/api/placeholder/") ? (
+                            {user?.avatar && !user.avatar.includes("/api/placeholder/") ? (
                               <img
                                 className="h-8 w-8 rounded-full"
-                                src={user.avatar}
+                                src={user.avatar || "/placeholder.svg"}
                                 alt={user?.name || "User"}
                               />
                             ) : (
-                              <div className={`h-8 w-8 rounded-full flex items-center justify-center ${getColorClass(user.id)} font-medium`}>
+                              <div
+                                className={`h-8 w-8 rounded-full flex items-center justify-center ${getColorClass(user.id)} font-medium`}
+                              >
                                 {getInitials(user?.name)}
                               </div>
                             )}
@@ -794,7 +726,9 @@ const UserProfile = () => {
                             {post.comments.map((comment) => (
                               <div key={comment.id} className="flex items-start space-x-3">
                                 <div className="flex-shrink-0">
-                                  <div className={`h-8 w-8 rounded-full flex items-center justify-center ${getColorClass(comment.userId)} font-medium`}>
+                                  <div
+                                    className={`h-8 w-8 rounded-full flex items-center justify-center ${getColorClass(comment.userId)} font-medium`}
+                                  >
                                     {getInitials(comment.userId === user.id ? user.name : "U")}
                                   </div>
                                 </div>
@@ -829,13 +763,9 @@ const UserProfile = () => {
                                           <p className="text-sm font-medium text-gray-900">
                                             {comment.userId === user.id ? "You" : "User"}
                                           </p>
-                                          <p className="text-xs text-gray-500">
-                                            {formatDate(comment.createdAt)}
-                                          </p>
+                                          <p className="text-xs text-gray-500">{formatDate(comment.createdAt)}</p>
                                         </div>
-                                        <p className="text-sm text-gray-700 mt-1">
-                                          {comment.content}
-                                        </p>
+                                        <p className="text-sm text-gray-700 mt-1">{comment.content}</p>
                                         {comment.userId === user.id && (
                                           <div className="flex space-x-2 mt-2">
                                             <button
@@ -877,13 +807,10 @@ const UserProfile = () => {
         </div>
       </div>
       {showCreatePostModal && (
-        <CreatePostModal
-          isOpen={showCreatePostModal}
-          onClose={() => setShowCreatePostModal(false)}
-        />
+        <CreatePostModal isOpen={showCreatePostModal} onClose={() => setShowCreatePostModal(false)} />
       )}
     </div>
-  );
-};
+  )
+}
 
-export default UserProfile;
+export default UserProfile
