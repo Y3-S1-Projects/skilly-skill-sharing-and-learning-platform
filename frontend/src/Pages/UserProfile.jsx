@@ -1,17 +1,20 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import Header from "../Components/Header";
 import CreatePostModal from "../Components/Modals/CreatePost";
 import CreatePostCard from "../Components/CreatePostCard";
 import EditIcon from "@/public/icons/EditIcon";
+import { getLearningPlansByUserId } from "../services/learningPlanService";
 
 const UserProfile = () => {
+  const navigate = useNavigate();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showCreatePostModal, setShowCreatePostModal] = useState(false);
   const [posts, setPosts] = useState([]);
+  const [learningPlans, setLearningPlans] = useState([]);
   const [user, setUser] = useState({
     id: "",
     name: "",
@@ -92,7 +95,7 @@ const UserProfile = () => {
           learningGoals: [],
           certifications: [],
         });
-        
+
         const postsResponse = await axios.get(
           `http://localhost:8080/api/posts/user/${data.id}`,
           {
@@ -103,14 +106,22 @@ const UserProfile = () => {
         );
 
         setPosts(postsResponse.data);
-        
+
+        // Fetch learning plans
+        try {
+          const learningPlansResponse = await getLearningPlansByUserId(data.id);
+          setLearningPlans(learningPlansResponse);
+        } catch (err) {
+          console.error("Error fetching learning plans:", err);
+        }
+
         // Initialize comment inputs
         const initialCommentInputs = {};
         postsResponse.data.forEach(post => {
           initialCommentInputs[post.id] = "";
         });
         setCommentInputs(initialCommentInputs);
-        
+
         setError(null);
       } catch (err) {
         setError("Failed to fetch user details: " + err.message);
@@ -220,7 +231,7 @@ const UserProfile = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      setPosts(posts.map(post => 
+      setPosts(posts.map(post =>
         post.id === postId ? response.data : post
       ));
 
@@ -254,7 +265,7 @@ const UserProfile = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      setPosts(posts.map(post => 
+      setPosts(posts.map(post =>
         post.id === postId ? response.data : post
       ));
 
@@ -274,12 +285,35 @@ const UserProfile = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      setPosts(posts.map(post => 
+      setPosts(posts.map(post =>
         post.id === postId ? response.data : post
       ));
     } catch (err) {
       console.error("Error deleting comment:", err);
     }
+  };
+
+  const handleDeleteLearningPlan = async (planId) => {
+    if (window.confirm("Are you sure you want to delete this learning plan?")) {
+      try {
+        const token = localStorage.getItem("authToken");
+        await axios.delete(`http://localhost:8080/api/learning-plans/${planId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setLearningPlans(learningPlans.filter(plan => plan.id !== planId));
+      } catch (err) {
+        console.error("Error deleting learning plan:", err);
+      }
+    }
+  };
+
+  const calculateProgress = (plan) => {
+    if (!plan || !plan.topics || plan.topics.length === 0) return 0;
+
+    const totalTopics = plan.topics.length;
+    const completedTopics = plan.topics.filter(topic => topic.completed).length;
+
+    return Math.round((completedTopics / totalTopics) * 100);
   };
 
   return (
@@ -383,7 +417,7 @@ const UserProfile = () => {
                     <button
                       className="px-5 py-2.5 text-sm font-medium rounded-xl
                       bg-gradient-to-r from-indigo-500 to-purple-500 text-white
-                      flex items-center justify-center gap-2 
+                      flex items-center justify-center gap-2
                       shadow-md hover:shadow-lg transition-all duration-300
                       hover:translate-y-px
                       focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-opacity-75"
@@ -608,7 +642,7 @@ const UserProfile = () => {
                 <nav className="flex" aria-label="Tabs">
                   <button
                     onClick={() => setActiveTab("activity")}
-                    className={`w-1/3 py-4 px-1 text-center border-b-2 font-medium text-sm ${
+                    className={`w-1/4 py-4 px-1 text-center border-b-2 font-medium text-sm ${
                       activeTab === "activity"
                         ? "border-indigo-500 text-indigo-600"
                         : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
@@ -617,8 +651,18 @@ const UserProfile = () => {
                     Activity
                   </button>
                   <button
+                    onClick={() => setActiveTab("learning-plans")}
+                    className={`w-1/4 py-4 px-1 text-center border-b-2 font-medium text-sm ${
+                      activeTab === "learning-plans"
+                        ? "border-indigo-500 text-indigo-600"
+                        : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                    }`}
+                  >
+                    Learning Plans
+                  </button>
+                  <button
                     onClick={() => setActiveTab("shared")}
-                    className={`w-1/3 py-4 px-1 text-center border-b-2 font-medium text-sm ${
+                    className={`w-1/4 py-4 px-1 text-center border-b-2 font-medium text-sm ${
                       activeTab === "shared"
                         ? "border-indigo-500 text-indigo-600"
                         : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
@@ -628,7 +672,7 @@ const UserProfile = () => {
                   </button>
                   <button
                     onClick={() => setActiveTab("achievements")}
-                    className={`w-1/3 py-4 px-1 text-center border-b-2 font-medium text-sm ${
+                    className={`w-1/4 py-4 px-1 text-center border-b-2 font-medium text-sm ${
                       activeTab === "achievements"
                         ? "border-indigo-500 text-indigo-600"
                         : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
@@ -640,239 +684,389 @@ const UserProfile = () => {
               </div>
             </div>
 
-            {/* Activities Feed */}
-            <div className="space-y-6">
-              {loading ? (
-                <div className="text-center py-4">Loading posts...</div>
-              ) : error ? (
-                <div className="text-center py-4 text-red-500">{error}</div>
-              ) : posts.length === 0 ? (
-                <div className="text-center py-4">No posts yet</div>
-              ) : (
-                posts.map((post) => (
-                  <div
-                    key={post.id}
-                    className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200 hover:shadow-md transition-shadow"
-                  >
-                    <div className="p-4 sm:p-6">
-                      {/* Post header with user info */}
-                      <div className="flex items-center mb-4">
-                        <img
-                          src={user.avatar}
-                          alt={user.name}
-                          className="h-10 w-10 rounded-full mr-3"
-                        />
-                        <div>
-                          <h3 className="font-medium text-gray-900">
-                            {user.name}
-                          </h3>
-                          <p className="text-xs text-gray-500">
-                            {formatDate(post.createdAt)}
-                          </p>
+            {/* Tab Content */}
+            {activeTab === "activity" && (
+              <div className="space-y-6">
+                {loading ? (
+                  <div className="text-center py-4">Loading posts...</div>
+                ) : error ? (
+                  <div className="text-center py-4 text-red-500">{error}</div>
+                ) : posts.length === 0 ? (
+                  <div className="text-center py-4">No posts yet</div>
+                ) : (
+                  posts.map((post) => (
+                    <div
+                      key={post.id}
+                      className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200 hover:shadow-md transition-shadow"
+                    >
+                      <div className="p-4 sm:p-6">
+                        {/* Post header with user info */}
+                        <div className="flex items-center mb-4">
+                          <img
+                            src={user.avatar}
+                            alt={user.name}
+                            className="h-10 w-10 rounded-full mr-3"
+                          />
+                          <div>
+                            <h3 className="font-medium text-gray-900">
+                              {user.name}
+                            </h3>
+                            <p className="text-xs text-gray-500">
+                              {formatDate(post.createdAt)}
+                            </p>
+                          </div>
                         </div>
-                      </div>
 
-                      <h2 className="text-xl font-semibold text-gray-900 mb-2">
-                        {post.title}
-                      </h2>
+                        <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                          {post.title}
+                        </h2>
 
-                      <p className="text-gray-700 mb-3">{post.content}</p>
+                        <p className="text-gray-700 mb-3">{post.content}</p>
 
-                      {/* Post media (if any) */}
-                      {post.mediaUrls && post.mediaUrls.length > 0 && (
-                        <div className="mt-3 grid grid-cols-2 gap-2">
-                          {post.mediaUrls.map((url, index) => (
-                            <img
-                              key={index}
-                              src={url}
-                              alt={`Post media ${index}`}
-                              className="rounded-lg object-cover w-full h-48"
-                            />
-                          ))}
-                        </div>
-                      )}
-
-                      {/* Post footer with actions */}
-                      <div className="mt-4 flex items-center justify-between border-t pt-3">
-                        <button
-                          onClick={() => handleLike(post.id)}
-                          className={`flex items-center ${
-                            post.likes.includes(user.id)
-                              ? "text-indigo-600"
-                              : "text-gray-500 hover:text-indigo-600"
-                          } transition-colors`}
-                        >
-                          <svg
-                            className="h-5 w-5 mr-1"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={1.5}
-                              d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"
-                            />
-                          </svg>
-                          <span>{post.likes?.length || 0} Likes</span>
-                        </button>
-                        <button className="flex items-center text-gray-500 hover:text-indigo-600 transition-colors">
-                          <svg
-                            className="h-5 w-5 mr-1"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={1.5}
-                              d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                            />
-                          </svg>
-                          <span>{post.comments?.length || 0} Comments</span>
-                        </button>
-                        <button className="flex items-center text-gray-500 hover:text-indigo-600 transition-colors">
-                          <svg
-                            className="h-5 w-5 mr-1"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={1.5}
-                              d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
-                            />
-                          </svg>
-                          <span>Share</span>
-                        </button>
-                      </div>
-
-                      {/* Comments section */}
-                      <div className="mt-4 border-t pt-4">
-                        {/* Comment input */}
-                        <div className="flex items-start space-x-3 mb-4">
-                          <div className="flex-shrink-0">
-                            {user?.avatar &&
-                            !user.avatar.includes("/api/placeholder/") ? (
+                        {/* Post media (if any) */}
+                        {post.mediaUrls && post.mediaUrls.length > 0 && (
+                          <div className="mt-3 grid grid-cols-2 gap-2">
+                            {post.mediaUrls.map((url, index) => (
                               <img
-                                className="h-8 w-8 rounded-full"
-                                src={user.avatar}
-                                alt={user?.name || "User"}
+                                key={index}
+                                src={url}
+                                alt={`Post media ${index}`}
+                                className="rounded-lg object-cover w-full h-48"
                               />
-                            ) : (
-                              <div className={`h-8 w-8 rounded-full flex items-center justify-center ${getColorClass(user.id)} font-medium`}>
-                                {getInitials(user?.name)}
-                              </div>
-                            )}
-                          </div>
-                          <div className="flex-1">
-                            <div className="flex">
-                              <input
-                                type="text"
-                                value={commentInputs[post.id] || ""}
-                                onChange={(e) => handleCommentInputChange(post.id, e.target.value)}
-                                placeholder="Write a comment..."
-                                className="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
-                              />
-                              <button
-                                onClick={() => handleAddComment(post.id)}
-                                className="ml-2 px-3 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 text-sm"
-                              >
-                                Post
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Comments list */}
-                        {post.comments && post.comments.length > 0 && (
-                          <div className="space-y-3">
-                            {post.comments.map((comment) => (
-                              <div key={comment.id} className="flex items-start space-x-3">
-                                <div className="flex-shrink-0">
-                                  <div className={`h-8 w-8 rounded-full flex items-center justify-center ${getColorClass(comment.userId)} font-medium`}>
-                                    {getInitials(comment.userId === user.id ? user.name : "U")}
-                                  </div>
-                                </div>
-                                <div className="flex-1">
-                                  <div className="bg-gray-50 rounded-lg p-3">
-                                    {editingCommentId === comment.id ? (
-                                      <div className="space-y-2">
-                                        <textarea
-                                          value={editCommentContent}
-                                          onChange={(e) => setEditCommentContent(e.target.value)}
-                                          className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
-                                          rows="2"
-                                        />
-                                        <div className="flex space-x-2">
-                                          <button
-                                            onClick={() => handleUpdateComment(post.id, comment.id)}
-                                            className="px-3 py-1 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 text-sm"
-                                          >
-                                            Save
-                                          </button>
-                                          <button
-                                            onClick={cancelEditingComment}
-                                            className="px-3 py-1 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 text-sm"
-                                          >
-                                            Cancel
-                                          </button>
-                                        </div>
-                                      </div>
-                                    ) : (
-                                      <>
-                                        <div className="flex justify-between items-start">
-                                          <p className="text-sm font-medium text-gray-900">
-                                            {comment.userId === user.id ? "You" : "User"}
-                                          </p>
-                                          <p className="text-xs text-gray-500">
-                                            {formatDate(comment.createdAt)}
-                                          </p>
-                                        </div>
-                                        <p className="text-sm text-gray-700 mt-1">
-                                          {comment.content}
-                                        </p>
-                                        {comment.userId === user.id && (
-                                          <div className="flex space-x-2 mt-2">
-                                            <button
-                                              onClick={() => startEditingComment(comment)}
-                                              className="text-xs text-indigo-600 hover:text-indigo-800"
-                                            >
-                                              Edit
-                                            </button>
-                                            <button
-                                              onClick={() => handleDeleteComment(post.id, comment.id)}
-                                              className="text-xs text-red-600 hover:text-red-800"
-                                            >
-                                              Delete
-                                            </button>
-                                          </div>
-                                        )}
-                                      </>
-                                    )}
-                                  </div>
-                                </div>
-                              </div>
                             ))}
                           </div>
                         )}
+
+                        {/* Post footer with actions */}
+                        <div className="mt-4 flex items-center justify-between border-t pt-3">
+                          <button
+                            onClick={() => handleLike(post.id)}
+                            className={`flex items-center ${
+                              post.likes.includes(user.id)
+                                ? "text-indigo-600"
+                                : "text-gray-500 hover:text-indigo-600"
+                            } transition-colors`}
+                          >
+                            <svg
+                              className="h-5 w-5 mr-1"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={1.5}
+                                d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"
+                              />
+                            </svg>
+                            <span>{post.likes?.length || 0} Likes</span>
+                          </button>
+                          <button className="flex items-center text-gray-500 hover:text-indigo-600 transition-colors">
+                            <svg
+                              className="h-5 w-5 mr-1"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={1.5}
+                                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                              />
+                            </svg>
+                            <span>{post.comments?.length || 0} Comments</span>
+                          </button>
+                          <button className="flex items-center text-gray-500 hover:text-indigo-600 transition-colors">
+                            <svg
+                              className="h-5 w-5 mr-1"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={1.5}
+                                d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
+                              />
+                            </svg>
+                            <span>Share</span>
+                          </button>
+                        </div>
+
+                        {/* Comments section */}
+                        <div className="mt-4 border-t pt-4">
+                          {/* Comment input */}
+                          <div className="flex items-start space-x-3 mb-4">
+                            <div className="flex-shrink-0">
+                              {user?.avatar &&
+                              !user.avatar.includes("/api/placeholder/") ? (
+                                <img
+                                  className="h-8 w-8 rounded-full"
+                                  src={user.avatar}
+                                  alt={user?.name || "User"}
+                                />
+                              ) : (
+                                <div className={`h-8 w-8 rounded-full flex items-center justify-center ${getColorClass(user.id)} font-medium`}>
+                                  {getInitials(user?.name)}
+                                </div>
+                              )}
+                            </div>
+                            <div className="flex-1">
+                              <div className="flex">
+                                <input
+                                  type="text"
+                                  value={commentInputs[post.id] || ""}
+                                  onChange={(e) => handleCommentInputChange(post.id, e.target.value)}
+                                  placeholder="Write a comment..."
+                                  className="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+                                />
+                                <button
+                                  onClick={() => handleAddComment(post.id)}
+                                  className="ml-2 px-3 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 text-sm"
+                                >
+                                  Post
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Comments list */}
+                          {post.comments && post.comments.length > 0 && (
+                            <div className="space-y-3">
+                              {post.comments.map((comment) => (
+                                <div key={comment.id} className="flex items-start space-x-3">
+                                  <div className="flex-shrink-0">
+                                    <div className={`h-8 w-8 rounded-full flex items-center justify-center ${getColorClass(comment.userId)} font-medium`}>
+                                      {getInitials(comment.userId === user.id ? user.name : "U")}
+                                    </div>
+                                  </div>
+                                  <div className="flex-1">
+                                    <div className="bg-gray-50 rounded-lg p-3">
+                                      {editingCommentId === comment.id ? (
+                                        <div className="space-y-2">
+                                          <textarea
+                                            value={editCommentContent}
+                                            onChange={(e) => setEditCommentContent(e.target.value)}
+                                            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+                                            rows="2"
+                                          />
+                                          <div className="flex space-x-2">
+                                            <button
+                                              onClick={() => handleUpdateComment(post.id, comment.id)}
+                                              className="px-3 py-1 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 text-sm"
+                                            >
+                                              Save
+                                            </button>
+                                            <button
+                                              onClick={cancelEditingComment}
+                                              className="px-3 py-1 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 text-sm"
+                                            >
+                                              Cancel
+                                            </button>
+                                          </div>
+                                        </div>
+                                      ) : (
+                                        <>
+                                          <div className="flex justify-between items-start">
+                                            <p className="text-sm font-medium text-gray-900">
+                                              {comment.userId === user.id ? "You" : "User"}
+                                            </p>
+                                            <p className="text-xs text-gray-500">
+                                              {formatDate(comment.createdAt)}
+                                            </p>
+                                          </div>
+                                          <p className="text-sm text-gray-700 mt-1">
+                                            {comment.content}
+                                          </p>
+                                          {comment.userId === user.id && (
+                                            <div className="flex space-x-2 mt-2">
+                                              <button
+                                                onClick={() => startEditingComment(comment)}
+                                                className="text-xs text-indigo-600 hover:text-indigo-800"
+                                              >
+                                                Edit
+                                              </button>
+                                              <button
+                                                onClick={() => handleDeleteComment(post.id, comment.id)}
+                                                className="text-xs text-red-600 hover:text-red-800"
+                                              >
+                                                Delete
+                                              </button>
+                                            </div>
+                                          )}
+                                        </>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))
-              )}
-            </div>
+                  ))
+                )}
 
-            {/* More Activities Button */}
-            <div className="mt-8 text-center">
-              <button className="px-6 py-2 border border-indigo-600 text-indigo-600 rounded-full hover:bg-indigo-50 font-medium transition-colors">
-                Load More Activities
-              </button>
-            </div>
+                {/* More Activities Button */}
+                <div className="mt-8 text-center">
+                  <button className="px-6 py-2 border border-indigo-600 text-indigo-600 rounded-full hover:bg-indigo-50 font-medium transition-colors">
+                    Load More Activities
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Learning Plans Tab */}
+            {activeTab === "learning-plans" && (
+              <div className="space-y-6">
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-lg font-medium text-gray-900">My Learning Plans</h2>
+                  <Link
+                    to="/learning-plans/create"
+                    className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 text-sm"
+                  >
+                    Create Plan
+                  </Link>
+                </div>
+
+                {loading ? (
+                  <div className="text-center py-8">
+                    <div className="spinner"></div>
+                    <p className="mt-2 text-gray-600">Loading learning plans...</p>
+                  </div>
+                ) : error ? (
+                  <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative" role="alert">
+                    <strong className="font-bold">Error: </strong>
+                    <span className="block sm:inline">{error}</span>
+                  </div>
+                ) : learningPlans.length === 0 ? (
+                  <div className="text-center py-8 bg-white rounded-lg shadow-sm">
+                    <p className="text-gray-500 mb-4">You haven't created any learning plans yet.</p>
+                    <Link
+                      to="/learning-plans/create"
+                      className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 text-sm"
+                    >
+                      Create Your First Learning Plan
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {learningPlans.map(plan => (
+                      <div key={plan.id} className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200 hover:shadow-md transition-shadow">
+                        <div className="p-4">
+                          <div className="flex justify-between items-start mb-2">
+                            <h3 className="text-lg font-semibold text-gray-900">{plan.title}</h3>
+                            <div className="flex space-x-2">
+                              <button
+                                onClick={() => navigate(`/learning-plans/edit/${plan.id}`)}
+                                className="text-gray-500 hover:text-indigo-600"
+                              >
+                                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={1.5}
+                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                                  />
+                                </svg>
+                              </button>
+                              <button
+                                onClick={() => handleDeleteLearningPlan(plan.id)}
+                                className="text-gray-500 hover:text-red-600"
+                              >
+                                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={1.5}
+                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                  />
+                                </svg>
+                              </button>
+                            </div>
+                          </div>
+
+                          <p className="text-sm text-gray-600 mb-3">{plan.description}</p>
+
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-xs text-gray-500">Progress</span>
+                            <span className="text-xs font-medium text-gray-700">{calculateProgress(plan)}%</span>
+                          </div>
+
+                          <div className="w-full bg-gray-200 rounded-full h-2">
+                            <div
+                              className="bg-indigo-600 h-2 rounded-full"
+                              style={{ width: `${calculateProgress(plan)}%` }}
+                            ></div>
+                          </div>
+
+                          <div className="mt-4 flex items-center justify-between text-xs text-gray-500">
+                            <div>
+                              <span className="font-medium">{plan.topics?.length || 0}</span> topics
+                            </div>
+                            {plan.completionDeadline && (
+                              <div>
+                                Deadline: {formatDate(plan.completionDeadline)}
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="mt-4 pt-3 border-t border-gray-100 flex justify-between items-center">
+                            <div className="flex items-center">
+                              <svg className="h-4 w-4 text-gray-400 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={1.5}
+                                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                                />
+                              </svg>
+                              <span className="text-xs text-gray-500">
+                                Created {formatDate(plan.createdAt)}
+                              </span>
+                            </div>
+                            <Link
+                              to={`/learning-plans/${plan.id}`}
+                              className="text-sm font-medium text-indigo-600 hover:text-indigo-800"
+                            >
+                              View Details
+                            </Link>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {learningPlans.length > 0 && (
+                  <div className="text-center mt-6">
+                    <Link
+                      to="/learning-plans"
+                      className="text-indigo-600 hover:text-indigo-800 font-medium"
+                    >
+                      View All Learning Plans
+                    </Link>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Other tabs remain the same */}
+            {activeTab === "shared" && (
+              <div className="text-center py-8 bg-white rounded-lg shadow-sm">
+                <p className="text-gray-500">No resources shared yet.</p>
+              </div>
+            )}
+
+            {activeTab === "achievements" && (
+              <div className="text-center py-8 bg-white rounded-lg shadow-sm">
+                <p className="text-gray-500">No achievements yet.</p>
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -1,3 +1,4 @@
+// frontend/src/App.jsx
 import "./App.css";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 
@@ -12,8 +13,14 @@ import PublicProfile from "./Pages/PublicProfile";
 import Auth from "./Pages/Auth";
 import NotificationSystem from "./Components/NotificationSystem";
 import Profile from "./Pages/Profile";
-// import SearchResults from "./Components/SearchResults";
 import SearchResults from "./Components/SearchResults ";
+
+// Learning Plans Components
+import LearningPlans from "./Pages/LearningPlans";
+import LearningPlanDetail from "./Pages/LearningPlanDetail";
+import CreateLearningPlan from "./Pages/CreateLearningPlan";
+import EditLearningPlan from "./Pages/EditLearningPlan";
+
 function App() {
   return (
     <Router>
@@ -28,8 +35,13 @@ function App() {
         <Route path="/profile" element={<Profile />} />
         <Route path="/profile/:userId" element={<PublicProfile />} />
         <Route path="/notification" element={<NotificationSystem />} />
-
         <Route path="/search" element={<SearchResults />} />
+
+        {/* Learning Plans Routes */}
+        <Route path="/learning-plans" element={<LearningPlans />} />
+        <Route path="/learning-plans/:id" element={<LearningPlanDetail />} />
+        <Route path="/learning-plans/create" element={<CreateLearningPlan />} />
+        <Route path="/learning-plans/edit/:id" element={<EditLearningPlan />} />
 
         {/*Components */}
         <Route path="/header" element={<Header />} />
