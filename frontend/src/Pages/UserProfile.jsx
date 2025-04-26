@@ -42,6 +42,14 @@ const UserProfile = () => {
   const [isFollowing, setIsFollowing] = useState(false)
   const [activeTab, setActiveTab] = useState("activity")
 
+  // Add these state variables after the existing state declarations (around line 30)
+  const [editingPostId, setEditingPostId] = useState(null)
+  const [editPostData, setEditPostData] = useState({
+    title: "",
+    content: "",
+    mediaUrls: [],
+  })
+
   useEffect(() => {
     const fetchUserDetailsAndPosts = async () => {
       try {
@@ -275,6 +283,57 @@ const UserProfile = () => {
     } catch (err) {
       console.error("Error deleting comment:", err)
     }
+  }
+
+  // Add these handler functions after the handleDeleteComment function (around line 200)
+  const handleUpdatePost = async (postId) => {
+    try {
+      const token = localStorage.getItem("authToken")
+      const formData = new FormData()
+
+      formData.append("title", editPostData.title)
+      formData.append("description", editPostData.content)
+
+      // If you want to handle new images for updates, you would add them here
+      // editPostData.newImages?.forEach((file) => {
+      //   formData.append('images', file);
+      // });
+
+      const response = await axios.put(`http://localhost:8080/api/posts/${postId}`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      })
+
+      setPosts(posts.map((post) => (post.id === postId ? response.data : post)))
+      setEditingPostId(null)
+      setEditPostData({
+        title: "",
+        content: "",
+        mediaUrls: [],
+      })
+    } catch (err) {
+      console.error("Error updating post:", err)
+    }
+  }
+
+  const startEditingPost = (post) => {
+    setEditingPostId(post.id)
+    setEditPostData({
+      title: post.title,
+      content: post.content,
+      mediaUrls: post.mediaUrls || [],
+    })
+  }
+
+  const cancelEditingPost = () => {
+    setEditingPostId(null)
+    setEditPostData({
+      title: "",
+      content: "",
+      mediaUrls: [],
+    })
   }
 
   return (
@@ -592,7 +651,7 @@ const UserProfile = () => {
                     className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200 hover:shadow-md transition-shadow"
                   >
                     <div className="p-4 sm:p-6">
-                      {/* Post header with user info */}
+                      {/* Replace the post header section with delete button (around line 470) with this updated version */}
                       <div className="flex items-center mb-4">
                         <img
                           src={user.avatar || "/placeholder.svg"}
@@ -603,8 +662,8 @@ const UserProfile = () => {
                           <h3 className="font-medium text-gray-900">{user.name}</h3>
                           <p className="text-xs text-gray-500">{formatDate(post.createdAt)}</p>
                         </div>
-                        {/* Add delete button in top right */}
-                        <div className="ml-auto">
+                        {/* Add delete and edit buttons in top right */}
+                        <div className="ml-auto flex flex-col space-y-2">
                           <button
                             onClick={() => handleDeletePost(post.id)}
                             className="flex items-center text-gray-500 hover:text-red-600 transition-colors"
@@ -619,24 +678,132 @@ const UserProfile = () => {
                             </svg>
                             <span>Delete</span>
                           </button>
+                          <button
+                            onClick={() => startEditingPost(post)}
+                            className="flex items-center text-gray-500 hover:text-indigo-600 transition-colors"
+                          >
+                            <svg className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={1.5}
+                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                              />
+                            </svg>
+                            <span>Edit</span>
+                          </button>
                         </div>
                       </div>
 
-                      <h2 className="text-xl font-semibold text-gray-900 mb-2">{post.title}</h2>
+                      {/* Replace the post title and content section (around line 490) with this updated version */}
+                      <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                        {editingPostId === post.id ? (
+                          <input
+                            type="text"
+                            value={editPostData.title}
+                            onChange={(e) => setEditPostData({ ...editPostData, title: e.target.value })}
+                            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                          />
+                        ) : (
+                          post.title
+                        )}
+                      </h2>
 
-                      <p className="text-gray-700 mb-3">{post.content}</p>
+                      <p className="text-gray-700 mb-3">
+                        {editingPostId === post.id ? (
+                          <textarea
+                            value={editPostData.content}
+                            onChange={(e) => setEditPostData({ ...editPostData, content: e.target.value })}
+                            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                            rows="3"
+                          />
+                        ) : (
+                          post.content
+                        )}
+                      </p>
 
-                      {/* Post media (if any) */}
+                      {/* Replace the post media section (around line 495) with this updated version */}
                       {post.mediaUrls && post.mediaUrls.length > 0 && (
                         <div className="mt-3 grid grid-cols-2 gap-2">
                           {post.mediaUrls.map((url, index) => (
-                            <img
-                              key={index}
-                              src={url || "/placeholder.svg"}
-                              alt={`Post media ${index}`}
-                              className="rounded-lg object-cover w-full h-48"
-                            />
+                            <div key={index} className="relative">
+                              <img
+                                src={url || "/placeholder.svg"}
+                                alt={`Post media ${index}`}
+                                className="rounded-lg object-cover w-full h-48"
+                              />
+                              {editingPostId === post.id && (
+                                <button
+                                  onClick={() => {
+                                    // Handle removing this image
+                                    const updatedMediaUrls = [...editPostData.mediaUrls]
+                                    updatedMediaUrls.splice(index, 1)
+                                    setEditPostData({ ...editPostData, mediaUrls: updatedMediaUrls })
+                                  }}
+                                  className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                                >
+                                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M6 18L18 6M6 6l12 12"
+                                    />
+                                  </svg>
+                                </button>
+                              )}
+                            </div>
                           ))}
+                          {editingPostId === post.id && (
+                            <div className="border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center h-48">
+                              <label className="cursor-pointer">
+                                <input
+                                  type="file"
+                                  className="hidden"
+                                  onChange={(e) => {
+                                    // Handle adding new images
+                                    // You would need to add this to your editPostData state
+                                    // and handle the upload in your update function
+                                  }}
+                                  multiple
+                                />
+                                <div className="text-center p-4">
+                                  <svg
+                                    className="mx-auto h-8 w-8 text-gray-400"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                                    />
+                                  </svg>
+                                  <p className="text-sm text-gray-500">Add more images</p>
+                                </div>
+                              </label>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Add save/cancel buttons when in edit mode (after the post media section) */}
+                      {editingPostId === post.id && (
+                        <div className="mt-4 flex justify-end space-x-2">
+                          <button
+                            onClick={() => handleUpdatePost(post.id)}
+                            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 text-sm"
+                          >
+                            Save Changes
+                          </button>
+                          <button
+                            onClick={cancelEditingPost}
+                            className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 text-sm"
+                          >
+                            Cancel
+                          </button>
                         </div>
                       )}
 
@@ -695,7 +862,9 @@ const UserProfile = () => {
                               />
                             ) : (
                               <div
-                                className={`h-8 w-8 rounded-full flex items-center justify-center ${getColorClass(user.id)} font-medium`}
+                                className={`h-8 w-8 rounded-full flex items-center justify-center ${getColorClass(
+                                  user.id,
+                                )} font-medium`}
                               >
                                 {getInitials(user?.name)}
                               </div>
@@ -727,7 +896,9 @@ const UserProfile = () => {
                               <div key={comment.id} className="flex items-start space-x-3">
                                 <div className="flex-shrink-0">
                                   <div
-                                    className={`h-8 w-8 rounded-full flex items-center justify-center ${getColorClass(comment.userId)} font-medium`}
+                                    className={`h-8 w-8 rounded-full flex items-center justify-center ${getColorClass(
+                                      comment.userId,
+                                    )} font-medium`}
                                   >
                                     {getInitials(comment.userId === user.id ? user.name : "U")}
                                   </div>

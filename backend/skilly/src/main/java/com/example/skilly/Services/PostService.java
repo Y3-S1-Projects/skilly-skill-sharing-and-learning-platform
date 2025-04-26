@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -79,7 +80,10 @@ public class PostService {
         // Create upload directory if it doesn't exist
         File directory = new File(uploadDir);
         if (!directory.exists()) {
-            directory.mkdirs();
+            boolean dirCreated = directory.mkdirs();
+            if (!dirCreated) {
+                throw new IOException("Failed to create upload directory");
+            }
         }
 
         // Generate unique filename
@@ -92,7 +96,46 @@ public class PostService {
         // Return the URL or path that can be used to access the file
         return "/uploads/" + filename;
     }
-    
+
+    public Optional<Post> updatePost(String id, Post updatedPost, MultipartFile[] newImages) {
+        try {
+            return postRepository.findById(id).map(existingPost -> {
+                // Update basic fields if they're provided in updatedPost
+                if (updatedPost.getTitle() != null) {
+                    existingPost.setTitle(updatedPost.getTitle());
+                }
+                if (updatedPost.getContent() != null) {
+                    existingPost.setContent(updatedPost.getContent());
+                }
+                if (updatedPost.getPostType() != null) {
+                    existingPost.setPostType(updatedPost.getPostType());
+                }
+
+                // Handle new image uploads if provided
+                if (newImages != null && newImages.length > 0) {
+                    List<String> mediaUrls = new ArrayList<>();
+                    for (MultipartFile image : newImages) {
+                        try {
+                            String imageUrl = uploadImage(image);
+                            mediaUrls.add(imageUrl);
+                        } catch (IOException e) {
+                            // Log the error but continue with other images
+                            System.err.println("Failed to upload image: " + e.getMessage());
+                        }
+                    }
+                    if (!mediaUrls.isEmpty()) {
+                        existingPost.setMediaUrls(mediaUrls);
+                    }
+                }
+
+                return postRepository.save(existingPost);
+            });
+        } catch (Exception e) {
+            System.err.println("Error updating post: " + e.getMessage());
+            return Optional.empty();
+        }
+    }
+
     // Comment operations
     public Optional<Post> addComment(String postId, String userId, String content) {
         return postRepository.findById(postId).map(post -> {
@@ -101,38 +144,39 @@ public class PostService {
             comment.setUserId(userId);
             comment.setContent(content);
             comment.setCreatedAt(new Date());
-            
+
             if (post.getComments() == null) {
-                post.setComments(List.of(comment));
-            } else {
-                post.getComments().add(comment);
+                post.setComments(new ArrayList<>());
             }
-            
+            post.getComments().add(comment);
+
             return postRepository.save(post);
         });
     }
-    
+
     public Optional<Post> updateComment(String postId, String commentId, String userId, String content) {
         return postRepository.findById(postId).map(post -> {
-            for (Comment comment : post.getComments()) {
-                if (comment.getId().equals(commentId) && comment.getUserId().equals(userId)) {
-                    comment.setContent(content);
-                    comment.setUpdatedAt(new Date());
-                    break;
+            if (post.getComments() != null) {
+                for (Comment comment : post.getComments()) {
+                    if (comment.getId().equals(commentId) && comment.getUserId().equals(userId)) {
+                        comment.setContent(content);
+                        comment.setUpdatedAt(new Date());
+                        break;
+                    }
                 }
             }
             return postRepository.save(post);
         });
     }
-    
+
     public Optional<Post> deleteComment(String postId, String commentId, String userId) {
         return postRepository.findById(postId).map(post -> {
-            post.setComments(post.getComments().stream()
-                .filter(comment -> !(comment.getId().equals(commentId) && comment.getUserId().equals(userId)))
-                .toList());
+            if (post.getComments() != null) {
+                post.setComments(post.getComments().stream()
+                        .filter(comment -> !(comment.getId().equals(commentId) && comment.getUserId().equals(userId)))
+                        .toList());
+            }
             return postRepository.save(post);
         });
     }
-
-
 }
