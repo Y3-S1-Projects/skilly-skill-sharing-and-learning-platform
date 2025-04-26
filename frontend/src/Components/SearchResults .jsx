@@ -78,7 +78,7 @@ const SearchResults = () => {
             className="bg-white rounded-lg shadow p-4 flex items-center border border-gray-100 hover:shadow-md transition-shadow"
           >
             <img
-              src={user.avatar || "/api/placeholder/64/64"}
+              src={user.profilePicUrl || "/api/placeholder/64/64"}
               alt={user.username}
               className="w-16 h-16 rounded-full object-cover"
             />
