@@ -1,2 +1,6 @@
 .qodo
 .idea
+node_modules/
+.npm/
+.yarn/
+.pnp.*
