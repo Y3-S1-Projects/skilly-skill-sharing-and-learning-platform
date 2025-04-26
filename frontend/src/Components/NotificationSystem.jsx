@@ -34,40 +34,101 @@ function NotificationSystem({ currentUser }) {
   const fetchNotifications = async () => {
     try {
       const token = localStorage.getItem("authToken");
-      const response = await axios.get(
+
+      // Fetch notifications
+      const notificationsResponse = await axios.get(
         `http://localhost:8080/api/notifications/${currentUser.id}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      // Ensure notifications are sorted by createdAt (newest first)
-      const sortedNotifications = response.data.sort(
+      // Get notifications sorted by createdAt
+      const sortedNotifications = notificationsResponse.data.sort(
         (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
       );
 
-      setNotifications(sortedNotifications);
+      // Enrich notifications with sender details
+      const enrichedNotifications = await Promise.all(
+        sortedNotifications.map(async (notification) => {
+          try {
+            // Only fetch user details if we have a senderId
+            if (notification.senderId) {
+              const userResponse = await axios.get(
+                `http://localhost:8080/api/users/${notification.senderId}`,
+                { headers: { Authorization: `Bearer ${token}` } }
+              );
 
-      // Calculate unread count based on isRead status from backend
-      const unread = sortedNotifications.filter((n) => !n.read).length;
+              // Add sender details to notification object
+              return {
+                ...notification,
+                senderAvatar: userResponse.data.profilePicUrl || null,
+                senderName:
+                  userResponse.data.username ||
+                  userResponse.data.name ||
+                  "User",
+              };
+            }
+            return notification;
+          } catch (error) {
+            console.error(
+              `Failed to fetch sender details for notification ${notification.id}:`,
+              error
+            );
+            return notification;
+          }
+        })
+      );
+
+      setNotifications(enrichedNotifications);
+
+      // Calculate unread count based on isRead status
+      const unread = enrichedNotifications.filter((n) => !n.read).length;
       setUnreadCount(unread);
     } catch (error) {
       console.error("Failed to fetch notifications:", error);
     }
   };
 
-  const handleNewNotification = (notification) => {
-    // Add to notifications list
-    setNotifications((prev) => [notification, ...prev]);
+  const handleNewNotification = async (notification) => {
+    try {
+      // Fetch sender details if senderId exists
+      if (notification.senderId) {
+        const token = localStorage.getItem("authToken");
+        const userResponse = await axios.get(
+          `http://localhost:8080/api/users/${notification.senderId}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
 
-    // Update unread count
-    setUnreadCount((prev) => prev + 1);
+        // Enrich notification with sender details
+        notification = {
+          ...notification,
+          senderAvatar: userResponse.data.profilePicUrl || null,
+          senderName:
+            userResponse.data.username || userResponse.data.name || "User",
+        };
+      }
 
-    // Show toast notification
-    toast.info(notification.message, {
-      onClick: () => {
-        // Navigate to the relevant post
-        window.location.href = `/posts/${notification.postId}`;
-      },
-    });
+      // Add to notifications list
+      setNotifications((prev) => [notification, ...prev]);
+
+      // Update unread count
+      setUnreadCount((prev) => prev + 1);
+
+      // Show toast notification
+      toast.info(notification.message, {
+        onClick: () => {
+          // Navigate to the relevant post
+          window.location.href = `/posts/${notification.postId}`;
+        },
+      });
+    } catch (error) {
+      console.error(
+        "Failed to fetch sender details for new notification:",
+        error
+      );
+      // Still add the notification even if we couldn't get sender details
+      setNotifications((prev) => [notification, ...prev]);
+      setUnreadCount((prev) => prev + 1);
+    }
   };
 
   // Handler for removing notifications

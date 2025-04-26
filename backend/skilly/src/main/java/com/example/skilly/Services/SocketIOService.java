@@ -21,7 +21,8 @@ public class SocketIOService {
     private final UserRepository userRepository;
 
     @Autowired
-    public SocketIOService(SocketIOServer server, NotificationRepository notificationRepository, UserRepository userRepository) {
+    public SocketIOService(SocketIOServer server, NotificationRepository notificationRepository,
+            UserRepository userRepository) {
         this.server = server;
         this.notificationRepository = notificationRepository;
         this.userRepository = userRepository;
@@ -40,7 +41,8 @@ public class SocketIOService {
             System.out.println("User " + userId + " joined room: " + userId);
 
             // Send unread notifications if available
-            List<Notification> unreadNotifications = notificationRepository.findByUserIdAndIsReadFalseOrderByCreatedAtDesc(userId);
+            List<Notification> unreadNotifications = notificationRepository
+                    .findByUserIdAndIsReadFalseOrderByCreatedAtDesc(userId);
             long unreadCount = notificationRepository.countByUserIdAndIsReadFalse(userId);
 
             if (unreadCount > 0) {
@@ -73,7 +75,8 @@ public class SocketIOService {
 
             System.out.println("Socket service processing notification: " + receiverId);
             System.out.println("Room operations for " + receiverId + ": " + server.getRoomOperations(receiverId));
-            System.out.println("Connected clients in room: " + server.getRoomOperations(receiverId).getClients().size());
+            System.out
+                    .println("Connected clients in room: " + server.getRoomOperations(receiverId).getClients().size());
 
             if ("LIKE".equals(action)) {
                 Notification notification = new Notification();
@@ -91,8 +94,7 @@ public class SocketIOService {
 
                 long unreadCount = notificationRepository.countByUserIdAndIsReadFalse(receiverId);
                 server.getRoomOperations(receiverId).sendEvent("notifications_unread_count", unreadCount);
-            }
-            else if ("UNLIKE".equals(action)) {
+            } else if ("UNLIKE".equals(action)) {
                 List<Notification> existingNotifications = notificationRepository
                         .findByUserIdAndSenderIdAndPostIdAndType(receiverId, senderId, postId, "POST_LIKE");
 
@@ -118,7 +120,8 @@ public class SocketIOService {
     }
 
     public List<Notification> markAsRead(String userId) {
-        List<Notification> unreadNotifications = notificationRepository.findByUserIdAndIsReadFalseOrderByCreatedAtDesc(userId);
+        List<Notification> unreadNotifications = notificationRepository
+                .findByUserIdAndIsReadFalseOrderByCreatedAtDesc(userId);
         unreadNotifications.forEach(notification -> notification.setRead(true));
         List<Notification> savedNotifications = notificationRepository.saveAll(unreadNotifications);
 
