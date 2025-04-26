@@ -25,7 +25,6 @@ const Profile = () => {
         // Try to get user role and handle errors
         try {
           role = await getUserRole();
-          console.log("User role:", role);
         } catch (roleError) {
           console.error("Failed to get user role:", roleError);
         }
@@ -33,7 +32,6 @@ const Profile = () => {
         // Try to get user ID and handle errors
         try {
           userId = await getUserId(); // Assuming this now returns the string value after your fix
-          console.log("User ID:", userId);
         } catch (idError) {
           console.error("Failed to get user ID:", idError);
           setError("Failed to authenticate user. Please try logging in again.");
@@ -59,7 +57,6 @@ const Profile = () => {
               },
             }
           );
-          console.log("Full response:", JSON.stringify(response));
 
           setUser(response.data);
         } catch (fetchError) {

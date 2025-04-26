@@ -22,7 +22,7 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { X, Camera, Lightbulb, Calendar, FileText, Share2 } from "lucide-react";
 
-const CreatePostModal = ({ isOpen, onClose }) => {
+const CreatePostModal = ({ isOpen, onClose, onPostCreated }) => {
   const [postType, setPostType] = useState("skill"); // skill, progress, plan
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -79,13 +79,19 @@ const CreatePostModal = ({ isOpen, onClose }) => {
 
       const token = localStorage.getItem("authToken");
 
-      await axios.post("http://localhost:8080/api/posts", formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
-        },
-      });
-
+      const response = await axios.post(
+        "http://localhost:8080/api/posts",
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      if (onPostCreated) {
+        onPostCreated(response.data);
+      }
       setTitle("");
       setDescription("");
       setImages([]);

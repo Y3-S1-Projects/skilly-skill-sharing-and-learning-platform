@@ -8,14 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.example.skilly.Exceptions.ResourceNotFoundException;
 import com.example.skilly.Models.User;
@@ -235,6 +228,56 @@ public class UserController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new MessageResponse("Error retrieving following list: " + e.getMessage()));
+        }
+    }
+    @PutMapping("/update")
+    public ResponseEntity<?> updateUser(
+            @RequestBody Map<String, Object> updates,
+            @RequestHeader(value = "Authorization", required = true) String token) {
+        try {
+            if (token == null || !token.startsWith("Bearer ")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(new MessageResponse("Invalid or missing token"));
+            }
+
+            String jwtToken = token.substring(7);
+            String userId = jwtUtil.getUserIdFromToken(jwtToken);
+
+            // Get the existing user
+            User user = userService.getUserById(userId);
+
+            // Update fields
+            if (updates.containsKey("username")) {
+                user.setUsername((String) updates.get("username"));
+            }
+
+            if (updates.containsKey("email")) {
+                user.setEmail((String) updates.get("email"));
+            }
+
+            if (updates.containsKey("bio")) {
+                user.setBio((String) updates.get("bio"));
+            }
+
+            if (updates.containsKey("profilePicUrl")) {
+                user.setProfilePicUrl((String) updates.get("profilePicUrl"));
+            }
+
+            if (updates.containsKey("skills") && updates.get("skills") instanceof List) {
+                @SuppressWarnings("unchecked")
+                List<String> skills = (List<String>) updates.get("skills");
+                user.setSkills(skills);
+            }
+
+            // Save the updated user
+            User updatedUser = userService.updateUser(user);
+            return ResponseEntity.ok(updatedUser);
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new MessageResponse(e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new MessageResponse("Error updating user: " + e.getMessage()));
         }
     }
 
