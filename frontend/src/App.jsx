@@ -12,12 +12,12 @@ import PublicProfile from "./Pages/PublicProfile";
 import Auth from "./Pages/Auth";
 import NotificationSystem from "./Components/NotificationSystem";
 import Profile from "./Pages/Profile";
-import LearningPlan from "./Pages/LearningPlan2";
+import LearningPlan from "./Pages/LearningPlan";
 import LearningPlanCreator from "./Components/LearningPlanCreator2";
 // import SearchResults from "./Components/SearchResults";
 import SearchResults from "./Components/SearchResults ";
 import PostCard from "./Components/PostCard";
-
+import EditProfilePage from "./Pages/EditProfileModal";
 import LearningPlans from "./Pages/LearningPlans";
 import LearningPlanDetail from "./Pages/LearningPlanDetail";
 import CreateLearningPlan from "./Pages/CreateLearningPlan";
@@ -40,12 +40,11 @@ function App() {
         <Route path="/learning-plan" element={<LearningPlan />} />
         <Route path="/search" element={<SearchResults />} />
         <Route path="/postcard" element={<PostCard />} />
-
+        <Route path="/profile/edit" element={<EditProfilePage />} />
         <Route path="/learning-plans" element={<LearningPlans />} />
         <Route path="/learning-plans/:id" element={<LearningPlanDetail />} />
         <Route path="/learning-plans/create" element={<CreateLearningPlan />} />
         <Route path="/learning-plans/edit/:id" element={<EditLearningPlan />} />
-
         <Route
           path="/learning-plan-creator"
           element={<LearningPlanCreator />}

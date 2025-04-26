@@ -90,4 +90,14 @@ public class UserService {
         return userRepository.findAllById(user.getFollowing());
     }
 
+    public User updateUser(User user) {
+        // Check if user exists
+        if (!userRepository.existsById(user.getId())) {
+            throw new ResourceNotFoundException("User not found with id: " + user.getId());
+        }
+
+        // Save the updated user
+        return userRepository.save(user);
+    }
+
 }

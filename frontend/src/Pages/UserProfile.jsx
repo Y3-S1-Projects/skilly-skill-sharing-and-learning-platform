@@ -13,6 +13,7 @@ const UserProfile = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showEditProfileModal, setShowEditProfileModal] = useState(false);
   const [showCreatePostModal, setShowCreatePostModal] = useState(false);
   const [posts, setPosts] = useState([]);
   const [user, setUser] = useState({
@@ -150,7 +151,6 @@ const UserProfile = () => {
       console.error("Error deleting post:", err);
     }
   };
-  console.log(user);
   const handleEndorse = (skillName) => {
     setUser((prev) => ({
       ...prev,
@@ -171,7 +171,9 @@ const UserProfile = () => {
   const handlePostDelete = (postId) => {
     setPosts(posts.filter((post) => post.id !== postId));
   };
-
+  const handleUserUpdate = (updatedUser) => {
+    setUser(updatedUser);
+  };
   return (
     <div className="min-h-screen bg-gray-50">
       <Header user={user} />
@@ -263,7 +265,8 @@ const UserProfile = () => {
                     </div>
                   </div>
                   <div className="mt-5 sm:mt-0 flex justify-center">
-                    <button
+                    <Link
+                      to="/profile/edit"
                       className="px-5 py-2.5 text-sm font-medium rounded-xl
                       bg-gradient-to-r from-indigo-500 to-purple-500 text-white
                       flex items-center justify-center gap-2
@@ -273,7 +276,7 @@ const UserProfile = () => {
                     >
                       <EditIcon />
                       Edit Profile
-                    </button>
+                    </Link>
                   </div>
                 </div>
 
@@ -362,7 +365,7 @@ const UserProfile = () => {
                             </span>
                           </div>
                         </div>
-                        <button
+                        {/* <button
                           onClick={() => handleEndorse(skill.name)}
                           className="inline-flex items-center text-sm text-gray-500 hover:text-indigo-600"
                         >
@@ -380,7 +383,7 @@ const UserProfile = () => {
                             />
                           </svg>
                           <span>{skill.endorsements}</span>
-                        </button>
+                        </button> */}
                       </div>
                     </li>
                   ))}
@@ -548,7 +551,7 @@ const UserProfile = () => {
 
             {/* Activities Feed */}
             <div className="space-y-6">
-              {posts.map((post) => (
+              {[...posts].reverse().map((post) => (
                 <PostCard
                   key={post.id}
                   post={post}
@@ -580,6 +583,7 @@ const UserProfile = () => {
         <CreatePostModal
           isOpen={showCreatePostModal}
           onClose={() => setShowCreatePostModal(false)}
+          onPostCreated={(newPost) => setPosts([newPost, ...posts])}
         />
       )}
     </div>

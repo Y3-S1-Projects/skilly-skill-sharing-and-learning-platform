@@ -221,8 +221,6 @@ const PublicProfile = () => {
     setPosts(posts.filter((post) => post.id !== postId));
   };
 
-  console.log(currentUser);
-
   const handleLike = async (postId) => {
     try {
       if (!currentUser) return;
@@ -374,9 +372,14 @@ const PublicProfile = () => {
                       )}
                     </div>
                     <div className="mt-4 sm:mt-0 text-center sm:text-left sm:flex-1">
-                      <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
+                      <h1 className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center gap-2">
                         {user.name}
+                        {currentUser.id === user.id && " (You)"}
+                        <span className="text-sm text-gray-500">
+                          Public View
+                        </span>
                       </h1>
+
                       <p className="text-sm sm:text-base font-medium text-indigo-600">
                         {user.title}
                       </p>
