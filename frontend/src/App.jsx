@@ -12,6 +12,8 @@ import PublicProfile from "./Pages/PublicProfile";
 import Auth from "./Pages/Auth";
 import NotificationSystem from "./Components/NotificationSystem";
 import Profile from "./Pages/Profile";
+import LearningPlan from "./Pages/LearningPlan2";
+import LearningPlanCreator from "./Components/LearningPlanCreator2";
 // import SearchResults from "./Components/SearchResults";
 import SearchResults from "./Components/SearchResults ";
 function App() {
@@ -28,9 +30,12 @@ function App() {
         <Route path="/profile" element={<Profile />} />
         <Route path="/profile/:userId" element={<PublicProfile />} />
         <Route path="/notification" element={<NotificationSystem />} />
-
+        <Route path="/learning-plan" element={<LearningPlan />} />
         <Route path="/search" element={<SearchResults />} />
-
+        <Route
+          path="/learning-plan-creator"
+          element={<LearningPlanCreator />}
+        />
         {/*Components */}
         <Route path="/header" element={<Header />} />
       </Routes>

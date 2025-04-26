@@ -1,15 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import axios from "axios";
 import Header from "../Components/Header";
-import { Share } from "lucide-react";
 import PostComponent from "../Components/Post";
 import DocsIcon from "@/public/icons/DocsIcon";
 import StarsIcon from "@/public/icons/StarsIcon";
-import {
-  connectWebSocket,
-  disconnectWebSocket,
-} from "../services/webSocketService";
+import { getSocket } from "../services/webSocketService";
 
 const PublicProfile = () => {
   const { userId } = useParams(); // Get userId from URL parameter
@@ -20,6 +16,7 @@ const PublicProfile = () => {
   const [isFollowing, setIsFollowing] = useState(false);
   const [activeTab, setActiveTab] = useState("activity");
   const [followLoading, setFollowLoading] = useState(false);
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
   const [user, setUser] = useState({
     id: "",
     name: "",
@@ -40,17 +37,13 @@ const PublicProfile = () => {
     learningGoals: [],
     certifications: [],
   });
-
   useEffect(() => {
     const fetchCurrentUser = async () => {
       try {
         const token = localStorage.getItem("authToken");
-        const response = await axios.get(
-          "http://localhost:8080/api/users/details",
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
+        const response = await axios.get(`${API_BASE_URL}/api/users/details`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
 
         setCurrentUser(response.data);
       } catch (err) {
@@ -64,7 +57,7 @@ const PublicProfile = () => {
         const token = localStorage.getItem("authToken");
 
         const response = await axios.get(
-          `http://localhost:8080/api/users/${userId}`,
+          `${API_BASE_URL}/api/users/${userId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -109,7 +102,7 @@ const PublicProfile = () => {
         const token2 = localStorage.getItem("authToken");
         if (token2) {
           const currentUserResponse = await axios.get(
-            "http://localhost:8080/api/users/details",
+            `${API_BASE_URL}/api/users/details`,
             {
               headers: { Authorization: `Bearer ${token2}` },
             }
@@ -126,7 +119,7 @@ const PublicProfile = () => {
 
         // Fetch user posts
         const postsResponse = await axios.get(
-          `http://localhost:8080/api/posts/user/${data.id}`,
+          `${API_BASE_URL}/api/posts/user/${data.id}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -187,7 +180,7 @@ const PublicProfile = () => {
 
       const endpoint = isFollowing ? "unfollow" : "follow";
       await axios.post(
-        `http://localhost:8080/api/users/${endpoint}/${userId}`,
+        `${API_BASE_URL}/api/users/${endpoint}/${userId}`,
         {},
         {
           headers: {
@@ -241,7 +234,7 @@ const PublicProfile = () => {
       // Make API request
       const endpoint = isLiked ? "unlike" : "like";
       const response = await axios.put(
-        `http://localhost:8080/api/posts/${postId}/${endpoint}/${userId}`,
+        `${API_BASE_URL}/api/posts/${postId}/${endpoint}/${userId}`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -259,6 +252,14 @@ const PublicProfile = () => {
           senderId: userId,
           action: action,
         };
+
+        // Get the socket instance and emit the notification
+        const socket = getSocket();
+        if (socket) {
+          socket.emit("like_notification", notification);
+        } else {
+          console.warn("Socket connection not available");
+        }
       }
     } catch (err) {
       console.error("Error liking post:", err);
@@ -288,7 +289,7 @@ const PublicProfile = () => {
       const token = localStorage.getItem("authToken");
 
       await axios.put(
-        `http://localhost:8080/api/users/endorse/${userId}/${skillName}`,
+        `${API_BASE_URL}/api/users/endorse/${userId}/${skillName}`,
         {},
         {
           headers: {
