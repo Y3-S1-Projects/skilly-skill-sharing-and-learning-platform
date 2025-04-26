@@ -245,11 +245,22 @@ const Header = ({ onLogout }) => {
                   onClick={toggleDropdown}
                 >
                   <span className="sr-only">Open user menu</span>
-                  <img
-                    className="h-8 w-8 rounded-full"
-                    src={currentUser?.avatar || "/api/placeholder/40/40"}
-                    alt={currentUser?.name || "User"}
-                  />
+                  {currentUser?.avatar &&
+                  !currentUser.avatar.includes("/api/placeholder/") ? (
+                    <img
+                      className="h-8 w-8 rounded-full"
+                      src={currentUser.avatar}
+                      alt={currentUser?.name || "User"}
+                    />
+                  ) : (
+                    <div
+                      className={`h-8 w-8 rounded-full flex items-center justify-center ${getColorClass(
+                        currentUser?.id
+                      )}`}
+                    >
+                      {getInitials(currentUser?.name)}
+                    </div>
+                  )}
                   {currentUser?.name && (
                     <span className="ml-2 text-sm font-medium text-gray-700 hidden md:block">
                       {currentUser.name}

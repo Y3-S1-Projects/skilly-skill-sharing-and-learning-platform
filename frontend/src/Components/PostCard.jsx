@@ -5,8 +5,9 @@ const PostCard = ({ post, currentUser, onPostUpdate, onPostDelete }) => {
   const [commentInput, setCommentInput] = useState("");
   const [editingCommentId, setEditingCommentId] = useState(null);
   const [postOwner, setPostOwner] = useState(null);
-  const [commentOwner, setCommentOwner] = useState(null);
   const [commentOwners, setCommentOwners] = useState({});
+  const [actionsDropdownOpen, setActionsDropdownOpen] = useState(false);
+  const [commentDropdowns, setCommentDropdowns] = useState({});
   const [loggedInUser, setLoggedInUser] = useState(null);
   const [editCommentContent, setEditCommentContent] = useState("");
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -65,7 +66,6 @@ const PostCard = ({ post, currentUser, onPostUpdate, onPostDelete }) => {
     fetchLoggedInUserDetails();
     fetchPostOwnerDetails();
     fetchAllCommentOwners();
-    setCommentOwner(post?.comments.userID);
   }, [post.userID]);
 
   const fetchUserDetails = async (userId) => {
@@ -236,7 +236,6 @@ const PostCard = ({ post, currentUser, onPostUpdate, onPostDelete }) => {
       console.error("Error updating comment:", err);
     }
   };
-
   const handleDeleteComment = async (commentId) => {
     try {
       const token = localStorage.getItem("authToken");
@@ -282,13 +281,13 @@ const PostCard = ({ post, currentUser, onPostUpdate, onPostDelete }) => {
           </div>
           {/* Post Actions (Edit/Delete) */}
           {isPostOwner && (
-            <div className="ml-auto flex flex-col space-y-2">
+            <div className="ml-auto relative">
               <button
-                onClick={handleDeletePost}
-                className="flex items-center text-gray-500 hover:text-red-600 transition-colors"
+                onClick={() => setActionsDropdownOpen(!actionsDropdownOpen)}
+                className="text-gray-500 hover:text-gray-700"
               >
                 <svg
-                  className="h-5 w-5 mr-1"
+                  className="h-5 w-5"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -297,30 +296,59 @@ const PostCard = ({ post, currentUser, onPostUpdate, onPostDelete }) => {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth={1.5}
-                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                    d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
                   />
                 </svg>
-                <span>Delete</span>
               </button>
-              <button
-                onClick={() => setIsEditing(true)}
-                className="flex items-center text-gray-500 hover:text-indigo-600 transition-colors"
-              >
-                <svg
-                  className="h-5 w-5 mr-1"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={1.5}
-                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                  />
-                </svg>
-                <span>Edit</span>
-              </button>
+
+              {actionsDropdownOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 py-1 border border-gray-200">
+                  <button
+                    onClick={() => {
+                      setIsEditing(true);
+                      setActionsDropdownOpen(false);
+                    }}
+                    className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >
+                    <svg
+                      className="h-4 w-4 mr-2"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={1.5}
+                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                      />
+                    </svg>
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => {
+                      handleDeletePost();
+                      setActionsDropdownOpen(false);
+                    }}
+                    className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                  >
+                    <svg
+                      className="h-4 w-4 mr-2"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={1.5}
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                      />
+                    </svg>
+                    Delete
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -458,14 +486,16 @@ const PostCard = ({ post, currentUser, onPostUpdate, onPostDelete }) => {
           <button
             onClick={handleLike}
             className={`flex items-center ${
-              post.likes.includes(currentUser.id)
+              post.likes.includes(loggedInUser?.id)
                 ? "text-indigo-600"
                 : "text-gray-500 hover:text-indigo-600"
             } transition-colors`}
           >
             <svg
               className="h-5 w-5 mr-1"
-              fill="none"
+              fill={
+                post.likes.includes(loggedInUser?.id) ? "currentColor" : "none"
+              }
               viewBox="0 0 24 24"
               stroke="currentColor"
             >
@@ -476,7 +506,10 @@ const PostCard = ({ post, currentUser, onPostUpdate, onPostDelete }) => {
                 d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"
               />
             </svg>
-            <span>{post.likes?.length || 0} Likes</span>
+            <span>
+              {post.likes?.length || 0}{" "}
+              {post.likes.includes(loggedInUser?.id) ? "Liked" : "Likes"}
+            </span>
           </button>
           <button className="flex items-center text-gray-500 hover:text-indigo-600 transition-colors">
             <svg
@@ -521,7 +554,7 @@ const PostCard = ({ post, currentUser, onPostUpdate, onPostDelete }) => {
                 <img
                   className="h-8 w-8 rounded-full"
                   src={loggedInUser?.profilePicUrl}
-                  alt={loggedInUser?.name || "User"}
+                  alt={loggedInUser?.username || "User"}
                 />
               ) : (
                 <div
@@ -529,7 +562,7 @@ const PostCard = ({ post, currentUser, onPostUpdate, onPostDelete }) => {
                     loggedInUser?.id
                   )} font-medium`}
                 >
-                  {getInitials(loggedInUser?.name)}
+                  {getInitials(loggedInUser?.username)}
                 </div>
               )}
             </div>

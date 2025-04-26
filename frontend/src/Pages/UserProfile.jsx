@@ -150,7 +150,7 @@ const UserProfile = () => {
       console.error("Error deleting post:", err);
     }
   };
-
+  console.log(user);
   const handleEndorse = (skillName) => {
     setUser((prev) => ({
       ...prev,

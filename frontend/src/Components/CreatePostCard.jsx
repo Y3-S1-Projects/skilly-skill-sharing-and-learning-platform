@@ -1,5 +1,6 @@
 import React from "react";
 import { Camera, Calendar, FileText, Lightbulb, Share2 } from "lucide-react";
+import { getColorClass, getInitials } from "../util/avatar";
 
 const CreatePostCard = ({ user, setShowCreatePostModal }) => {
   return (
@@ -10,11 +11,21 @@ const CreatePostCard = ({ user, setShowCreatePostModal }) => {
           className="flex items-center space-x-4 cursor-pointer"
         >
           <div className="relative">
-            <img
-              src={user.avatar || "/api/placeholder/80/80"}
-              alt={user.name}
-              className="h-12 w-12 rounded-full object-cover border-2 border-indigo-300"
-            />
+            {user?.avatar && !user.avatar.includes("/api/placeholder/") ? (
+              <img
+                className="h-8 w-8 rounded-full"
+                src={user.avatar}
+                alt={user?.name || "User"}
+              />
+            ) : (
+              <div
+                className={`h-8 w-8 rounded-full flex items-center justify-center ${getColorClass(
+                  user?.id
+                )}`}
+              >
+                {getInitials(user?.name)}
+              </div>
+            )}
             <div className="absolute bottom-0 right-0 bg-green-400 h-3 w-3 rounded-full border-2 border-white"></div>
           </div>
           <div className="bg-white rounded-xl px-5 py-3 flex-grow text-gray-500 hover:bg-gray-50 transition-colors duration-200 border border-indigo-100 shadow-sm">

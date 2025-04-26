@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import Header from "../Components/Header";
-import PostComponent from "../Components/Post";
 import DocsIcon from "@/public/icons/DocsIcon";
 import PostCard from "../Components/PostCard";
 import StarsIcon from "@/public/icons/StarsIcon";
@@ -221,6 +220,8 @@ const PublicProfile = () => {
   const handlePostDelete = (postId) => {
     setPosts(posts.filter((post) => post.id !== postId));
   };
+
+  console.log(currentUser);
 
   const handleLike = async (postId) => {
     try {
