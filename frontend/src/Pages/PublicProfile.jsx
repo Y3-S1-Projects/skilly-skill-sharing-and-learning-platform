@@ -141,7 +141,6 @@ const PublicProfile = () => {
     fetchCurrentUser();
     fetchUserProfile();
   }, [userId]);
-  console.log(user?.avatar);
   const getInitials = (name) => {
     if (!name) return "?";
     return name.charAt(0).toUpperCase();

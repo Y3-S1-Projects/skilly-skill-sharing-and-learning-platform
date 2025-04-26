@@ -67,8 +67,6 @@ const PostCard = ({ post, currentUser, onPostUpdate, onPostDelete }) => {
     fetchAllCommentOwners();
     setCommentOwner(post?.comments.userID);
   }, [post.userID]);
-  console.log(post);
-  console.log("commentOwner userId", post?.comments[0].userId); // For the first comment
 
   const fetchUserDetails = async (userId) => {
     if (!userId || commentOwners[userId]) return; // Skip if already fetched
@@ -129,7 +127,6 @@ const PostCard = ({ post, currentUser, onPostUpdate, onPostDelete }) => {
     try {
       const token = localStorage.getItem("authToken");
       const userId = loggedInUser.id;
-      console.log("User ID:", userId);
       const isLiked = post.likes.includes(userId);
 
       const endpoint = isLiked ? "unlike" : "like";
@@ -192,8 +189,6 @@ const PostCard = ({ post, currentUser, onPostUpdate, onPostDelete }) => {
     }
   };
 
-  console.log("loggedInUser", loggedInUser?.profilePicUrl);
-
   // Comment operations
   const handleAddComment = async () => {
     try {
@@ -223,8 +218,6 @@ const PostCard = ({ post, currentUser, onPostUpdate, onPostDelete }) => {
     setEditingCommentId(null);
     setEditCommentContent("");
   };
-
-  console.log("comment owners", commentOwners);
 
   const handleUpdateComment = async (commentId) => {
     try {
