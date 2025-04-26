@@ -4,6 +4,7 @@ import axios from "axios";
 import Header from "../Components/Header";
 import PostComponent from "../Components/Post";
 import DocsIcon from "@/public/icons/DocsIcon";
+import PostCard from "../Components/PostCard";
 import StarsIcon from "@/public/icons/StarsIcon";
 import { getSocket } from "../services/webSocketService";
 
@@ -140,7 +141,7 @@ const PublicProfile = () => {
     fetchCurrentUser();
     fetchUserProfile();
   }, [userId]);
-
+  console.log(user?.avatar);
   const getInitials = (name) => {
     if (!name) return "?";
     return name.charAt(0).toUpperCase();
@@ -211,6 +212,15 @@ const PublicProfile = () => {
       // Reset loading state when done
       setFollowLoading(false);
     }
+  };
+  const handlePostUpdate = (updatedPost) => {
+    setPosts(
+      posts.map((post) => (post.id === updatedPost.id ? updatedPost : post))
+    );
+  };
+
+  const handlePostDelete = (postId) => {
+    setPosts(posts.filter((post) => post.id !== postId));
   };
 
   const handleLike = async (postId) => {
@@ -327,7 +337,6 @@ const PublicProfile = () => {
       </div>
     );
   }
-
   return (
     <div className="min-h-screen bg-gray-50">
       <Header user={currentUser} />
@@ -668,14 +677,19 @@ const PublicProfile = () => {
               </div>
             </div>
             {activeTab === "activity" && (
-              <PostComponent
-                posts={posts}
-                currentUser={currentUser}
-                onLike={handleLike}
-                authorInfo={user}
-                context="profile"
-              />
+              <div>
+                {posts.map((post) => (
+                  <PostCard
+                    key={post.id}
+                    post={post}
+                    currentUser={user}
+                    onPostUpdate={handlePostUpdate}
+                    onPostDelete={handlePostDelete}
+                  />
+                ))}
+              </div>
             )}
+
             {/* Resources Tab */}
             {activeTab === "shared" && (
               <div className="bg-white rounded-xl shadow-sm overflow-hidden p-6">
