@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Header from "../Components/Header";
 
 const EditProfilePage = () => {
   const navigate = useNavigate();
+  const fileInputRef = useRef(null);
   const [formData, setFormData] = useState({
     username: "",
     email: "",
@@ -21,6 +22,9 @@ const EditProfilePage = () => {
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [user, setUser] = useState(null);
+  const [image, setImage] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState("");
+  const [imageHover, setImageHover] = useState(false);
 
   useEffect(() => {
     const fetchUserDetails = async () => {
@@ -54,6 +58,10 @@ const EditProfilePage = () => {
           skills: userData.skills || [],
         });
 
+        if (userData.profilePicUrl) {
+          setPreviewUrl(userData.profilePicUrl);
+        }
+
         setError(null);
       } catch (err) {
         setError(
@@ -75,6 +83,34 @@ const EditProfilePage = () => {
       ...formData,
       [name]: value,
     });
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        setError("Image size should be less than 5MB");
+        return;
+      }
+
+      // Validate file type
+      if (!file.type.match("image.*")) {
+        setError("Please select an image file");
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        setImage(file);
+        setPreviewUrl(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const triggerFileInput = () => {
+    fileInputRef.current.click();
   };
 
   const handleAddSkill = () => {
@@ -110,9 +146,40 @@ const EditProfilePage = () => {
         return;
       }
 
+      let imageUrl = formData.profilePicUrl; // Default to existing URL
+
+      if (image) {
+        try {
+          const imgFormData = new FormData();
+          imgFormData.append("file", image);
+          imgFormData.append("upload_preset", "Skilly"); // Ensure this matches your Cloudinary upload preset
+
+          const uploadRes = await axios.post(
+            "https://api.cloudinary.com/v1_1/dxw700dpb/image/upload",
+            imgFormData,
+            {
+              headers: {
+                "Content-Type": "multipart/form-data",
+              },
+            }
+          );
+
+          if (uploadRes.data.secure_url) {
+            imageUrl = uploadRes.data.secure_url;
+          } else {
+            throw new Error("Failed to get image URL from Cloudinary");
+          }
+        } catch (uploadError) {
+          console.error("Cloudinary upload error:", uploadError);
+          throw new Error("Failed to upload image to Cloudinary");
+        }
+      }
+
+      const updatedFormData = { ...formData, profilePicUrl: imageUrl };
+
       const response = await axios.put(
         "http://localhost:8080/api/users/update",
-        formData,
+        updatedFormData,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -123,13 +190,14 @@ const EditProfilePage = () => {
 
       if (response.status === 200) {
         setSuccess("Profile updated successfully");
-        // Optional: redirect after short delay
         setTimeout(() => {
           navigate("/userprofile");
         }, 1500);
       }
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to update profile");
+      setError(
+        err.response?.data?.message || err.message || "Failed to update profile"
+      );
       console.error("Error updating profile:", err);
     } finally {
       setLoading(false);
@@ -226,6 +294,83 @@ const EditProfilePage = () => {
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
                 <label
+                  htmlFor="profilePicture"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  Profile Picture
+                </label>
+
+                <div className="flex items-start space-x-6">
+                  <div className="flex flex-col items-center">
+                    <div
+                      className="relative group cursor-pointer"
+                      onClick={triggerFileInput}
+                      onMouseEnter={() => setImageHover(true)}
+                      onMouseLeave={() => setImageHover(false)}
+                    >
+                      {/* Profile image container */}
+                      <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-100 shadow-md border-4 border-white flex items-center justify-center">
+                        {previewUrl ? (
+                          <img
+                            src={previewUrl}
+                            alt="Profile"
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <svg
+                            className="h-16 w-16 text-gray-400"
+                            fill="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" />
+                          </svg>
+                        )}
+                      </div>
+
+                      {/* Hover overlay */}
+                      <div
+                        className={`absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center transition-opacity duration-200 
+                        ${imageHover ? "opacity-100" : "opacity-0"}`}
+                      >
+                        <div className="text-white text-sm font-medium">
+                          Change Photo
+                        </div>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={triggerFileInput}
+                      className="mt-2 text-sm font-medium text-indigo-600 hover:text-indigo-500"
+                    >
+                      Upload new image
+                    </button>
+
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      id="profilePicture"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                      className="hidden"
+                    />
+                  </div>
+
+                  <div className="flex-1">
+                    <p className="text-sm text-gray-600 mb-2">
+                      Choose a square image in JPG or PNG format.
+                    </p>
+                    <ul className="text-xs text-gray-500 list-disc pl-4 space-y-1">
+                      <li>Recommended size: 400x400 pixels or larger</li>
+                      <li>Maximum file size: 5MB</li>
+                      <li>The image will be displayed as a circle</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label
                   htmlFor="username"
                   className="block text-sm font-medium text-gray-700"
                 >
@@ -278,32 +423,19 @@ const EditProfilePage = () => {
                   onChange={handleChange}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
                   placeholder="Tell others about yourself"
+                  maxLength={200}
                 ></textarea>
                 <p className="mt-1 text-xs text-gray-500">
                   Brief description for your profile. Maximum 200 characters.
                 </p>
               </div>
 
-              <div>
-                <label
-                  htmlFor="profilePicUrl"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Profile Picture URL
-                </label>
-                <input
-                  type="url"
-                  name="profilePicUrl"
-                  id="profilePicUrl"
-                  value={formData.profilePicUrl}
-                  onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
-                  placeholder="https://example.com/your-photo.jpg"
-                />
-                <p className="mt-1 text-xs text-gray-500">
-                  Enter a direct link to your profile image
-                </p>
-              </div>
+              {/* Hidden field to maintain the URL in formData */}
+              <input
+                type="hidden"
+                name="profilePicUrl"
+                value={formData.profilePicUrl}
+              />
 
               <div>
                 <label

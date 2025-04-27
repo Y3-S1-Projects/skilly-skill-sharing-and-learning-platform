@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
 import axios from "axios";
+import { isLoggedIn } from "../util/authGuard";
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -17,6 +18,12 @@ const Login = () => {
   const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
   const githubClientId = import.meta.env.VITE_GITHUB_CLIENT_ID;
   const githubRedirectUri = import.meta.env.VITE_GITHUB_REDIRECT_URI;
+
+  useEffect(() => {
+    if (isLoggedIn()) {
+      navigate("/userprofile");
+    }
+  }, [navigate]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;

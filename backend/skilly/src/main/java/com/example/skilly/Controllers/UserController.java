@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.example.skilly.Config.CloudinaryConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -14,7 +15,9 @@ import com.example.skilly.Exceptions.ResourceNotFoundException;
 import com.example.skilly.Models.User;
 import com.example.skilly.Payload.MessageResponse;
 import com.example.skilly.Services.UserService;
+import com.example.skilly.Services.CloudinaryService;
 import com.example.skilly.Utils.JwtUtil;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/users")
@@ -25,6 +28,9 @@ public class UserController {
 
     @Autowired
     private JwtUtil jwtUtil;
+
+    @Autowired
+    private CloudinaryService cloudinaryService;
 
     @GetMapping
     public ResponseEntity<?> getAllUsers() {
@@ -280,5 +286,45 @@ public class UserController {
                     .body(new MessageResponse("Error updating user: " + e.getMessage()));
         }
     }
+    @PostMapping("/upload-profile-pic")
+    public ResponseEntity<?> uploadProfilePicture(
+            @RequestParam("file") MultipartFile file,
+            @RequestHeader(value = "Authorization") String token) {
+        try {
+            if (token == null || !token.startsWith("Bearer ")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(new MessageResponse("Invalid or missing token"));
+            }
 
+            String jwtToken = token.substring(7);
+            String userId = jwtUtil.getUserIdFromToken(jwtToken);
+
+            // Get current user to check for existing image
+            User user = userService.getUserById(userId);
+
+            // Delete old image if publicId exists
+            if (user.getProfilePicPublicId() != null && !user.getProfilePicPublicId().isEmpty()) {
+                cloudinaryService.deleteFile(user.getProfilePicPublicId());
+            }
+            // If no publicId but there is a URL, we can't delete the old image
+            else if (user.getProfilePicUrl() != null && !user.getProfilePicUrl().isEmpty()) {
+                // Log that we can't delete the old image
+                System.out.println("Warning: Cannot delete old profile picture for user " + userId +
+                        " because profilePicPublicId is not stored");
+            }
+
+            // Upload new image
+            Map<String, String> uploadResult = cloudinaryService.uploadFile(file);
+            String imageUrl = uploadResult.get("url");
+            String publicId = uploadResult.get("public_id");
+
+            // Update user with new image details
+            User updatedUser = userService.updateUserProfilePicture(userId, imageUrl, publicId);
+
+            return ResponseEntity.ok(updatedUser);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new MessageResponse("Error uploading image: " + e.getMessage()));
+        }
+    }
 }

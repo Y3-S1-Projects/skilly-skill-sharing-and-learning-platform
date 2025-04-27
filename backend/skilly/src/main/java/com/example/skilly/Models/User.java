@@ -22,6 +22,7 @@ public class User {
     private String profilePicUrl = "";
     private String bio = "";
     private String profilePic;
+    private String profilePicPublicId;
     private String role = "USER";
     private List<String> following = new ArrayList<>();
     private List<String> followers = new ArrayList<>();
