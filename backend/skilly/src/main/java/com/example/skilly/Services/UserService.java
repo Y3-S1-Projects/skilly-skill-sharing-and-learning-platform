@@ -99,5 +99,11 @@ public class UserService {
         // Save the updated user
         return userRepository.save(user);
     }
+    public User updateUserProfilePicture(String userId, String imageUrl, String publicId) {
+        User user = getUserById(userId);
+        user.setProfilePicUrl(imageUrl);
+        user.setProfilePicPublicId(publicId);
+        return userRepository.save(user);
+    }
 
 }

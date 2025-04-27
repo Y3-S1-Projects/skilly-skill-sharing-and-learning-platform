@@ -1,5 +1,5 @@
 import "./App.css";
-import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 //Components
 import Header from "./Components/Header";
@@ -11,18 +11,16 @@ import UserProfile from "./Pages/UserProfile";
 import PublicProfile from "./Pages/PublicProfile";
 import Auth from "./Pages/Auth";
 import NotificationSystem from "./Components/NotificationSystem";
-import Profile from "./Pages/Profile";
 import LearningPlan from "./Pages/LearningPlan";
 import LearningPlanCreator from "./Components/LearningPlanCreator2";
-// import SearchResults from "./Components/SearchResults";
 import SearchResults from "./Components/SearchResults ";
 import PostCard from "./Components/PostCard";
-import EditProfilePage from "./Pages/EditProfileModal";
+import EditProfilePage from "./Pages/EditProfilePage";
 import LearningPlans from "./Pages/LearningPlans";
 import LearningPlanDetail from "./Pages/LearningPlanDetail";
 import CreateLearningPlan from "./Pages/CreateLearningPlan";
 import EditLearningPlan from "./Pages/EditLearningPlan";
-
+import ProtectedRoute from "./guards/authGuard";
 function App() {
   return (
     <Router>
@@ -31,10 +29,23 @@ function App() {
         <Route path="/auth/github/callback" element={<GitHubCallback />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/socialfeed" element={<SocialFeed />} />
-        <Route path="/userprofile" element={<UserProfile />} />
+        <Route
+          path="/socialfeed"
+          element={
+            <ProtectedRoute>
+              <SocialFeed />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/userprofile"
+          element={
+            <ProtectedRoute>
+              <UserProfile />
+            </ProtectedRoute>
+          }
+        />
         <Route path="/auth" element={<Auth />} />
-        <Route path="/profile" element={<Profile />} />
         <Route path="/profile/:userId" element={<PublicProfile />} />
         <Route path="/notification" element={<NotificationSystem />} />
         <Route path="/learning-plan" element={<LearningPlan />} />
