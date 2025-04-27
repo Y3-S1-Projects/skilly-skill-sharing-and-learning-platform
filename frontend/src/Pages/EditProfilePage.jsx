@@ -130,6 +130,7 @@ const EditProfilePage = () => {
     });
   };
 
+  // Modified handleSubmit function
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -146,40 +147,50 @@ const EditProfilePage = () => {
         return;
       }
 
-      let imageUrl = formData.profilePicUrl; // Default to existing URL
+      let updatedProfileData = { ...formData };
 
+      // If there's a new image, upload it through our backend API first
       if (image) {
-        try {
-          const imgFormData = new FormData();
-          imgFormData.append("file", image);
-          imgFormData.append("upload_preset", "Skilly"); // Ensure this matches your Cloudinary upload preset
+        const imgFormData = new FormData();
+        imgFormData.append("file", image);
 
+        try {
           const uploadRes = await axios.post(
-            "https://api.cloudinary.com/v1_1/dxw700dpb/image/upload",
+            "http://localhost:8080/api/users/upload-profile-pic",
             imgFormData,
             {
               headers: {
                 "Content-Type": "multipart/form-data",
+                Authorization: `Bearer ${token}`,
               },
             }
           );
 
-          if (uploadRes.data.secure_url) {
-            imageUrl = uploadRes.data.secure_url;
+          console.log("Upload response:", uploadRes.data);
+
+          // Update profilePicUrl from the response
+          if (uploadRes.data && uploadRes.data.profilePicUrl) {
+            updatedProfileData.profilePicUrl = uploadRes.data.profilePicUrl;
+            console.log(
+              "Updated profile pic URL:",
+              updatedProfileData.profilePicUrl
+            );
           } else {
-            throw new Error("Failed to get image URL from Cloudinary");
+            console.warn("No profilePicUrl in response:", uploadRes.data);
           }
         } catch (uploadError) {
-          console.error("Cloudinary upload error:", uploadError);
-          throw new Error("Failed to upload image to Cloudinary");
+          console.error("Image upload error:", uploadError);
+          throw new Error(
+            "Failed to upload image: " +
+              (uploadError.response?.data?.message || uploadError.message)
+          );
         }
       }
 
-      const updatedFormData = { ...formData, profilePicUrl: imageUrl };
-
+      // Now update the rest of the profile data
       const response = await axios.put(
         "http://localhost:8080/api/users/update",
-        updatedFormData,
+        updatedProfileData, // Using the updated data with new profilePicUrl
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -190,6 +201,7 @@ const EditProfilePage = () => {
 
       if (response.status === 200) {
         setSuccess("Profile updated successfully");
+        setPreviewUrl(updatedProfileData.profilePicUrl); // Update the preview
         setTimeout(() => {
           navigate("/userprofile");
         }, 1500);

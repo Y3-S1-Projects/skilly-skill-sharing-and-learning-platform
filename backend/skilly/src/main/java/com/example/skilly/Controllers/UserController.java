@@ -299,30 +299,37 @@ public class UserController {
             String jwtToken = token.substring(7);
             String userId = jwtUtil.getUserIdFromToken(jwtToken);
 
-            // Get current user to check for existing image
+            // Get current user
             User user = userService.getUserById(userId);
+            System.out.println("Current user profile picture: " + user.getProfilePicUrl());
+            System.out.println("Current user profile picture publicId: " + user.getProfilePicPublicId());
 
-            // Delete old image if publicId exists
-            if (user.getProfilePicPublicId() != null && !user.getProfilePicPublicId().isEmpty()) {
-                cloudinaryService.deleteFile(user.getProfilePicPublicId());
-            }
-            // If no publicId but there is a URL, we can't delete the old image
-            else if (user.getProfilePicUrl() != null && !user.getProfilePicUrl().isEmpty()) {
-                // Log that we can't delete the old image
-                System.out.println("Warning: Cannot delete old profile picture for user " + userId +
-                        " because profilePicPublicId is not stored");
-            }
+            // Store the old public ID, if it exists
+            String oldPublicId = user.getProfilePicPublicId();
 
             // Upload new image
             Map<String, String> uploadResult = cloudinaryService.uploadFile(file);
             String imageUrl = uploadResult.get("url");
             String publicId = uploadResult.get("public_id");
 
+            System.out.println("New image uploaded - URL: " + imageUrl + ", PublicID: " + publicId);
+
             // Update user with new image details
             User updatedUser = userService.updateUserProfilePicture(userId, imageUrl, publicId);
+            System.out.println("User updated with new profile picture");
+
+            // Only after successful upload and database update, try to delete the old image
+            if (oldPublicId != null && !oldPublicId.isEmpty()) {
+                System.out.println("Attempting to delete old image with publicId: " + oldPublicId);
+                boolean deleted = cloudinaryService.deleteFile(oldPublicId);
+                System.out.println("Old image deletion result: " + deleted);
+            } else {
+                System.out.println("No old image publicId to delete");
+            }
 
             return ResponseEntity.ok(updatedUser);
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new MessageResponse("Error uploading image: " + e.getMessage()));
         }

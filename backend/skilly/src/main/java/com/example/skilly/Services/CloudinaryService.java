@@ -33,9 +33,26 @@ public class CloudinaryService {
     }
 
     // Delete file using public_id
-    public void deleteFile(String publicId) throws IOException {
-        if (publicId != null && !publicId.isEmpty()) {
-            cloudinary.uploader().destroy(publicId, ObjectUtils.emptyMap());
+    public boolean deleteFile(String publicId) {
+        if (publicId == null || publicId.isEmpty()) {
+            System.out.println("Cannot delete image: publicId is null or empty");
+            return false;
+        }
+
+        try {
+            System.out.println("Attempting to delete image with publicId: " + publicId);
+            Map result = cloudinary.uploader().destroy(publicId, ObjectUtils.emptyMap());
+
+            // Check if deletion was successful
+            String status = (String) result.get("result");
+            boolean success = "ok".equals(status);
+
+            System.out.println("Image deletion result: " + result);
+            return success;
+        } catch (IOException e) {
+            System.err.println("Error deleting image from Cloudinary: " + e.getMessage());
+            e.printStackTrace();
+            return false;
         }
     }
 
