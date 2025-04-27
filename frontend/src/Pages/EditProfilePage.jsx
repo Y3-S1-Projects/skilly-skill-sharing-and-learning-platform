@@ -1,9 +1,53 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Header from "../Components/Header";
+import Cropper from "react-easy-crop";
+
+// Function to generate a cropped image from the crop area
+const createCroppedImage = async (imageSrc, pixelCrop) => {
+  const image = new Image();
+  image.src = imageSrc;
+
+  // Create a canvas to draw the cropped image
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
+
+  // Wait for image to load
+  await new Promise((resolve) => {
+    image.onload = resolve;
+  });
+
+  // Set canvas dimensions to the cropped area
+  canvas.width = pixelCrop.width;
+  canvas.height = pixelCrop.height;
+
+  // Draw the cropped image onto the canvas
+  ctx.drawImage(
+    image,
+    pixelCrop.x,
+    pixelCrop.y,
+    pixelCrop.width,
+    pixelCrop.height,
+    0,
+    0,
+    pixelCrop.width,
+    pixelCrop.height
+  );
+
+  // Convert canvas to blob
+  return new Promise((resolve) => {
+    canvas.toBlob(
+      (blob) => {
+        resolve(blob);
+      },
+      "image/jpeg",
+      0.95
+    );
+  });
+};
 
 const EditProfilePage = () => {
   const navigate = useNavigate();
@@ -22,9 +66,16 @@ const EditProfilePage = () => {
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [user, setUser] = useState(null);
-  const [image, setImage] = useState(null);
-  const [previewUrl, setPreviewUrl] = useState("");
   const [imageHover, setImageHover] = useState(false);
+
+  // Image cropping state
+  const [imageToCrop, setImageToCrop] = useState(null);
+  const [cropperOpen, setCropperOpen] = useState(false);
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
+  const [croppedImage, setCroppedImage] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState("");
 
   useEffect(() => {
     const fetchUserDetails = async () => {
@@ -85,6 +136,13 @@ const EditProfilePage = () => {
     });
   };
 
+  // component style for circular cropping
+  const cropAreaStyle = {
+    borderRadius: "50%",
+    border: "2px solid #fff",
+    boxShadow: "0 0 0 9999em rgba(0, 0, 0, 0.7)",
+  };
+
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -102,8 +160,12 @@ const EditProfilePage = () => {
 
       const reader = new FileReader();
       reader.onload = () => {
-        setImage(file);
-        setPreviewUrl(reader.result);
+        // Open the cropper instead of directly setting the image
+        setImageToCrop(reader.result);
+        setCropperOpen(true);
+        // Reset crop and zoom when a new image is loaded
+        setCrop({ x: 0, y: 0 });
+        setZoom(1);
       };
       reader.readAsDataURL(file);
     }
@@ -111,6 +173,48 @@ const EditProfilePage = () => {
 
   const triggerFileInput = () => {
     fileInputRef.current.click();
+  };
+
+  // Handle crop complete
+  const onCropComplete = useCallback((croppedArea, croppedAreaPixels) => {
+    setCroppedAreaPixels(croppedAreaPixels);
+  }, []);
+
+  // Close cropper and clear state
+  const handleCancelCrop = () => {
+    setCropperOpen(false);
+    setImageToCrop(null);
+  };
+
+  // Apply crop and generate cropped image
+  const handleApplyCrop = async () => {
+    try {
+      if (!imageToCrop || !croppedAreaPixels) {
+        return;
+      }
+
+      const croppedImageBlob = await createCroppedImage(
+        imageToCrop,
+        croppedAreaPixels
+      );
+
+      // Create a File object from the Blob
+      const croppedFile = new File([croppedImageBlob], "cropped-profile.jpg", {
+        type: "image/jpeg",
+      });
+
+      // Generate URL for preview
+      const objectUrl = URL.createObjectURL(croppedImageBlob);
+      setPreviewUrl(objectUrl);
+      setCroppedImage(croppedFile);
+
+      // Close the cropper
+      setCropperOpen(false);
+      setImageToCrop(null);
+    } catch (err) {
+      console.error("Error creating cropped image:", err);
+      setError("Failed to crop image: " + err.message);
+    }
   };
 
   const handleAddSkill = () => {
@@ -130,7 +234,6 @@ const EditProfilePage = () => {
     });
   };
 
-  // Modified handleSubmit function
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -149,10 +252,10 @@ const EditProfilePage = () => {
 
       let updatedProfileData = { ...formData };
 
-      // If there's a new image, upload it through our backend API first
-      if (image) {
+      // If there's a cropped image, upload it
+      if (croppedImage) {
         const imgFormData = new FormData();
-        imgFormData.append("file", image);
+        imgFormData.append("file", croppedImage);
 
         try {
           const uploadRes = await axios.post(
@@ -166,15 +269,9 @@ const EditProfilePage = () => {
             }
           );
 
-          console.log("Upload response:", uploadRes.data);
-
           // Update profilePicUrl from the response
           if (uploadRes.data && uploadRes.data.profilePicUrl) {
             updatedProfileData.profilePicUrl = uploadRes.data.profilePicUrl;
-            console.log(
-              "Updated profile pic URL:",
-              updatedProfileData.profilePicUrl
-            );
           } else {
             console.warn("No profilePicUrl in response:", uploadRes.data);
           }
@@ -187,10 +284,10 @@ const EditProfilePage = () => {
         }
       }
 
-      // Now update the rest of the profile data
+      // Update the rest of the profile data
       const response = await axios.put(
         "http://localhost:8080/api/users/update",
-        updatedProfileData, // Using the updated data with new profilePicUrl
+        updatedProfileData,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -201,7 +298,6 @@ const EditProfilePage = () => {
 
       if (response.status === 200) {
         setSuccess("Profile updated successfully");
-        setPreviewUrl(updatedProfileData.profilePicUrl); // Update the preview
         setTimeout(() => {
           navigate("/userprofile");
         }, 1500);
@@ -303,6 +399,67 @@ const EditProfilePage = () => {
               </div>
             )}
 
+            {/* Image Cropper Modal */}
+            {cropperOpen && (
+              <div className="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-75 flex items-center justify-center">
+                <div className="bg-white rounded-lg shadow-lg w-full max-w-lg p-6">
+                  <div className="mb-4">
+                    <h3 className="text-lg font-medium text-gray-900">
+                      Crop Profile Picture
+                    </h3>
+                    <p className="text-sm text-gray-500 mt-1">
+                      Drag and zoom to adjust your profile picture
+                    </p>
+                  </div>
+
+                  <div className="relative h-64 w-full">
+                    <Cropper
+                      image={imageToCrop}
+                      crop={crop}
+                      zoom={zoom}
+                      aspect={1}
+                      onCropChange={setCrop}
+                      onCropComplete={onCropComplete}
+                      onZoomChange={setZoom}
+                      cropShape="round"
+                      showGrid={false}
+                      cropAreaStyle={cropAreaStyle}
+                    />
+                  </div>
+
+                  <div className="mt-4">
+                    <label className="text-sm text-gray-700">Zoom</label>
+                    <input
+                      type="range"
+                      value={zoom}
+                      min={1}
+                      max={3}
+                      step={0.1}
+                      onChange={(e) => setZoom(Number(e.target.value))}
+                      className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer mt-1"
+                    />
+                  </div>
+
+                  <div className="mt-6 flex justify-end space-x-3">
+                    <button
+                      type="button"
+                      className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                      onClick={handleCancelCrop}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
+                      onClick={handleApplyCrop}
+                    >
+                      Apply Crop
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
                 <label
@@ -375,6 +532,9 @@ const EditProfilePage = () => {
                     <ul className="text-xs text-gray-500 list-disc pl-4 space-y-1">
                       <li>Recommended size: 400x400 pixels or larger</li>
                       <li>Maximum file size: 5MB</li>
+                      <li>
+                        You can crop and adjust your image before uploading
+                      </li>
                       <li>The image will be displayed as a circle</li>
                     </ul>
                   </div>
