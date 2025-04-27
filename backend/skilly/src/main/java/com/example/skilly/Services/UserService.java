@@ -100,10 +100,22 @@ public class UserService {
         return userRepository.save(user);
     }
     public User updateUserProfilePicture(String userId, String imageUrl, String publicId) {
+        // Get user by ID
         User user = getUserById(userId);
+
+        // Log before values for debugging
+        System.out.println("Before update - URL: " + user.getProfilePicUrl() + ", PublicID: " + user.getProfilePicPublicId());
+
+        // Update profile picture URL and public ID
         user.setProfilePicUrl(imageUrl);
         user.setProfilePicPublicId(publicId);
-        return userRepository.save(user);
-    }
 
+        // Save and return updated user
+        User updatedUser = userRepository.save(user);
+
+        // Log after values for debugging
+        System.out.println("After update - URL: " + updatedUser.getProfilePicUrl() + ", PublicID: " + updatedUser.getProfilePicPublicId());
+
+        return updatedUser;
+    }
 }
