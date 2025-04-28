@@ -65,14 +65,41 @@ public class PostService {
             return postRepository.save(post);
         });
     }
-
     public Optional<Post> sharePost(String id, String userId) {
-        return postRepository.findById(id).map(post -> {
-            if (!post.getSharedBy().contains(userId)) {
-                post.getSharedBy().add(userId);
-                return postRepository.save(post);
+        return postRepository.findById(id).map(originalPost -> {
+            // Prevent sharing own posts
+            if (originalPost.getUserId().equals(userId)) {
+                throw new IllegalArgumentException("You cannot share your own post");
             }
-            return post;
+    
+            // Check if the user has already shared this post
+            if (originalPost.getSharedBy().contains(userId)) {
+                throw new IllegalArgumentException("You have already shared this post");
+            }
+    
+            // Create a new post that's a share of the original
+            Post sharedPost = new Post();
+            sharedPost.setUserId(userId);
+            sharedPost.setOriginalPostId(originalPost.getId());
+            sharedPost.setOriginalUserId(originalPost.getUserId());
+            sharedPost.setOriginalUsername(originalPost.getUsername());
+            sharedPost.setTitle(originalPost.getTitle());
+            sharedPost.setContent(originalPost.getContent());
+            sharedPost.setMediaUrls(originalPost.getMediaUrls());
+            sharedPost.setPostType(originalPost.getPostType());
+            sharedPost.setCreatedAt(new Date());
+            sharedPost.setLikes(new ArrayList<>());
+            sharedPost.setSharedBy(new ArrayList<>());
+            sharedPost.setComments(new ArrayList<>());
+            
+            // Save the shared post
+            Post savedSharedPost = postRepository.save(sharedPost);
+            
+            // Update the original post's sharedBy list
+            originalPost.getSharedBy().add(userId);
+            postRepository.save(originalPost);
+            
+            return savedSharedPost;
         });
     }
 

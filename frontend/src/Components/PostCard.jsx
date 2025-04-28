@@ -86,6 +86,32 @@ const PostCard = ({ post, currentUser, onPostUpdate, onPostDelete }) => {
     }
   };
 
+  useEffect(() => {
+    const fetchAllNeededUsers = async () => {
+        const userIds = new Set();
+        
+        // Add post author
+        if (post.userId) userIds.add(post.userId);
+        
+        // Add original post author (for shared posts)
+        if (post.originalUserId) userIds.add(post.originalUserId);
+        
+        // Add comment authors
+        if (post.comments) {
+            post.comments.forEach(comment => userIds.add(comment.userId));
+        }
+        
+        // Fetch all unique users
+        for (const userId of userIds) {
+            if (!commentOwners[userId]) {
+                await fetchUserDetails(userId);
+            }
+        }
+    };
+    
+    fetchAllNeededUsers();
+}, [post]);
+
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     const now = new Date();
@@ -189,6 +215,32 @@ const PostCard = ({ post, currentUser, onPostUpdate, onPostDelete }) => {
     }
   };
 
+  const handleShare = async () => {
+    try {
+        const token = localStorage.getItem("authToken");
+        
+        const response = await axios.put(
+            `http://localhost:8080/api/posts/${post.id}/share`,
+            {},
+            { headers: { Authorization: `Bearer ${token}` } }
+        );
+
+        if (response.data) {
+            alert('Post shared successfully!');
+            if (onSharePost) {
+                onSharePost(response.data);
+            }
+        }
+    } catch (err) {
+        console.error("Error sharing post:", err);
+        if (err.response && err.response.data) {
+            alert(err.response.data); // Show the error message from the server
+        } else {
+            alert('Failed to share post. Please try again.');
+        }
+    }
+};
+
   // Comment operations
   const handleAddComment = async () => {
     try {
@@ -253,445 +305,475 @@ const PostCard = ({ post, currentUser, onPostUpdate, onPostDelete }) => {
   const isPostOwner = post.userId === loggedInUser?.id;
   return (
     <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200 hover:shadow-md transition-shadow">
-      <div className="p-4 sm:p-6">
-        {/* Post Header */}
-        <div className="flex items-center mb-4">
-          {postOwner?.profilePicUrl ? (
-            <img
-              src={postOwner.profilePicUrl}
-              alt={postOwner?.name || "User"}
-              className="h-10 w-10 rounded-full mr-3"
-            />
-          ) : (
-            <div
-              className={`h-10 w-10 rounded-full flex items-center justify-center ${getColorClass(
-                post.userId
-              )} font-medium`}
-            >
-              {getInitials(postOwner?.username || "User")}
-            </div>
-          )}
-          <div>
-            <h3 className="font-medium text-gray-900">
-              {post.userId === currentUser.id ? currentUser.name : "User"}
-            </h3>
-            <p className="text-xs text-gray-500">
-              {formatDate(post.createdAt)}
-            </p>
-          </div>
-          {/* Post Actions (Edit/Delete) */}
-          {isPostOwner && (
-            <div className="ml-auto relative">
-              <button
-                onClick={() => setActionsDropdownOpen(!actionsDropdownOpen)}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                <svg
-                  className="h-5 w-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={1.5}
-                    d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
-                  />
+        {/* Shared post header */}
+        {post.originalPostId && (
+            <div className="px-4 pt-4 flex items-center text-sm text-gray-500">
+                <svg className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
                 </svg>
-              </button>
-
-              {actionsDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 py-1 border border-gray-200">
-                  <button
-                    onClick={() => {
-                      setIsEditing(true);
-                      setActionsDropdownOpen(false);
-                    }}
-                    className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  >
-                    <svg
-                      className="h-4 w-4 mr-2"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={1.5}
-                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                      />
-                    </svg>
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => {
-                      handleDeletePost();
-                      setActionsDropdownOpen(false);
-                    }}
-                    className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
-                  >
-                    <svg
-                      className="h-4 w-4 mr-2"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={1.5}
-                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                      />
-                    </svg>
-                    Delete
-                  </button>
-                </div>
-              )}
+                <span>
+                    {post.userId === currentUser.id 
+                        ? 'Shared by you' 
+                        : `Shared by ${postOwner?.username || 'user'}`}
+                </span>
             </div>
-          )}
-        </div>
-
-        {/* Post Content */}
-        <h2 className="text-xl font-semibold text-gray-900 mb-2">
-          {isEditing ? (
-            <input
-              type="text"
-              value={editData.title}
-              onChange={(e) =>
-                setEditData({
-                  ...editData,
-                  title: e.target.value,
-                })
-              }
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-            />
-          ) : (
-            post.title
-          )}
-        </h2>
-
-        <p className="text-gray-700 mb-3">
-          {isEditing ? (
-            <textarea
-              value={editData.content}
-              onChange={(e) =>
-                setEditData({
-                  ...editData,
-                  content: e.target.value,
-                })
-              }
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-              rows="3"
-            />
-          ) : (
-            post.content
-          )}
-        </p>
-
-        {/* Post Media */}
-        {post.mediaUrls && post.mediaUrls.length > 0 && (
-          <div className="mt-3 grid grid-cols-2 gap-2">
-            {post.mediaUrls.map((url, index) => (
-              <div key={index} className="relative">
-                <img
-                  src={url}
-                  alt={`Post media ${index}`}
-                  className="rounded-lg object-cover w-full h-48"
-                />
-                {isEditing && (
-                  <button
-                    onClick={() => {
-                      const updatedMediaUrls = [...editData.mediaUrls];
-                      updatedMediaUrls.splice(index, 1);
-                      setEditData({
-                        ...editData,
-                        mediaUrls: updatedMediaUrls,
-                      });
-                    }}
-                    className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
-                  >
-                    <svg
-                      className="h-4 w-4"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M6 18L18 6M6 6l12 12"
-                      />
-                    </svg>
-                  </button>
-                )}
-              </div>
-            ))}
-            {isEditing && (
-              <div className="border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center h-48">
-                <label className="cursor-pointer">
-                  <input
-                    type="file"
-                    className="hidden"
-                    onChange={(e) => {
-                      // Handle adding new images
-                      // This would need additional code for image handling
-                    }}
-                    multiple
-                  />
-                  <div className="text-center p-4">
-                    <svg
-                      className="mx-auto h-8 w-8 text-gray-400"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                      />
-                    </svg>
-                    <p className="text-sm text-gray-500">Add more images</p>
-                  </div>
-                </label>
-              </div>
-            )}
-          </div>
         )}
 
-        {/* Edit mode save/cancel buttons */}
-        {isEditing && (
-          <div className="mt-4 flex justify-end space-x-2">
-            <button
-              onClick={handleUpdatePost}
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 text-sm"
-            >
-              Save Changes
-            </button>
-            <button
-              onClick={() => setIsEditing(false)}
-              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 text-sm"
-            >
-              Cancel
-            </button>
-          </div>
-        )}
-
-        {/* Post footer with actions */}
-        <div className="mt-4 flex items-center justify-between border-t pt-3">
-          <button
-            onClick={handleLike}
-            className={`flex items-center ${
-              post.likes.includes(loggedInUser?.id)
-                ? "text-indigo-600"
-                : "text-gray-500 hover:text-indigo-600"
-            } transition-colors`}
-          >
-            <svg
-              className="h-5 w-5 mr-1"
-              fill={
-                post.likes.includes(loggedInUser?.id) ? "currentColor" : "none"
-              }
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1.5}
-                d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"
-              />
-            </svg>
-            <span>
-              {post.likes?.length || 0}{" "}
-              {post.likes.includes(loggedInUser?.id) ? "Liked" : "Likes"}
-            </span>
-          </button>
-          <button className="flex items-center text-gray-500 hover:text-indigo-600 transition-colors">
-            <svg
-              className="h-5 w-5 mr-1"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1.5}
-                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-              />
-            </svg>
-            <span>{post.comments?.length || 0} Comments</span>
-          </button>
-          <button className="flex items-center text-gray-500 hover:text-indigo-600 transition-colors">
-            <svg
-              className="h-5 w-5 mr-1"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1.5}
-                d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
-              />
-            </svg>
-            <span>Share</span>
-          </button>
-        </div>
-
-        {/* Comments section */}
-        <div className="mt-4 border-t pt-4">
-          {/* Comment input */}
-          <div className="flex items-start space-x-3 mb-4">
-            <div className="flex-shrink-0">
-              {loggedInUser?.profilePicUrl ? (
-                <img
-                  className="h-8 w-8 rounded-full"
-                  src={loggedInUser?.profilePicUrl}
-                  alt={loggedInUser?.username || "User"}
-                />
-              ) : (
-                <div
-                  className={`h-8 w-8 rounded-full flex items-center justify-center ${getColorClass(
-                    loggedInUser?.id
-                  )} font-medium`}
-                >
-                  {getInitials(loggedInUser?.username)}
-                </div>
-              )}
-            </div>
-            <div className="flex-1">
-              <div className="flex">
-                <input
-                  type="text"
-                  value={commentInput}
-                  onChange={(e) => setCommentInput(e.target.value)}
-                  placeholder="Write a comment..."
-                  className="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
-                />
-                <button
-                  onClick={handleAddComment}
-                  className="ml-2 px-3 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 text-sm"
-                >
-                  Post
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Comments list */}
-          {post.comments && post.comments.length > 0 && (
-            <div className="space-y-3">
-              {post.comments.map((comment) => (
-                <div
-                  key={comment.id || comment._id}
-                  className="flex items-start space-x-3"
-                >
-                  {/* Avatar section */}
-                  <div className="flex-shrink-0">
-                    {commentOwners[comment.userId]?.profilePicUrl ? (
-                      <img
-                        className="h-8 w-8 rounded-full"
-                        src={commentOwners[comment.userId].profilePicUrl}
-                        alt={commentOwners[comment.userId]?.username || "User"}
-                      />
-                    ) : (
-                      <div
-                        className={`h-8 w-8 rounded-full flex items-center justify-center ${getColorClass(
-                          comment.userId
-                        )} font-medium`}
-                      >
-                        {getInitials(
-                          commentOwners[comment.userId]?.username || "U"
-                        )}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Comment content section */}
-                  <div className="flex-1">
-                    <div className="bg-gray-50 rounded-lg p-3">
-                      {editingCommentId === comment.id ||
-                      editingCommentId === comment._id ? (
-                        <div className="space-y-2">
-                          <textarea
-                            value={editCommentContent}
-                            onChange={(e) =>
-                              setEditCommentContent(e.target.value)
-                            }
-                            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
-                            rows="2"
-                          />
-                          <div className="flex space-x-2">
-                            <button
-                              onClick={() =>
-                                handleUpdateComment(comment.id || comment._id)
-                              }
-                              className="px-3 py-1 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 text-sm"
-                            >
-                              Save
-                            </button>
-                            <button
-                              onClick={cancelEditingComment}
-                              className="px-3 py-1 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 text-sm"
-                            >
-                              Cancel
-                            </button>
-                          </div>
-                        </div>
-                      ) : (
-                        <>
-                          <div className="flex justify-between items-start">
-                            {/* Username from comment owner data */}
-                            <p className="text-sm font-medium text-gray-900">
-                              {commentOwners[comment.userId]?.username ||
-                                (comment.userId === currentUser.id
-                                  ? currentUser.name
-                                  : "User")}
-                            </p>
-                            <p className="text-xs text-gray-500">
-                              {formatDate(comment.createdAt)}
-                            </p>
-                          </div>
-                          <p className="text-sm text-gray-700 mt-1">
-                            {comment.content}
-                          </p>
-                          {comment.userId === loggedInUser?.id && (
-                            <div className="flex space-x-2 mt-2">
-                              <button
-                                onClick={() => startEditingComment(comment)}
-                                className="text-xs text-indigo-600 hover:text-indigo-800"
-                              >
-                                Edit
-                              </button>
-                              <button
-                                onClick={() =>
-                                  handleDeleteComment(comment.id || comment._id)
-                                }
-                                className="text-xs text-red-600 hover:text-red-800"
-                              >
-                                Delete
-                              </button>
-                            </div>
-                          )}
-                        </>
-                      )}
+        <div className="p-4 sm:p-6">
+            {/* Post Header */}
+            <div className="flex items-center mb-4">
+                {/* Avatar */}
+                {postOwner?.profilePicUrl ? (
+                    <img
+                        src={postOwner.profilePicUrl}
+                        alt={postOwner?.username || "User"}
+                        className="h-10 w-10 rounded-full mr-3"
+                    />
+                ) : (
+                    <div className={`h-10 w-10 rounded-full flex items-center justify-center ${getColorClass(post.userId)} font-medium`}>
+                        {getInitials(postOwner?.username || "User")}
                     </div>
-                  </div>
+                )}
+                
+                {/* Name and timestamp */}
+                <div>
+                    <h3 className="font-medium text-gray-900">
+                        {post.userId === currentUser.id 
+                            ? 'You' 
+                            : postOwner?.username || 'User'}
+                        
+                        {post.originalUserId && post.originalUserId !== post.userId && (
+                            <span className="text-sm text-gray-500 ml-1">
+                                (original post by {post.originalUserId === currentUser.id 
+                                    ? 'you' 
+                                    : commentOwners[post.originalUserId]?.username || 'user'})
+                            </span>
+                        )}
+                    </h3>
+                    <p className="text-xs text-gray-500">
+                        {formatDate(post.createdAt)}
+                    </p>
                 </div>
-              ))}
+                
+                {/* Post actions dropdown */}
+                {isPostOwner && (
+                    <div className="ml-auto relative">
+                        <button
+                            onClick={() => setActionsDropdownOpen(!actionsDropdownOpen)}
+                            className="text-gray-500 hover:text-gray-700"
+                        >
+                            <svg
+                                className="h-5 w-5"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={1.5}
+                                    d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
+                                />
+                            </svg>
+                        </button>
+
+                        {actionsDropdownOpen && (
+                            <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 py-1 border border-gray-200">
+                                <button
+                                    onClick={() => {
+                                        setIsEditing(true);
+                                        setActionsDropdownOpen(false);
+                                    }}
+                                    className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                >
+                                    <svg
+                                        className="h-4 w-4 mr-2"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={1.5}
+                                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                                        />
+                                    </svg>
+                                    Edit
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        handleDeletePost();
+                                        setActionsDropdownOpen(false);
+                                    }}
+                                    className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                                >
+                                    <svg
+                                        className="h-4 w-4 mr-2"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={1.5}
+                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                        />
+                                    </svg>
+                                    Delete
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
-          )}
+
+            {/* Post Content */}
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                {isEditing ? (
+                    <input
+                        type="text"
+                        value={editData.title}
+                        onChange={(e) =>
+                            setEditData({
+                                ...editData,
+                                title: e.target.value,
+                            })
+                        }
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    />
+                ) : (
+                    post.title
+                )}
+            </h2>
+
+            <p className="text-gray-700 mb-3">
+                {isEditing ? (
+                    <textarea
+                        value={editData.content}
+                        onChange={(e) =>
+                            setEditData({
+                                ...editData,
+                                content: e.target.value,
+                            })
+                        }
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        rows="3"
+                    />
+                ) : (
+                    post.content
+                )}
+            </p>
+
+            {/* Post Media */}
+            {post.mediaUrls && post.mediaUrls.length > 0 && (
+                <div className="mt-3 grid grid-cols-2 gap-2">
+                    {post.mediaUrls.map((url, index) => (
+                        <div key={index} className="relative">
+                            <img
+                                src={url}
+                                alt={`Post media ${index}`}
+                                className="rounded-lg object-cover w-full h-48"
+                            />
+                            {isEditing && (
+                                <button
+                                    onClick={() => {
+                                        const updatedMediaUrls = [...editData.mediaUrls];
+                                        updatedMediaUrls.splice(index, 1);
+                                        setEditData({
+                                            ...editData,
+                                            mediaUrls: updatedMediaUrls,
+                                        });
+                                    }}
+                                    className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                                >
+                                    <svg
+                                        className="h-4 w-4"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M6 18L18 6M6 6l12 12"
+                                        />
+                                    </svg>
+                                </button>
+                            )}
+                        </div>
+                    ))}
+                    {isEditing && (
+                        <div className="border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center h-48">
+                            <label className="cursor-pointer">
+                                <input
+                                    type="file"
+                                    className="hidden"
+                                    onChange={(e) => {
+                                        // Handle adding new images
+                                    }}
+                                    multiple
+                                />
+                                <div className="text-center p-4">
+                                    <svg
+                                        className="mx-auto h-8 w-8 text-gray-400"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                                        />
+                                    </svg>
+                                    <p className="text-sm text-gray-500">Add more images</p>
+                                </div>
+                            </label>
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {/* Edit mode save/cancel buttons */}
+            {isEditing && (
+                <div className="mt-4 flex justify-end space-x-2">
+                    <button
+                        onClick={handleUpdatePost}
+                        className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 text-sm"
+                    >
+                        Save Changes
+                    </button>
+                    <button
+                        onClick={() => setIsEditing(false)}
+                        className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 text-sm"
+                    >
+                        Cancel
+                    </button>
+                </div>
+            )}
+
+            {/* Post footer with actions */}
+            <div className="mt-4 flex items-center justify-between border-t pt-3">
+                <button
+                    onClick={handleLike}
+                    className={`flex items-center ${
+                        post.likes.includes(loggedInUser?.id)
+                            ? "text-indigo-600"
+                            : "text-gray-500 hover:text-indigo-600"
+                    } transition-colors`}
+                >
+                    <svg
+                        className="h-5 w-5 mr-1"
+                        fill={
+                            post.likes.includes(loggedInUser?.id) ? "currentColor" : "none"
+                        }
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                    >
+                        <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={1.5}
+                            d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"
+                        />
+                    </svg>
+                    <span>
+                        {post.likes?.length || 0}{" "}
+                        {post.likes.includes(loggedInUser?.id) ? "Liked" : "Likes"}
+                    </span>
+                </button>
+                <button className="flex items-center text-gray-500 hover:text-indigo-600 transition-colors">
+                    <svg
+                        className="h-5 w-5 mr-1"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                    >
+                        <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={1.5}
+                            d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                        />
+                    </svg>
+                    <span>{post.comments?.length || 0} Comments</span>
+                </button>
+                <button 
+                    onClick={handleShare}
+                    className={`flex items-center ${
+                        post.sharedBy?.includes(loggedInUser?.id)
+                            ? "text-indigo-600"
+                            : "text-gray-500 hover:text-indigo-600"
+                    } transition-colors`}
+                >
+                    <svg
+                        className="h-5 w-5 mr-1"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                    >
+                        <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={1.5}
+                            d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
+                        />
+                    </svg>
+                    <span>Share ({post.sharedBy?.length || 0})</span>
+                </button>
+            </div>
+
+            {/* Comments section */}
+            <div className="mt-4 border-t pt-4">
+                {/* Comment input */}
+                <div className="flex items-start space-x-3 mb-4">
+                    <div className="flex-shrink-0">
+                        {loggedInUser?.profilePicUrl ? (
+                            <img
+                                className="h-8 w-8 rounded-full"
+                                src={loggedInUser?.profilePicUrl}
+                                alt={loggedInUser?.username || "User"}
+                            />
+                        ) : (
+                            <div
+                                className={`h-8 w-8 rounded-full flex items-center justify-center ${getColorClass(
+                                    loggedInUser?.id
+                                )} font-medium`}
+                            >
+                                {getInitials(loggedInUser?.username)}
+                            </div>
+                        )}
+                    </div>
+                    <div className="flex-1">
+                        <div className="flex">
+                            <input
+                                type="text"
+                                value={commentInput}
+                                onChange={(e) => setCommentInput(e.target.value)}
+                                placeholder="Write a comment..."
+                                className="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+                            />
+                            <button
+                                onClick={handleAddComment}
+                                className="ml-2 px-3 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 text-sm"
+                            >
+                                Post
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Comments list */}
+                {post.comments && post.comments.length > 0 && (
+                    <div className="space-y-3">
+                        {post.comments.map((comment) => (
+                            <div
+                                key={comment.id || comment._id}
+                                className="flex items-start space-x-3"
+                            >
+                                {/* Avatar section */}
+                                <div className="flex-shrink-0">
+                                    {commentOwners[comment.userId]?.profilePicUrl ? (
+                                        <img
+                                            className="h-8 w-8 rounded-full"
+                                            src={commentOwners[comment.userId].profilePicUrl}
+                                            alt={commentOwners[comment.userId]?.username || "User"}
+                                        />
+                                    ) : (
+                                        <div
+                                            className={`h-8 w-8 rounded-full flex items-center justify-center ${getColorClass(
+                                                comment.userId
+                                            )} font-medium`}
+                                        >
+                                            {getInitials(
+                                                commentOwners[comment.userId]?.username || "U"
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Comment content section */}
+                                <div className="flex-1">
+                                    <div className="bg-gray-50 rounded-lg p-3">
+                                        {editingCommentId === comment.id ||
+                                        editingCommentId === comment._id ? (
+                                            <div className="space-y-2">
+                                                <textarea
+                                                    value={editCommentContent}
+                                                    onChange={(e) =>
+                                                        setEditCommentContent(e.target.value)
+                                                    }
+                                                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+                                                    rows="2"
+                                                />
+                                                <div className="flex space-x-2">
+                                                    <button
+                                                        onClick={() =>
+                                                            handleUpdateComment(comment.id || comment._id)
+                                                        }
+                                                        className="px-3 py-1 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 text-sm"
+                                                    >
+                                                        Save
+                                                    </button>
+                                                    <button
+                                                        onClick={cancelEditingComment}
+                                                        className="px-3 py-1 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 text-sm"
+                                                    >
+                                                        Cancel
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <>
+                                                <div className="flex justify-between items-start">
+                                                    {/* Username from comment owner data */}
+                                                    <p className="text-sm font-medium text-gray-900">
+                                                        {commentOwners[comment.userId]?.username ||
+                                                            (comment.userId === currentUser.id
+                                                                ? currentUser.name
+                                                                : "User")}
+                                                    </p>
+                                                    <p className="text-xs text-gray-500">
+                                                        {formatDate(comment.createdAt)}
+                                                    </p>
+                                                </div>
+                                                <p className="text-sm text-gray-700 mt-1">
+                                                    {comment.content}
+                                                </p>
+                                                {comment.userId === loggedInUser?.id && (
+                                                    <div className="flex space-x-2 mt-2">
+                                                        <button
+                                                            onClick={() => startEditingComment(comment)}
+                                                            className="text-xs text-indigo-600 hover:text-indigo-800"
+                                                        >
+                                                            Edit
+                                                        </button>
+                                                        <button
+                                                            onClick={() =>
+                                                                handleDeleteComment(comment.id || comment._id)
+                                                            }
+                                                            className="text-xs text-red-600 hover:text-red-800"
+                                                        >
+                                                            Delete
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
         </div>
-      </div>
     </div>
-  );
+);
 };
 
 export default PostCard;

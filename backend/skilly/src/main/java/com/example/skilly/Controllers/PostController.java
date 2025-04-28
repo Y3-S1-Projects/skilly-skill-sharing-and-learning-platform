@@ -94,6 +94,8 @@ public class PostController {
         return ResponseEntity.status(HttpStatus.CREATED).body(postService.save(post));
     }
 
+    
+
     @PutMapping("/{id}")
     public ResponseEntity<Post> updatePost(
             @PathVariable String id,
@@ -171,14 +173,24 @@ public class PostController {
                 })
                 .orElse(ResponseEntity.notFound().build());
     }
-
-    @PutMapping("/{id}/share/{userId}")
-    public ResponseEntity<Post> sharePost(@PathVariable String id, @PathVariable String userId) {
+    @PutMapping("/{id}/share")
+public ResponseEntity<?> sharePost(
+    @PathVariable String id,
+    @RequestHeader("Authorization") String token) {
+    
+    String userId = jwtUtil.getUserIdFromToken(token.replace("Bearer ", ""));
+    
+    try {
         return postService.sharePost(id, userId)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+    } catch (IllegalArgumentException e) {
+        return ResponseEntity.badRequest().body(e.getMessage());
+    } catch (Exception e) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Error sharing post");
     }
-    
+}
     // Comment endpoints
     @PostMapping("/{id}/comments")
     public ResponseEntity<Post> addComment(

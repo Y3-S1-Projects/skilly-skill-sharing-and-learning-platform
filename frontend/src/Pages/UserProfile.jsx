@@ -135,6 +135,25 @@ const UserProfile = () => {
     return colors[index];
   };
 
+  const fetchPosts = async () => {
+    try {
+        const token = localStorage.getItem("authToken");
+        const response = await axios.get(
+            `http://localhost:8080/api/posts/user/${user.id}`,
+            { headers: { Authorization: `Bearer ${token}` } }
+        );
+        
+        // Filter out shared versions of your own posts
+        const filteredPosts = response.data.filter(post => 
+            !(post.originalUserId && post.originalUserId === user.id)
+        );
+        
+        setPosts(filteredPosts);
+    } catch (err) {
+        console.error("Error fetching posts:", err);
+    }
+};
+
   const handleDeletePost = async (postId) => {
     try {
       const token = localStorage.getItem("authToken");
@@ -167,6 +186,11 @@ const UserProfile = () => {
       posts.map((post) => (post.id === updatedPost.id ? updatedPost : post))
     );
   };
+
+  const handlePostShared = (sharedPost) => {
+    // Add the shared post to the beginning of the posts array
+    setPosts([sharedPost, ...posts]);
+};
 
   const handlePostDelete = (postId) => {
     setPosts(posts.filter((post) => post.id !== postId));
@@ -553,12 +577,13 @@ const UserProfile = () => {
             <div className="space-y-6">
               {[...posts].reverse().map((post) => (
                 <PostCard
-                  key={post.id}
-                  post={post}
-                  currentUser={user}
-                  onPostUpdate={handlePostUpdate}
-                  onPostDelete={handlePostDelete}
-                />
+                key={post.id}
+                post={post}
+                currentUser={user}
+                onPostUpdate={handlePostUpdate}
+                onPostDelete={handlePostDelete}
+                onSharePost={handlePostShared} // Add this prop
+            />
               ))}
 
               {posts.length >= 5 && (
