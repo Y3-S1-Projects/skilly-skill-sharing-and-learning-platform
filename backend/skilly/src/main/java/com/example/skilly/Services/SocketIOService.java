@@ -1,6 +1,7 @@
 package com.example.skilly.Services;
 
 import com.corundumstudio.socketio.SocketIOServer;
+import com.example.skilly.DTOs.CommentNotification;
 import com.example.skilly.DTOs.LikeNotification;
 import com.example.skilly.Models.Notification;
 import com.example.skilly.Models.User;
@@ -22,13 +23,12 @@ public class SocketIOService {
 
     @Autowired
     public SocketIOService(SocketIOServer server, NotificationRepository notificationRepository,
-            UserRepository userRepository) {
+                           UserRepository userRepository) {
         this.server = server;
         this.notificationRepository = notificationRepository;
         this.userRepository = userRepository;
         startServer();
         System.out.println("Socket.IO server started on port 8081");
-
     }
 
     private void startServer() {
@@ -111,6 +111,46 @@ public class SocketIOService {
             }
         } catch (Exception e) {
             System.err.println("Error processing like notification: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    public void processCommentNotification(String receiverId, CommentNotification commentData) {
+        try {
+            String senderId = commentData.getSenderId();
+            String postId = commentData.getPostId();
+            String commentContent = commentData.getCommentContent();
+
+            User sender = userRepository.findById(senderId).orElse(null);
+            String senderName = (sender != null) ? sender.getUsername() : "Someone";
+
+            System.out.println("Socket service processing comment notification: " + receiverId);
+            System.out.println("Room operations for " + receiverId + ": " + server.getRoomOperations(receiverId));
+            System.out.println("Connected clients in room: " + server.getRoomOperations(receiverId).getClients().size());
+
+            // Create shortened version of comment content for notification message
+            String shortComment = commentContent.length() > 30
+                    ? commentContent.substring(0, 27) + "..."
+                    : commentContent;
+
+            Notification notification = new Notification();
+            notification.setUserId(receiverId);
+            notification.setSenderId(senderId);
+            notification.setPostId(postId);
+            notification.setCreatedAt(LocalDateTime.now());
+            notification.setType("POST_COMMENT");
+            notification.setMessage(senderName + " commented: \"" + shortComment + "\"");
+            notification.setRead(false);
+
+            notification = notificationRepository.save(notification);
+
+            server.getRoomOperations(receiverId).sendEvent("notification", notification);
+
+            long unreadCount = notificationRepository.countByUserIdAndIsReadFalse(receiverId);
+            server.getRoomOperations(receiverId).sendEvent("notifications_unread_count", unreadCount);
+
+        } catch (Exception e) {
+            System.err.println("Error processing comment notification: " + e.getMessage());
             e.printStackTrace();
         }
     }

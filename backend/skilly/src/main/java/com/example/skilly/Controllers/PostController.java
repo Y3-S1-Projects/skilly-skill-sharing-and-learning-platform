@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import com.example.skilly.DTOs.CommentNotification;
 import com.example.skilly.DTOs.LikeNotification;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -121,8 +122,6 @@ public class PostController {
 
     @PutMapping("/{id}/like/{userId}")
     public ResponseEntity<Post> likePost(@PathVariable String id, @PathVariable String userId) {
-        System.out.println("Like request received: Post=" + id + ", User=" + userId);
-
         return postService.likePost(id, userId)
                 .map(post -> {
                     // Only send notification if the post owner is not the same person who liked
@@ -185,11 +184,33 @@ public class PostController {
             @PathVariable String id,
             @RequestBody CommentRequest commentRequest,
             @RequestHeader("Authorization") String token) {
-        
+
         String userId = jwtUtil.getUserIdFromToken(token.replace("Bearer ", ""));
-        
+
         return postService.addComment(id, userId, commentRequest.getContent())
-                .map(ResponseEntity::ok)
+                .map(post -> {
+                    // Only send notification if the post owner is not the same person who commented
+                    if (!post.getUserId().equals(userId)) {
+                        try {
+                            System.out.println("Sending COMMENT notification from " + userId + " to " + post.getUserId());
+
+                            CommentNotification notification = new CommentNotification();
+                            notification.setPostId(id);
+                            notification.setSenderId(userId);
+                            notification.setCommentContent(commentRequest.getContent());
+
+                            notificationController.sendCommentNotificationToUser(post.getUserId(), notification);
+                            System.out.println("Comment notification sent successfully");
+                        } catch (Exception e) {
+                            // Log error but don't prevent the comment from being processed
+                            System.err.println("Error sending comment notification: " + e.getMessage());
+                            e.printStackTrace();
+                        }
+                    } else {
+                        System.out.println("No notification needed - user commented on their own post");
+                    }
+                    return ResponseEntity.ok(post);
+                })
                 .orElse(ResponseEntity.notFound().build());
     }
     
