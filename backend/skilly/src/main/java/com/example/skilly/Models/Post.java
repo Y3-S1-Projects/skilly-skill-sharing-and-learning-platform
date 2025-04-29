@@ -19,6 +19,7 @@ public class Post {
     @Id
     private String id;
     private String userId;
+    private String username; // Add this
     private String postType;
     private String title;
     private String content;
@@ -27,4 +28,7 @@ public class Post {
     private List<String> sharedBy;
     private List<Comment> comments = new ArrayList<>();
     private Date createdAt = new Date();
+    private String originalPostId;
+    private String originalUserId;
+    private String originalUsername; // Add this
 }
