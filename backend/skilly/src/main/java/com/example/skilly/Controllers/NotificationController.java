@@ -1,5 +1,6 @@
 package com.example.skilly.Controllers;
 
+import com.example.skilly.DTOs.CommentNotification;
 import com.example.skilly.DTOs.LikeNotification;
 import com.example.skilly.Models.Notification;
 import com.example.skilly.Services.SocketIOService;
@@ -8,7 +9,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/notifications")
@@ -23,6 +23,10 @@ public class NotificationController {
 
     public void sendNotificationToUser(String userId, LikeNotification notification) {
         socketIOService.processLikeNotification(userId, notification);
+    }
+
+    public void sendCommentNotificationToUser(String userId, CommentNotification notification) {
+        socketIOService.processCommentNotification(userId, notification);
     }
 
     @GetMapping("/{userId}")
