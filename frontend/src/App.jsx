@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 //Components
 import Header from "./Components/Header";
-import GitHubCallback from "./Components/GithubCallback";
+// import GitHubCallback from "./Components/GithubCallback";
 import Login from "./Pages/Login";
 import Register from "./Pages/Register";
 import SocialFeed from "./Pages/SocialFeed";
@@ -21,12 +21,13 @@ import LearningPlanDetail from "./Pages/LearningPlanDetail";
 import CreateLearningPlan from "./Pages/CreateLearningPlan";
 import EditLearningPlan from "./Pages/EditLearningPlan";
 import ProtectedRoute from "./guards/authGuard";
+import LoginSuccess from "./Components/LoginSuccess";
 function App() {
   return (
     <Router>
       <Routes>
         <Route path="/" element={<Login />} />
-        <Route path="/auth/github/callback" element={<GitHubCallback />} />
+        {/* <Route path="/auth/github/callback" element={<GitHubCallback />} /> */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route
@@ -37,6 +38,7 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route path="/login-success" element={<LoginSuccess />} />
         <Route
           path="/userprofile"
           element={

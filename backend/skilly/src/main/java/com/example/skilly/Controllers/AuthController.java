@@ -200,49 +200,29 @@ public class AuthController {
     private Set<String> usedCodes = Collections.synchronizedSet(new HashSet<>());
 
     @PostMapping("/github")
-    public ResponseEntity<?> authenticateGithub(@RequestBody GithubTokenRequest request,
-            HttpServletResponse response) {
-        String code = request.getCode();
-
-        if (usedCodes.contains(code)) {
+    public ResponseEntity<?> authenticateGithub(@RequestBody GithubTokenRequest request) {
+        if (usedCodes.contains(request.getCode())) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of("error", "code_already_used",
-                            "message", "This authorization code has already been used. Please try logging in again."));
+                            "message", "This authorization code has already been used"));
         }
-
         try {
-            // Exchange the code for an access token
-            String accessToken = exchangeCodeForToken(code);
-            if (accessToken == null || accessToken.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body("Failed to obtain access token from GitHub");
-            }
-            usedCodes.add(code); // ✅ Add here only after success
-
-            if (accessToken == null || accessToken.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body("Failed to obtain access token from GitHub");
-            }
-
-            // Use the access token to get user info
+            String accessToken = exchangeCodeForToken(request.getCode());
             Map<String, Object> userInfo = getGithubUserInfo(accessToken);
 
             String email = (String) userInfo.get("email");
             String name = (String) userInfo.get("name");
-            String pictureUrl = (String) userInfo.get("avatar_url");
-
-            // If email is null (GitHub doesn't always provide email), use login as fallback
-            if (email == null) {
-                String login = (String) userInfo.get("login");
-                email = login + "@github.com"; // Generate a placeholder email
+            if (name == null) {
+                name = (String) userInfo.get("login");
             }
+            String pictureUrl = (String) userInfo.get("avatar_url");
 
             // Find or create user
             User user = userRepository.findByEmail(email);
             if (user == null) {
                 user = new User();
                 user.setEmail(email);
-                user.setUsername(name != null ? name : (String) userInfo.get("login"));
+                user.setUsername(name);
                 user.setProfilePicUrl(pictureUrl);
                 user.setRegistrationDate(LocalDateTime.now());
                 user.setRole("USER");
@@ -252,81 +232,84 @@ public class AuthController {
                 userRepository.save(user);
             }
 
-            // Generate JWT token
             String jwtToken = jwtService.generateToken(user);
-
             return ResponseEntity.ok(Map.of(
                     "user", user,
                     "token", jwtToken));
+        } catch (HttpClientErrorException e) {
+            if (e.getStatusCode() == HttpStatus.UNAUTHORIZED) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of("error", "invalid_code",
+                                "message", "The GitHub authorization code is invalid or expired"));
+            }
+            throw e;
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Authentication failed: " + e.getMessage());
+                    .body("GitHub authentication failed: " + e.getMessage());
         }
     }
 
-    private String exchangeCodeForToken(String code) {
+    private String exchangeCodeForToken(String code) throws HttpClientErrorException {
         HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED); // 🔥 This is the missing piece
+        headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(List.of(MediaType.APPLICATION_JSON));
 
-        MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
-        map.add("client_id", clientId);
-        map.add("client_secret", clientSecret);
-        map.add("code", code);
-        map.add("redirect_uri", redirectUri);
+        Map<String, String> requestBody = Map.of(
+                "client_id", clientId,
+                "client_secret", clientSecret,
+                "code", code,
+                "redirect_uri", redirectUri
+        );
 
-        HttpEntity<MultiValueMap<String, String>> requestEntity = new HttpEntity<>(map, headers);
+        HttpEntity<Map<String, String>> request = new HttpEntity<>(requestBody, headers);
         RestTemplate restTemplate = new RestTemplate();
 
-        try {
-            ResponseEntity<Map> response = restTemplate.exchange(
-                    "https://github.com/login/oauth/access_token",
-                    HttpMethod.POST,
-                    requestEntity,
-                    Map.class);
-
-            System.out.println("Full GitHub token response: " + response.getBody());
-
-            if (response.getBody().containsKey("error")) {
-                System.out.println("GitHub error: " + response.getBody().get("error"));
-                System.out.println("Error description: " + response.getBody().get("error_description"));
-                return null;
+        // Add error handler to properly parse GitHub errors
+        restTemplate.setErrorHandler(new DefaultResponseErrorHandler() {
+            @Override
+            public void handleError(ClientHttpResponse response) throws IOException {
+                if (response.getStatusCode() == HttpStatus.BAD_REQUEST) {
+                    String errorBody = new String(response.getBody().readAllBytes());
+                    throw new HttpClientErrorException(response.getStatusCode(), errorBody);
+                }
+                super.handleError(response);
             }
+        });
 
-            String accessToken = (String) response.getBody().get("access_token");
-            String tokenType = (String) response.getBody().get("token_type");
+        ResponseEntity<Map> response = restTemplate.exchange(
+                "https://github.com/login/oauth/access_token",
+                HttpMethod.POST,
+                request,
+                Map.class);
 
-            System.out.println("Token type: " + tokenType);
-            System.out.println("Access token: " + accessToken);
-
-            return accessToken;
-        } catch (Exception e) {
-            System.out.println("Error exchanging code for token: " + e.getMessage());
-            e.printStackTrace();
-            return null;
+        if (response.getBody().containsKey("error")) {
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST,
+                    (String) response.getBody().get("error_description"));
         }
+
+        return (String) response.getBody().get("access_token");
     }
 
     private Map<String, Object> getGithubUserInfo(String accessToken) {
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "token " + accessToken); // MUST be lowercase 'token'
+        headers.setBearerAuth(accessToken); // Proper way to set Bearer token
         headers.setAccept(List.of(MediaType.APPLICATION_JSON));
 
         HttpEntity<String> requestEntity = new HttpEntity<>(headers);
         RestTemplate restTemplate = new RestTemplate();
 
-        // ✅ Optional: skip default error handler to avoid 401 hiding real issues
-        restTemplate.setErrorHandler(new DefaultResponseErrorHandler() {
-            @Override
-            public void handleError(ClientHttpResponse response) throws IOException {
-                System.out.println("Raw error body: " + new String(response.getBody().readAllBytes()));
-                System.out.println("Status code: " + response.getStatusCode());
-                throw new HttpClientErrorException(response.getStatusCode(), response.getStatusText());
-            }
-        });
-
         try {
+            // First get user info
+            ResponseEntity<Map> userResponse = restTemplate.exchange(
+                    "https://api.github.com/user",
+                    HttpMethod.GET,
+                    requestEntity,
+                    Map.class);
+
+            Map<String, Object> userInfo = userResponse.getBody();
+            System.out.println("User info fetched: " + userInfo);
+
+            // Then get emails
             ResponseEntity<List> emailsResponse = restTemplate.exchange(
                     "https://api.github.com/user/emails",
                     HttpMethod.GET,
@@ -336,8 +319,7 @@ public class AuthController {
             List<Map<String, Object>> emails = emailsResponse.getBody();
             System.out.println("Emails fetched: " + emails);
 
-            Map<String, Object> userInfo = new HashMap<>();
-
+            // Find primary email
             if (emails != null && !emails.isEmpty()) {
                 Map<String, Object> primaryEmail = emails.stream()
                         .filter(email -> Boolean.TRUE.equals(email.get("primary")))
@@ -345,17 +327,17 @@ public class AuthController {
                         .orElse(emails.get(0));
 
                 userInfo.put("email", primaryEmail.get("email"));
-                String email = (String) primaryEmail.get("email");
-                String username = email.split("@")[0];
-                userInfo.put("name", username);
-                userInfo.put("login", username);
-                userInfo.put("avatar_url", "https://github.com/identicons/" + username);
+            }
+
+            // If no email found, use login as fallback
+            if (userInfo.get("email") == null) {
+                String login = (String) userInfo.get("login");
+                userInfo.put("email", login + "@github.com");
             }
 
             return userInfo;
         } catch (Exception e) {
             System.out.println("Error while fetching GitHub user info: " + e.getMessage());
-            e.printStackTrace();
             throw new RuntimeException("GitHub user info fetch failed", e);
         }
     }

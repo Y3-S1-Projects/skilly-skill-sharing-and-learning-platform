@@ -13,11 +13,7 @@ const Login = () => {
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const called = useRef(false);
-  const location = useLocation();
   const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-  const githubClientId = import.meta.env.VITE_GITHUB_CLIENT_ID;
-  const githubRedirectUri = import.meta.env.VITE_GITHUB_REDIRECT_URI;
 
   useEffect(() => {
     if (isLoggedIn()) {
@@ -80,12 +76,10 @@ const Login = () => {
         token: response.credential,
       });
 
-      if (res.data && res.data.token) {
+      if (res.data?.token) {
         localStorage.setItem("authToken", res.data.token);
+        navigate("/userprofile");
       }
-
-      // Redirect to dashboard
-      navigate("/userprofile");
     } catch (error) {
       console.error("Google Login Error:", error);
       setErrors({ general: "Google login failed. Please try again." });
@@ -101,6 +95,8 @@ const Login = () => {
   //   window.location.href = `https://github.com/login/oauth/authorize?client_id=${githubClientId}&redirect_uri=${redirectUri}&scope=user:email%20read:user`;
   // };
   const handleGithubLogin = () => {
+    setIsLoading(true);
+    // This will redirect to Spring's OAuth2 endpoint
     window.location.href = "http://localhost:8080/oauth2/authorization/github";
   };
 
@@ -250,7 +246,7 @@ const Login = () => {
                 shape="rectangular"
               />
 
-              {/* <button
+              <button
                 onClick={handleGithubLogin}
                 className="flex items-center justify-center h-10 px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
               >
@@ -266,7 +262,7 @@ const Login = () => {
                   />
                 </svg>
                 Sign in with GitHub
-              </button> */}
+              </button>
             </div>
           </div>
         </div>
