@@ -13,7 +13,7 @@ public class SocketIOConfig {
         com.corundumstudio.socketio.Configuration config = new com.corundumstudio.socketio.Configuration();
         config.setHostname("localhost");
         config.setPort(8081);
-//        config.setContext("/socket.io");
+        config.setContext("/socket.io");
 
         // CORS setup
         config.setOrigin("http://localhost:5173");

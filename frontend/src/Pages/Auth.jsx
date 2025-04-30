@@ -1,4 +1,3 @@
-// src/components/Auth.jsx
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
@@ -29,6 +28,18 @@ function Auth() {
   }, []);
 
   const handleGoogleLogin = () => {
+    const state = generateState();
+    localStorage.setItem("oauth_state", state);
+
+    // Pass state to Google's client library
+    google.accounts.id.prompt(
+      (notification) => {
+        if (notification.isNotDisplayed() || notification.isSkipped()) {
+          // Handle case where One Tap isn't displayed
+        }
+      },
+      { state }
+    );
     window.location.href = "/oauth2/authorization/google";
   };
 

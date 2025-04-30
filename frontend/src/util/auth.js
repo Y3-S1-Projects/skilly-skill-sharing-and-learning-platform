@@ -78,6 +78,14 @@ export async function getUserRole(tokenParam) {
     throw error;
   }
 }
+
+export const generateState = () => {
+  return (
+    Math.random().toString(36).substring(2, 15) +
+    Math.random().toString(36).substring(2, 15)
+  );
+};
+
 export const logout = () => {
   localStorage.removeItem("authToken");
   window.location.href = "/"; // Redirect user
