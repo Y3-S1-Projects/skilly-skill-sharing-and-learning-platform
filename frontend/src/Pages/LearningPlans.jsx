@@ -74,7 +74,9 @@ const LearningPlans = () => {
           plans = await getPublicLearningPlans();
           break;
         case "all-plans":
-          // Only fetch current user's plans for All Plans tab
+          plans = await getLearningPlansByUserId(userId);
+          break;
+        case "completed-plans":
           plans = await getLearningPlansByUserId(userId);
           break;
         default:
@@ -114,103 +116,144 @@ const LearningPlans = () => {
     }
   };
 
+  // Helper to filter completed plans
+  const getCompletedPlans = (plans) => {
+    return plans.filter(plan =>
+      Array.isArray(plan.topics) &&
+      plan.topics.length > 0 &&
+      plan.topics.every(topic => topic.completed)
+    );
+  };
+
+  // Choose which plans to display based on tab
+  let displayedPlans = learningPlans;
+  if (activeTab === "completed-plans") {
+    displayedPlans = getCompletedPlans(learningPlans);
+  }
+
+  // Plan stats for summary
+  const totalPlans = learningPlans.length;
+  const completedPlans = getCompletedPlans(learningPlans).length;
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
       <Header user={user} />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">Learning Plans</h1>
+        {/* Summary Section */}
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
+          <div>
+            <h1 className="text-3xl font-extrabold text-gray-900 flex items-center gap-2">
+              <svg className="h-8 w-8 text-indigo-500" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2" />
+                <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" fill="none"/>
+              </svg>
+              Learning Plans
+            </h1>
+            <div className="mt-2 text-sm text-gray-600">
+              <span className="inline-block bg-indigo-100 text-indigo-700 rounded-full px-3 py-1 mr-2">
+                Total: <b>{totalPlans}</b>
+              </span>
+              <span className="inline-block bg-green-100 text-green-700 rounded-full px-3 py-1">
+                Completed: <b>{completedPlans}</b>
+              </span>
+            </div>
+          </div>
           <button
             onClick={handleCreatePlan}
-            className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+            className="mt-4 md:mt-0 px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-lg shadow-lg hover:scale-105 hover:from-indigo-600 hover:to-purple-600 transition-all duration-200 font-semibold text-lg flex items-center gap-2"
           >
+            <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+            </svg>
             Create Learning Plan
           </button>
         </div>
 
+        {/* Tabs */}
         <div className="bg-white shadow rounded-lg mb-8">
           <div className="border-b border-gray-200">
             <nav className="flex -mb-px" aria-label="Tabs">
-              <button
-                onClick={() => handleTabChange("my-plans")}
-                className={`w-1/4 py-4 px-1 text-center border-b-2 font-medium text-sm ${
-                  activeTab === "my-plans"
-                    ? "border-indigo-500 text-indigo-600"
-                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                }`}
-              >
-                My Plans
-              </button>
-              <button
-                onClick={() => handleTabChange("shared-with-me")}
-                className={`w-1/4 py-4 px-1 text-center border-b-2 font-medium text-sm ${
-                  activeTab === "shared-with-me"
-                    ? "border-indigo-500 text-indigo-600"
-                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                }`}
-              >
-                Shared With Me
-              </button>
-              <button
-                onClick={() => handleTabChange("public-plans")}
-                className={`w-1/4 py-4 px-1 text-center border-b-2 font-medium text-sm ${
-                  activeTab === "public-plans"
-                    ? "border-indigo-500 text-indigo-600"
-                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                }`}
-              >
-                Public Plans
-              </button>
-              <button
-                onClick={() => handleTabChange("all-plans")}
-                className={`w-1/4 py-4 px-1 text-center border-b-2 font-medium text-sm ${
-                  activeTab === "all-plans"
-                    ? "border-indigo-500 text-indigo-600"
-                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                }`}
-              >
-                All Plans
-              </button>
+              {[
+                { key: "my-plans", label: "My Plans", icon: "📄" },
+                { key: "shared-with-me", label: "Shared With Me", icon: "🤝" },
+                { key: "public-plans", label: "Public Plans", icon: "🌍" },
+                { key: "all-plans", label: "All Plans", icon: "🗂️" },
+                { key: "completed-plans", label: "Completed Plans", icon: "✅" }
+              ].map(tab => (
+                <button
+                  key={tab.key}
+                  onClick={() => handleTabChange(tab.key)}
+                  className={`w-1/5 py-4 px-1 text-center border-b-2 font-medium text-sm flex flex-col items-center gap-1 transition-all
+                    ${activeTab === tab.key
+                      ? "border-indigo-500 text-indigo-600 bg-indigo-50"
+                      : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 bg-white"
+                    }`}
+                  style={{ outline: "none" }}
+                >
+                  <span className="text-lg">{tab.icon}</span>
+                  {tab.label}
+                </button>
+              ))}
             </nav>
           </div>
         </div>
 
+        {/* Content */}
         {loading ? (
-          <div className="text-center py-8">
-            <div className="spinner"></div>
-            <p className="mt-2 text-gray-600">Loading learning plans...</p>
+          <div className="text-center py-16">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500 mx-auto mb-4"></div>
+            <p className="mt-2 text-gray-600 text-lg">Loading learning plans...</p>
           </div>
         ) : error ? (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative" role="alert">
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative text-center" role="alert">
             <strong className="font-bold">Error: </strong>
             <span className="block sm:inline">{error}</span>
           </div>
-        ) : learningPlans.length === 0 ? (
-          <div className="text-center py-8">
-            <p className="text-gray-500">No learning plans found.</p>
+        ) : displayedPlans.length === 0 ? (
+          <div className="text-center py-16">
+            <svg className="mx-auto mb-4 h-20 w-20 text-indigo-100" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2" />
+              <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" fill="none"/>
+            </svg>
+            <p className="text-gray-500 text-xl mb-2">
+              {activeTab === "completed-plans"
+                ? "No completed learning plans found."
+                : "No learning plans found."}
+            </p>
             {activeTab === "my-plans" && (
               <button
                 onClick={handleCreatePlan}
-                className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                className="mt-4 px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-lg shadow-lg hover:scale-105 hover:from-indigo-600 hover:to-purple-600 transition-all duration-200 font-semibold text-lg"
               >
                 Create Your First Learning Plan
               </button>
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {learningPlans.map(plan => (
-              <LearningPlanCard
-                key={plan.id}
-                plan={plan}
-                onEdit={activeTab === "my-plans" ? handleEditPlan : null}
-                onDelete={activeTab === "my-plans" ? handleDeletePlan : null}
-              />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 animate-fade-in">
+            {displayedPlans.map(plan => (
+              <div key={plan.id} className="transition-transform hover:-translate-y-1 hover:shadow-2xl duration-200">
+                <LearningPlanCard
+                  plan={plan}
+                  onEdit={activeTab === "my-plans" ? handleEditPlan : null}
+                  onDelete={activeTab === "my-plans" ? handleDeletePlan : null}
+                />
+              </div>
             ))}
           </div>
         )}
       </div>
+      {/* Simple animation for fade-in */}
+      <style>{`
+        .animate-fade-in {
+          animation: fadeIn 0.7s;
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(16px);}
+          to { opacity: 1; transform: translateY(0);}
+        }
+      `}</style>
     </div>
   );
 };
