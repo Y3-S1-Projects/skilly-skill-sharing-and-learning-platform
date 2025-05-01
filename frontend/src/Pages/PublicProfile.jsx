@@ -6,12 +6,15 @@ import DocsIcon from "@/public/icons/DocsIcon";
 import PostCard from "../Components/PostCard";
 import StarsIcon from "@/public/icons/StarsIcon";
 import { getSocket } from "../services/webSocketService";
+import UserConnectionsModal from "../Components/Modals/UserConnections";
 
 const PublicProfile = () => {
   const { userId } = useParams(); // Get userId from URL parameter
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [posts, setPosts] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [activeConnectionTab, setActiveConnectionTab] = useState("followers");
   const [currentUser, setCurrentUser] = useState(null);
   const [isFollowing, setIsFollowing] = useState(false);
   const [activeTab, setActiveTab] = useState("activity");
@@ -457,18 +460,38 @@ const PublicProfile = () => {
 
                 {/* User Stats */}
                 <div className="mt-6 grid grid-cols-3 lg:grid-cols-5 gap-4 text-center">
-                  <div className="bg-gray-50 rounded-lg py-2 px-4">
+                  <div
+                    className="bg-gray-50 rounded-lg py-2 px-4 cursor-pointer hover:bg-gray-100 transition-colors"
+                    onClick={() => {
+                      setActiveConnectionTab("followers");
+                      setIsModalOpen(true);
+                    }}
+                  >
                     <div className="text-2xl font-bold text-indigo-600">
                       {user.stats.followers}
                     </div>
                     <div className="text-xs text-gray-500">Followers</div>
                   </div>
-                  <div className="bg-gray-50 rounded-lg py-2 px-4">
+                  <div
+                    className="bg-gray-50 rounded-lg py-2 px-4 cursor-pointer hover:bg-gray-100 transition-colors"
+                    onClick={() => {
+                      setActiveConnectionTab("following");
+                      setIsModalOpen(true);
+                    }}
+                  >
                     <div className="text-2xl font-bold text-indigo-600">
                       {user.stats.following}
                     </div>
                     <div className="text-xs text-gray-500">Following</div>
                   </div>
+                  <UserConnectionsModal
+                    userId={user.id}
+                    isOwnProfile={false}
+                    isOpen={isModalOpen}
+                    onClose={() => setIsModalOpen(false)}
+                    activeTab={activeConnectionTab}
+                    setActiveTab={setActiveConnectionTab}
+                  />
 
                   <div className="bg-gray-50 rounded-lg py-2 px-4">
                     <div className="text-2xl font-bold text-indigo-600">

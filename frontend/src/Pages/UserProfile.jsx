@@ -7,14 +7,14 @@ import Header from "../Components/Header";
 import CreatePostModal from "../Components/Modals/CreatePost";
 import CreatePostCard from "../Components/CreatePostCard";
 import EditIcon from "@/public/icons/EditIcon";
-import { useNavigate } from "react-router-dom";
 import PostCard from "../Components/PostCard";
+import UserConnectionsModal from "../Components/Modals/UserConnections";
 const UserProfile = () => {
-  const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [showEditProfileModal, setShowEditProfileModal] = useState(false);
   const [showCreatePostModal, setShowCreatePostModal] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [activeConnectionTab, setActiveConnectionTab] = useState("followers");
   const [posts, setPosts] = useState([]);
   const [user, setUser] = useState({
     id: "",
@@ -137,22 +137,22 @@ const UserProfile = () => {
 
   const fetchPosts = async () => {
     try {
-        const token = localStorage.getItem("authToken");
-        const response = await axios.get(
-            `http://localhost:8080/api/posts/user/${user.id}`,
-            { headers: { Authorization: `Bearer ${token}` } }
-        );
-        
-        // Filter out shared versions of your own posts
-        const filteredPosts = response.data.filter(post => 
-            !(post.originalUserId && post.originalUserId === user.id)
-        );
-        
-        setPosts(filteredPosts);
+      const token = localStorage.getItem("authToken");
+      const response = await axios.get(
+        `http://localhost:8080/api/posts/user/${user.id}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      // Filter out shared versions of your own posts
+      const filteredPosts = response.data.filter(
+        (post) => !(post.originalUserId && post.originalUserId === user.id)
+      );
+
+      setPosts(filteredPosts);
     } catch (err) {
-        console.error("Error fetching posts:", err);
+      console.error("Error fetching posts:", err);
     }
-};
+  };
 
   const handleDeletePost = async (postId) => {
     try {
@@ -190,7 +190,7 @@ const UserProfile = () => {
   const handlePostShared = (sharedPost) => {
     // Add the shared post to the beginning of the posts array
     setPosts([sharedPost, ...posts]);
-};
+  };
 
   const handlePostDelete = (postId) => {
     setPosts(posts.filter((post) => post.id !== postId));
@@ -311,18 +311,39 @@ const UserProfile = () => {
 
                 {/* User Stats */}
                 <div className="mt-6 grid grid-cols-3 lg:grid-cols-5 gap-4 text-center">
-                  <div className="bg-gray-50 rounded-lg py-2 px-4">
+                  <div
+                    className="bg-gray-50 rounded-lg py-2 px-4 cursor-pointer hover:bg-gray-100 transition-colors"
+                    onClick={() => {
+                      setActiveConnectionTab("followers");
+                      setIsModalOpen(true);
+                    }}
+                  >
                     <div className="text-2xl font-bold text-indigo-600">
                       {user.stats.followers}
                     </div>
                     <div className="text-xs text-gray-500">Followers</div>
                   </div>
-                  <div className="bg-gray-50 rounded-lg py-2 px-4">
+                  <div
+                    className="bg-gray-50 rounded-lg py-2 px-4 cursor-pointer hover:bg-gray-100 transition-colors"
+                    onClick={() => {
+                      setActiveConnectionTab("following");
+                      setIsModalOpen(true);
+                    }}
+                  >
                     <div className="text-2xl font-bold text-indigo-600">
                       {user.stats.following}
                     </div>
                     <div className="text-xs text-gray-500">Following</div>
                   </div>
+
+                  <UserConnectionsModal
+                    userId={user.id}
+                    isOwnProfile={true}
+                    isOpen={isModalOpen}
+                    onClose={() => setIsModalOpen(false)}
+                    activeTab={activeConnectionTab}
+                    setActiveTab={setActiveConnectionTab}
+                  />
 
                   <div className="bg-gray-50 rounded-lg py-2 px-4">
                     <div className="text-2xl font-bold text-indigo-600">
@@ -577,13 +598,13 @@ const UserProfile = () => {
             <div className="space-y-6">
               {[...posts].reverse().map((post) => (
                 <PostCard
-                key={post.id}
-                post={post}
-                currentUser={user}
-                onPostUpdate={handlePostUpdate}
-                onPostDelete={handlePostDelete}
-                onSharePost={handlePostShared} // Add this prop
-            />
+                  key={post.id}
+                  post={post}
+                  currentUser={user}
+                  onPostUpdate={handlePostUpdate}
+                  onPostDelete={handlePostDelete}
+                  onSharePost={handlePostShared} // Add this prop
+                />
               ))}
 
               {posts.length >= 5 && (

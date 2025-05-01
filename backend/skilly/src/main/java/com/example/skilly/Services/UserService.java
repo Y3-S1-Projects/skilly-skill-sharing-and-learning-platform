@@ -1,9 +1,13 @@
 package com.example.skilly.Services;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.ArrayList;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -80,14 +84,43 @@ public class UserService {
         userRepository.save(followee);
     }
 
-    public List<User> getFollowers(String userId) {
-        User user = getUserById(userId);
-        return userRepository.findAllById(user.getFollowers());
+    public List<User> getFollowers(String userId, int page, int size, String search) {
+        // Check if user exists
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<User> followerPage;
+
+        if (search != null && !search.trim().isEmpty()) {
+            followerPage = userRepository.findFollowersByUserIdAndSearchQuery(userId, search, pageable);
+        } else {
+            followerPage = userRepository.findFollowersByUserId(userId, pageable);
+        }
+
+        return followerPage.getContent();
     }
 
-    public List<User> getFollowing(String userId) {
-        User user = getUserById(userId);
-        return userRepository.findAllById(user.getFollowing());
+    public List<User> getFollowing(String userId, int page, int size, String search) {
+        // Check if user exists
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+
+        // If user doesn't have any following, return empty list
+        if (user.getFollowing() == null || user.getFollowing().isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<User> followingPage;
+
+        if (search != null && !search.trim().isEmpty()) {
+            followingPage = userRepository.findFollowingByUserIdsAndSearchQuery(user.getFollowing(), search, pageable);
+        } else {
+            followingPage = userRepository.findFollowingByUserIds(user.getFollowing(), pageable);
+        }
+
+        return followingPage.getContent();
     }
 
     public User updateUser(User user) {
