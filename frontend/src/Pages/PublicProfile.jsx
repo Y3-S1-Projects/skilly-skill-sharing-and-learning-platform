@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import axios from "axios";
 import Header from "../Components/Header";
 import DocsIcon from "@/public/icons/DocsIcon";
@@ -74,7 +74,7 @@ const PublicProfile = () => {
         setUser({
           id: data.id,
           name: data.username,
-          title: data.role === "ADMIN" ? "Administrator" : "Member",
+          title: data.role === "ADMIN" ? "Administrator" : "Beginner",
           avatar:
             data.profilePicUrl || data.profilePic || "/api/placeholder/120/120",
           coverPhoto: "/api/placeholder/1200/300",
@@ -563,45 +563,6 @@ const PublicProfile = () => {
                               </span>
                             </div>
                           </div>
-                          {currentUser && currentUser.id !== user.id && (
-                            <button
-                              onClick={() => handleEndorse(skill.name)}
-                              className="inline-flex items-center text-sm text-gray-500 hover:text-indigo-600"
-                            >
-                              <svg
-                                className="h-5 w-5 mr-1"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={1.5}
-                                  d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"
-                                />
-                              </svg>
-                              <span>{skill.endorsements}</span>
-                            </button>
-                          )}
-                          {(!currentUser || currentUser.id === user.id) && (
-                            <div className="inline-flex items-center text-sm text-gray-500">
-                              <svg
-                                className="h-5 w-5 mr-1"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={1.5}
-                                  d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"
-                                />
-                              </svg>
-                              <span>{skill.endorsements}</span>
-                            </div>
-                          )}
                         </div>
                       </li>
                     ))}
@@ -610,55 +571,69 @@ const PublicProfile = () => {
               </div>
             </div>
 
-            {/* Certifications Section */}
-            <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-              <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
-                <h3 className="text-lg font-medium leading-6 text-gray-900">
-                  Certifications
-                </h3>
-                <p className="mt-1 max-w-2xl text-sm text-gray-500">
-                  Verified achievements and credentials
-                </p>
-              </div>
+            {/* Learning Goals Section */}
+            <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
+              <Link
+                to="#"
+                className="block w-full p-4 rounded-lg transition-all 
+                hover:bg-gray-50 hover:shadow-sm 
+                focus:outline-none focus:ring-2 focus:ring-blue-500
+                group" // Added group for child hover effects
+                aria-label="View Learning Plans"
+              >
+                <div className="transition-all group-hover:translate-x-1">
+                  <h3 className="text-lg font-medium leading-6 text-gray-900 flex items-center">
+                    Learning Plans
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5 ml-1 text-gray-400 group-hover:text-blue-500 transition-colors"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 5l7 7-7 7"
+                      />
+                    </svg>
+                  </h3>
+                  <p className="mt-1 max-w-2xl text-sm text-gray-500 group-hover:text-gray-700">
+                    Skills currently in progress - Click to view details
+                  </p>
+                </div>
+              </Link>
               <div className="px-4 py-3 sm:px-6">
-                {user.certifications.length === 0 ? (
-                  <div className="py-3 text-center text-gray-500">
-                    No certifications listed yet
-                  </div>
-                ) : (
-                  <ul className="divide-y divide-gray-200">
-                    {user.certifications.map((cert, index) => (
-                      <li key={index} className="py-3">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <h4 className="text-sm font-medium text-gray-900">
-                              {cert.name}
-                            </h4>
-                            <p className="text-xs text-gray-500 mt-1">
-                              Issued by {cert.issuer} • {cert.date}
-                            </p>
-                          </div>
-                          {cert.verified && (
-                            <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
-                              <svg
-                                className="mr-1 h-3 w-3 text-green-500"
-                                fill="currentColor"
-                                viewBox="0 0 20 20"
-                              >
-                                <path
-                                  fillRule="evenodd"
-                                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                  clipRule="evenodd"
-                                />
-                              </svg>
-                              Verified
-                            </span>
-                          )}
+                <ul className="divide-y divide-gray-200">
+                  {user.learningGoals.map((goal) => (
+                    <li key={goal.id} className="py-3">
+                      <div>
+                        <div className="flex justify-between items-center">
+                          <h4 className="text-sm font-medium text-gray-900">
+                            {goal.name}
+                          </h4>
+                          <span className="text-xs text-gray-500">
+                            {goal.category}
+                          </span>
                         </div>
-                      </li>
-                    ))}
-                  </ul>
-                )}
+                        <div className="mt-2">
+                          <div className="flex items-center justify-between">
+                            <div className="w-full bg-gray-200 rounded-full h-2.5 mr-2">
+                              <div
+                                className="bg-indigo-600 h-2.5 rounded-full"
+                                style={{ width: `${goal.progress}%` }}
+                              ></div>
+                            </div>
+                            <span className="text-xs font-medium text-gray-500">
+                              {goal.progress}%
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
               </div>
             </div>
           </div>
