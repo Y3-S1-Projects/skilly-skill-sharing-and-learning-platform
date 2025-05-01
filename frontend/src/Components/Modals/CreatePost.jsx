@@ -20,7 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { X, Camera, Lightbulb, Calendar, FileText, Share2 } from "lucide-react";
+import { X, Camera, Lightbulb, Calendar, FileText, Video, Share2 } from "lucide-react";
 
 const CreatePostModal = ({ isOpen, onClose, onPostCreated }) => {
   const [postType, setPostType] = useState("skill"); // skill, progress, plan
@@ -28,8 +28,11 @@ const CreatePostModal = ({ isOpen, onClose, onPostCreated }) => {
   const [description, setDescription] = useState("");
   const [images, setImages] = useState([]);
   const [previewImages, setPreviewImages] = useState([]);
+  const [video, setVideo] = useState(null);
+  const [videoPreview, setVideoPreview] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [activeTab, setActiveTab] = useState("images"); // "images" or "video"
 
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
@@ -45,6 +48,32 @@ const CreatePostModal = ({ isOpen, onClose, onPostCreated }) => {
     setPreviewImages([...previewImages, ...newPreviewImages]);
   };
 
+  const handleVideoChange = (e) => {
+    const file = e.target.files[0];
+
+    if (!file) return;
+
+    // Check if it's a video file
+    if (!file.type.startsWith("video/")) {
+      setError("Please upload a valid video file");
+      return;
+    }
+
+    // Check file size (limit to 50MB for example)
+    if (file.size > 50 * 1024 * 1024) {
+      setError("Video file is too large (maximum 50MB)");
+      return;
+    }
+
+    // If there's already a video, revoke the old object URL
+    if (videoPreview) {
+      URL.revokeObjectURL(videoPreview);
+    }
+
+    setVideo(file);
+    setVideoPreview(URL.createObjectURL(file));
+  };
+
   const removeImage = (index) => {
     const newImages = [...images];
     const newPreviewImages = [...previewImages];
@@ -57,12 +86,26 @@ const CreatePostModal = ({ isOpen, onClose, onPostCreated }) => {
     setPreviewImages(newPreviewImages);
   };
 
+  const removeVideo = () => {
+    if (videoPreview) {
+      URL.revokeObjectURL(videoPreview);
+    }
+    setVideo(null);
+    setVideoPreview(null);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
     if (!title.trim()) {
       setError("Title is required");
+      return;
+    }
+
+    // Check if there's any content
+    if ((images.length === 0 && !video) && !description.trim()) {
+      setError("Please add a description, images, or a video to your post");
       return;
     }
 
@@ -73,9 +116,16 @@ const CreatePostModal = ({ isOpen, onClose, onPostCreated }) => {
       formData.append("postType", postType);
       formData.append("title", title);
       formData.append("description", description);
+
+      // Add images if any
       images.forEach((image) => {
         formData.append("images", image);
       });
+
+      // Add video if any
+      if (video) {
+        formData.append("video", video);
+      }
 
       const token = localStorage.getItem("authToken");
 
@@ -92,10 +142,7 @@ const CreatePostModal = ({ isOpen, onClose, onPostCreated }) => {
       if (onPostCreated) {
         onPostCreated(response.data);
       }
-      setTitle("");
-      setDescription("");
-      setImages([]);
-      setPreviewImages([]);
+      resetForm();
       onClose();
     } catch (err) {
       setError(
@@ -105,6 +152,19 @@ const CreatePostModal = ({ isOpen, onClose, onPostCreated }) => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const resetForm = () => {
+    setTitle("");
+    setDescription("");
+    setImages([]);
+    setPreviewImages([]);
+    if (videoPreview) {
+      URL.revokeObjectURL(videoPreview);
+    }
+    setVideo(null);
+    setVideoPreview(null);
+    setActiveTab("images");
   };
 
   const getPostTypeIcon = () => {
@@ -226,64 +286,143 @@ const CreatePostModal = ({ isOpen, onClose, onPostCreated }) => {
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label className="text-gray-700 font-medium">
-                  Upload Images (max 3)
-                </Label>
-                <div className="flex items-center justify-center w-full">
-                  <label
-                    className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-xl cursor-pointer bg-gradient-to-r from-gray-50 to-gray-100 hover:from-indigo-50 hover:to-purple-50 transition-all duration-300`}
-                  >
-                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                      <Camera className="w-8 h-8 mb-2 text-indigo-500" />
-                      <p className="mb-1 text-sm text-gray-700">
-                        <span className="font-semibold">Click to upload</span>{" "}
-                        or drag and drop
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        PNG, JPG, GIF up to 10MB
-                      </p>
-                    </div>
-                    <input
-                      id="dropzone-file"
-                      type="file"
-                      accept="image/*"
-                      multiple
-                      onChange={handleImageChange}
-                      className="hidden"
-                    />
-                  </label>
-                </div>
-              </div>
+              {/* Media Upload Tabs */}
+              <div className="space-y-4">
+                <Tabs
+                  value={activeTab}
+                  onValueChange={setActiveTab}
+                  className="w-full"
+                >
+                  <TabsList className="grid w-full grid-cols-2 bg-gray-100 p-1 rounded-xl">
+                    <TabsTrigger
+                      value="images"
+                      className="rounded-lg flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-indigo-700 data-[state=active]:shadow"
+                    >
+                      <Camera className="h-4 w-4" />
+                      <span>Images (max 3)</span>
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="video"
+                      className="rounded-lg flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-indigo-700 data-[state=active]:shadow"
+                    >
+                      <Video className="h-4 w-4" />
+                      <span>Video (max 30s)</span>
+                    </TabsTrigger>
+                  </TabsList>
+                </Tabs>
 
-              {previewImages.length > 0 && (
-                <div className="space-y-3">
-                  <Label className="text-gray-700 font-medium">Preview</Label>
-                  <div className="grid grid-cols-3 gap-4">
-                    {previewImages.map((url, index) => (
-                      <div
-                        key={index}
-                        className="relative aspect-square rounded-xl overflow-hidden shadow-sm border border-indigo-100"
+                {activeTab === "images" && (
+                  <>
+                    <div className="flex items-center justify-center w-full">
+                      <label
+                        className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-xl cursor-pointer bg-gradient-to-r from-gray-50 to-gray-100 hover:from-indigo-50 hover:to-purple-50 transition-all duration-300 ${images.length >= 3 ? 'opacity-50 cursor-not-allowed' : ''}`}
                       >
-                        <img
-                          src={url}
-                          alt={`Preview ${index + 1}`}
-                          className="h-full w-full object-cover"
+                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                          <Camera className="w-8 h-8 mb-2 text-indigo-500" />
+                          <p className="mb-1 text-sm text-gray-700">
+                            <span className="font-semibold">Click to upload</span>{" "}
+                            or drag and drop
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            PNG, JPG, GIF up to 10MB ({images.length}/3)
+                          </p>
+                        </div>
+                        <input
+                          id="dropzone-file"
+                          type="file"
+                          accept="image/*"
+                          multiple
+                          onChange={handleImageChange}
+                          className="hidden"
+                          disabled={images.length >= 3}
                         />
-                        <Button
-                          type="button"
-                          onClick={() => removeImage(index)}
-                          variant="destructive"
-                          size="icon"
-                          className="absolute top-2 right-2 h-8 w-8 rounded-full bg-gray-800 bg-opacity-60 hover:bg-opacity-80 border-0"
-                        >
-                          <X className="h-4 w-4 text-white" />
-                        </Button>
+                      </label>
+                    </div>
+
+                    {previewImages.length > 0 && (
+                      <div className="space-y-3">
+                        <Label className="text-gray-700 font-medium">Preview</Label>
+                        <div className="grid grid-cols-3 gap-4">
+                          {previewImages.map((url, index) => (
+                            <div
+                              key={index}
+                              className="relative aspect-square rounded-xl overflow-hidden shadow-sm border border-indigo-100"
+                            >
+                              <img
+                                src={url}
+                                alt={`Preview ${index + 1}`}
+                                className="h-full w-full object-cover"
+                              />
+                              <Button
+                                type="button"
+                                onClick={() => removeImage(index)}
+                                variant="destructive"
+                                size="icon"
+                                className="absolute top-2 right-2 h-8 w-8 rounded-full bg-gray-800 bg-opacity-60 hover:bg-opacity-80 border-0"
+                              >
+                                <X className="h-4 w-4 text-white" />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
                       </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+                    )}
+                  </>
+                )}
+
+                {activeTab === "video" && (
+                  <>
+                    <div className="flex items-center justify-center w-full">
+                      <label
+                        className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-xl cursor-pointer bg-gradient-to-r from-gray-50 to-gray-100 hover:from-indigo-50 hover:to-purple-50 transition-all duration-300 ${video ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      >
+                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                          <Video className="w-8 h-8 mb-2 text-indigo-500" />
+                          <p className="mb-1 text-sm text-gray-700">
+                            <span className="font-semibold">Upload a short video</span>
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            MP4, WebM, max 30 seconds
+                          </p>
+                        </div>
+                        <input
+                          id="video-upload"
+                          type="file"
+                          accept="video/*"
+                          onChange={handleVideoChange}
+                          className="hidden"
+                          disabled={video !== null}
+                        />
+                      </label>
+                    </div>
+
+                    {videoPreview && (
+                      <div className="space-y-3">
+                        <Label className="text-gray-700 font-medium">Video Preview</Label>
+                        <div className="relative rounded-xl overflow-hidden shadow-sm border border-indigo-100">
+                          <video
+                            src={videoPreview}
+                            controls
+                            className="w-full aspect-video"
+                          />
+                          <Button
+                            type="button"
+                            onClick={removeVideo}
+                            variant="destructive"
+                            size="icon"
+                            className="absolute top-2 right-2 h-8 w-8 rounded-full bg-gray-800 bg-opacity-60 hover:bg-opacity-80 border-0"
+                          >
+                            <X className="h-4 w-4 text-white" />
+                          </Button>
+                        </div>
+                        <p className="text-xs text-gray-500">
+                          Note: Videos longer than 30 seconds will be trimmed automatically.
+                        </p>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
 
               {postType === "progress" && (
                 <div className="space-y-2">

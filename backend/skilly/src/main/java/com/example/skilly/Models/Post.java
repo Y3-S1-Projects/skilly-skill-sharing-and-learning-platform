@@ -31,4 +31,9 @@ public class Post {
     private String originalPostId;
     private String originalUserId;
     private String originalUsername; // Add this
+    private List<String> mediaPublicIds; // To store Cloudinary public IDs for media
+    private String videoUrl; // To store video URL
+    private String videoPublicId; // To store video public ID
+    private Integer videoDuration; // To store video duration in seconds
+
 }
