@@ -4,9 +4,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import com.example.skilly.DTOs.CommentNotification;
 import com.example.skilly.DTOs.LikeNotification;
+import com.example.skilly.Services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -43,6 +45,9 @@ public class PostController {
     @Autowired
     private NotificationController notificationController;
 
+    @Autowired
+    private UserService userService;
+
 
     @GetMapping
     public ResponseEntity<List<Post>> getAllPosts() {
@@ -62,64 +67,128 @@ public class PostController {
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<Post> createPost(
+    public ResponseEntity<?> createPost(
             @RequestParam("postType") String postType,
             @RequestParam("title") String title,
             @RequestParam("description") String description,
             @RequestParam(value = "images", required = false) MultipartFile[] images,
-            @RequestHeader("Authorization") String token) throws IOException {
+            @RequestParam(value = "video", required = false) MultipartFile video,
+            @RequestHeader("Authorization") String token) {
 
-        // Extract userId from token (typically would use a JWT service)
-        String userId = jwtUtil.getUserIdFromToken(token.replace("Bearer ", ""));
+        try {
+            // Extract userId from token
+            String userId = jwtUtil.getUserIdFromToken(token.replace("Bearer ", ""));
 
-        Post post = new Post();
-        post.setUserId(userId);
-        post.setTitle(title);
-        post.setPostType(postType);
-        post.setContent(description);
-        post.setCreatedAt(new Date());
-        post.setLikes(new ArrayList<>());
-        post.setSharedBy(new ArrayList<>());
-        post.setComments(new ArrayList<>());
+            // Get username from user service
+            String username = userService.getUserById(userId).getUsername();
 
-        // Handle file uploads and save URLs
-        List<String> mediaUrls = new ArrayList<>();
-        if (images != null) {
-            for (MultipartFile image : images) {
-                String imageUrl = postService.uploadImage(image);
-                mediaUrls.add(imageUrl);
+            // Validate image count
+            if (images != null && images.length > 3) {
+                return ResponseEntity.badRequest().body("Maximum 3 images are allowed per post");
             }
-        }
-        post.setMediaUrls(mediaUrls);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(postService.save(post));
+            // Create post with media
+            Post post = postService.createPost(userId, username, title, description, postType, images, video);
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(post);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error creating post: " + e.getMessage());
+        }
     }
 
-    
 
-    @PutMapping("/{id}")
-    public ResponseEntity<Post> updatePost(
+
+    @PutMapping(path = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> updatePost(
             @PathVariable String id,
-            @RequestParam("title") String title,
-            @RequestParam("description") String description) {
+            @RequestParam(value = "title", required = false) String title,
+            @RequestParam(value = "description", required = false) String description,
+            @RequestParam(value = "postType", required = false) String postType,
+            @RequestParam(value = "images", required = false) MultipartFile[] images,
+            @RequestParam(value = "video", required = false) MultipartFile video,
+            @RequestHeader("Authorization") String token) {
 
-        return postService.findById(id)
-                .map(existingPost -> {
-                    existingPost.setTitle(title);
-                    existingPost.setContent(description);
-                    return ResponseEntity.ok(postService.save(existingPost));
-                })
-                .orElse(ResponseEntity.notFound().build());
+        try {
+            // Extract userId from token
+            String userId = jwtUtil.getUserIdFromToken(token.replace("Bearer ", ""));
+
+            // Get the existing post
+            Optional<Post> existingPostOpt = postService.findById(id);
+
+            if (!existingPostOpt.isPresent()) {
+                return ResponseEntity.notFound().build();
+            }
+
+            Post existingPost = existingPostOpt.get();
+
+            // Check if the post belongs to the user
+            if (!existingPost.getUserId().equals(userId)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body("You can only update your own posts");
+            }
+
+            // Create updated post object
+            Post updatedPost = new Post();
+            updatedPost.setTitle(title != null ? title : existingPost.getTitle());
+            updatedPost.setContent(description != null ? description : existingPost.getContent());
+            updatedPost.setPostType(postType != null ? postType : existingPost.getPostType());
+
+            // Validate image count
+            if (images != null && images.length > 3) {
+                return ResponseEntity.badRequest().body("Maximum 3 images are allowed per post");
+            }
+
+            // Update post
+            Optional<Post> result = postService.updatePost(id, updatedPost, images, video);
+
+            return result.map(ResponseEntity::ok)
+                    .orElse(ResponseEntity.notFound().build());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error updating post: " + e.getMessage());
+        }
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletePost(@PathVariable String id) {
-        return postService.findById(id)
-                .map(post -> {
-                    postService.deleteById(id);
-                    return ResponseEntity.noContent().<Void>build();
-                })
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<?> deletePost(
+            @PathVariable String id,
+            @RequestHeader("Authorization") String token) {
+
+        try {
+            // Extract userId from token
+            String userId = jwtUtil.getUserIdFromToken(token.replace("Bearer ", ""));
+
+            // Get the existing post
+            Optional<Post> existingPostOpt = postService.findById(id);
+
+            if (!existingPostOpt.isPresent()) {
+                return ResponseEntity.notFound().build();
+            }
+
+            Post existingPost = existingPostOpt.get();
+
+            // Check if the post belongs to the user
+            if (!existingPost.getUserId().equals(userId)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body("You can only delete your own posts");
+            }
+
+            // Delete post and associated media
+            postService.deleteById(id);
+
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error deleting post: " + e.getMessage());
+        }
     }
 
     @PutMapping("/{id}/like/{userId}")
@@ -173,23 +242,23 @@ public class PostController {
                 .orElse(ResponseEntity.notFound().build());
     }
     @PutMapping("/{id}/share")
-public ResponseEntity<?> sharePost(
-    @PathVariable String id,
-    @RequestHeader("Authorization") String token) {
-    
-    String userId = jwtUtil.getUserIdFromToken(token.replace("Bearer ", ""));
-    
-    try {
-        return postService.sharePost(id, userId)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    } catch (IllegalArgumentException e) {
-        return ResponseEntity.badRequest().body(e.getMessage());
-    } catch (Exception e) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("Error sharing post");
+    public ResponseEntity<?> sharePost(
+            @PathVariable String id,
+            @RequestHeader("Authorization") String token) {
+
+        String userId = jwtUtil.getUserIdFromToken(token.replace("Bearer ", ""));
+
+        try {
+            return postService.sharePost(id, userId)
+                    .map(ResponseEntity::ok)
+                    .orElse(ResponseEntity.notFound().build());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error sharing post");
+        }
     }
-}
     // Comment endpoints
     @PostMapping("/{id}/comments")
     public ResponseEntity<Post> addComment(
@@ -225,29 +294,29 @@ public ResponseEntity<?> sharePost(
                 })
                 .orElse(ResponseEntity.notFound().build());
     }
-    
+
     @PutMapping("/{id}/comments/{commentId}")
     public ResponseEntity<Post> updateComment(
             @PathVariable String id,
             @PathVariable String commentId,
             @RequestBody CommentRequest commentRequest,
             @RequestHeader("Authorization") String token) {
-        
+
         String userId = jwtUtil.getUserIdFromToken(token.replace("Bearer ", ""));
-        
+
         return postService.updateComment(id, commentId, userId, commentRequest.getContent())
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
-    
+
     @DeleteMapping("/{id}/comments/{commentId}")
     public ResponseEntity<Post> deleteComment(
             @PathVariable String id,
             @PathVariable String commentId,
             @RequestHeader("Authorization") String token) {
-        
+
         String userId = jwtUtil.getUserIdFromToken(token.replace("Bearer ", ""));
-        
+
         return postService.deleteComment(id, commentId, userId)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
