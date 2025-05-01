@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import Header from "../Components/Header";
 import LearningPlanCard from "../Components/LearningPlans/LearningPlanCard";
 import {
-  getAllLearningPlans,
   getLearningPlansByUserId,
   getPublicLearningPlans,
   getSharedLearningPlans,
@@ -56,6 +55,7 @@ const LearningPlans = () => {
     };
 
     fetchUserData();
+    // eslint-disable-next-line
   }, [activeTab]);
 
   const fetchLearningPlans = async (userId, tab) => {
@@ -74,7 +74,8 @@ const LearningPlans = () => {
           plans = await getPublicLearningPlans();
           break;
         case "all-plans":
-          plans = await getAllLearningPlans();
+          // Only fetch current user's plans for All Plans tab
+          plans = await getLearningPlansByUserId(userId);
           break;
         default:
           plans = await getLearningPlansByUserId(userId);
