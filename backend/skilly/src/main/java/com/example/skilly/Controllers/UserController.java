@@ -210,9 +210,13 @@ public class UserController {
     }
 
     @GetMapping("/{userId}/followers")
-    public ResponseEntity<?> getFollowers(@PathVariable String userId) {
+    public ResponseEntity<?> getFollowers(
+            @PathVariable String userId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String search) {
         try {
-            List<User> followers = userService.getFollowers(userId);
+            List<User> followers = userService.getFollowers(userId, page, size, search);
             return ResponseEntity.ok(followers);
         } catch (ResourceNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -224,9 +228,13 @@ public class UserController {
     }
 
     @GetMapping("/{userId}/following")
-    public ResponseEntity<?> getFollowing(@PathVariable String userId) {
+    public ResponseEntity<?> getFollowing(
+            @PathVariable String userId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String search) {
         try {
-            List<User> following = userService.getFollowing(userId);
+            List<User> following = userService.getFollowing(userId, page, size, search);
             return ResponseEntity.ok(following);
         } catch (ResourceNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -236,6 +244,7 @@ public class UserController {
                     .body(new MessageResponse("Error retrieving following list: " + e.getMessage()));
         }
     }
+
     @PutMapping("/update")
     public ResponseEntity<?> updateUser(
             @RequestBody Map<String, Object> updates,

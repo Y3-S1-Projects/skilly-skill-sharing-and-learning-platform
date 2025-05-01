@@ -31,7 +31,7 @@ const Header = ({ onLogout }) => {
         setCurrentUser({
           id: data.id,
           name: data.username,
-          title: data.role === "ADMIN" ? "Administrator" : "Member",
+          title: data.role === "ADMIN" ? "Administrator" : "Beginner",
           avatar:
             data.profilePicUrl || data.profilePic || "/api/placeholder/120/120",
           coverPhoto: "/api/placeholder/1200/300",
@@ -295,7 +295,7 @@ const Header = ({ onLogout }) => {
                       {currentUser?.name || "Guest"}
                     </p>
                     <p className="text-xs text-gray-500 truncate">
-                      {currentUser?.title || "Member"}
+                      {currentUser?.title || "Beginner"}
                     </p>
                   </div>
                   <a
@@ -321,7 +321,7 @@ const Header = ({ onLogout }) => {
                   </a>
                   <button
                     onClick={handleLogout}
-                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    className="block w-full text-left px-4 py-2 text-sm text-red-700 hover:bg-gray-100"
                     role="menuitem"
                   >
                     Sign out

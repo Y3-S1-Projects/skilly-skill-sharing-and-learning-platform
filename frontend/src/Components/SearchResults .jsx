@@ -3,6 +3,7 @@ import axios from "axios";
 import { Link, useLocation } from "react-router-dom";
 import useUser from "../hooks/useUser";
 import Header from "./Header";
+import { getUserId } from "../util/auth";
 
 const SearchResults = () => {
   const [activeTab, setActiveTab] = useState("users");
@@ -12,7 +13,7 @@ const SearchResults = () => {
   const [error, setError] = useState(null);
   const { user } = useUser();
   const [usersById, setUsersById] = useState({}); // Add this line
-
+  const [loggedInUserId, setLoggedInUserId] = useState(null);
   // Get search query from URL parameters
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
@@ -54,11 +55,14 @@ const SearchResults = () => {
         setLoading(false);
       }
     };
-
+    const fetchLoggedUserId = async () => {
+      const id = await getUserId();
+      setLoggedInUserId(id);
+    };
+    fetchLoggedUserId();
     fetchResults();
   }, [searchQuery]);
 
-  // In SearchResults.js, update the renderUserResults function:
   const renderUserResults = () => {
     if (users.length === 0) {
       return (
@@ -83,11 +87,18 @@ const SearchResults = () => {
               className="w-16 h-16 rounded-full object-cover"
             />
             <div className="ml-4">
-              <h3 className="font-medium text-gray-900">{user.username}</h3>
+              <h3 className="font-medium text-gray-900">
+                {user.username}
+                {user.id === loggedInUserId && " (You)"}
+              </h3>
               <p className="text-sm text-gray-500">{user.title}</p>
               <div className="mt-2">
                 <Link
-                  to={`/profile/${user.id}`}
+                  to={
+                    user.id === loggedInUserId
+                      ? "/userprofile"
+                      : `/profile/${user.id}`
+                  }
                   className="text-sm bg-indigo-50 text-indigo-600 px-3 py-1 rounded-full hover:bg-indigo-100"
                 >
                   View Profile
