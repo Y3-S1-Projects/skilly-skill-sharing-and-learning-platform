@@ -216,31 +216,37 @@ const PostCard = ({ post, currentUser, onPostUpdate, onPostDelete }) => {
     }
   };
 
-  const handleShare = async () => {
+const handleShare = async () => {
+  try {
+    const token = localStorage.getItem("authToken");
+
+    const response = await axios.put(
+      `http://localhost:8080/api/posts/${post.id}/share`,
+      {},
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
+    alert("Post shared successfully!");
+
+    // Separate try for onSharePost
     try {
-      const token = localStorage.getItem("authToken");
-
-      const response = await axios.put(
-        `http://localhost:8080/api/posts/${post.id}/share`,
-        {},
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      if (response.data) {
-        alert("Post shared successfully!");
-        if (onSharePost) {
-          onSharePost(response.data);
-        }
+      if (onSharePost) {
+        onSharePost(response.data);
       }
     } catch (err) {
-      console.error("Error sharing post:", err);
-      if (err.response && err.response.data) {
-        alert(err.response.data); // Show the error message from the server
-      } else {
-        alert("Failed to share post. Please try again.");
-      }
+      console.error("Error in onSharePost callback:", err);
     }
-  };
+
+  } catch (err) {
+    console.error("Error sharing post:", err);
+    if (err.response && err.response.data) {
+      alert(err.response.data); // Show server error
+    } else {
+      alert("Failed to share post. Please try again.");
+    }
+  }
+};
+
 
   // Comment operations
   const handleAddComment = async () => {
