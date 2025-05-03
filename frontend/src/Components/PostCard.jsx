@@ -2,7 +2,13 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import CustomVideoPlayer from "./CustomeVideoPlayer";
 
-const PostCard = ({ post, currentUser, onPostUpdate, onPostDelete }) => {
+const PostCard = ({
+  post,
+  currentUser,
+  onPostUpdate,
+  onPostDelete,
+  isViewingProfile = true,
+}) => {
   const [commentInput, setCommentInput] = useState("");
   const [editingCommentId, setEditingCommentId] = useState(null);
   const [postOwner, setPostOwner] = useState(null);
@@ -216,37 +222,35 @@ const PostCard = ({ post, currentUser, onPostUpdate, onPostDelete }) => {
     }
   };
 
-const handleShare = async () => {
-  try {
-    const token = localStorage.getItem("authToken");
-
-    const response = await axios.put(
-      `http://localhost:8080/api/posts/${post.id}/share`,
-      {},
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-
-    alert("Post shared successfully!");
-
-    // Separate try for onSharePost
+  const handleShare = async () => {
     try {
-      if (onSharePost) {
-        onSharePost(response.data);
+      const token = localStorage.getItem("authToken");
+
+      const response = await axios.put(
+        `http://localhost:8080/api/posts/${post.id}/share`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      alert("Post shared successfully!");
+
+      // Separate try for onSharePost
+      try {
+        if (onSharePost) {
+          onSharePost(response.data);
+        }
+      } catch (err) {
+        console.error("Error in onSharePost callback:", err);
       }
     } catch (err) {
-      console.error("Error in onSharePost callback:", err);
+      console.error("Error sharing post:", err);
+      if (err.response && err.response.data) {
+        alert(err.response.data); // Show server error
+      } else {
+        alert("Failed to share post. Please try again.");
+      }
     }
-
-  } catch (err) {
-    console.error("Error sharing post:", err);
-    if (err.response && err.response.data) {
-      alert(err.response.data); // Show server error
-    } else {
-      alert("Failed to share post. Please try again.");
-    }
-  }
-};
-
+  };
 
   // Comment operations
   const handleAddComment = async () => {
@@ -359,7 +363,11 @@ const handleShare = async () => {
           {/* Name and timestamp */}
           <div>
             <h3 className="font-medium text-gray-900">
-              {post.userId === currentUser.id ? postOwner?.username : "User"}
+              {isViewingProfile
+                ? post.userId === currentUser.id
+                  ? postOwner?.username
+                  : "User"
+                : postOwner?.username}
 
               {post.originalUserId && post.originalUserId !== post.userId && (
                 <span className="text-sm text-gray-500 ml-1">
@@ -373,6 +381,21 @@ const handleShare = async () => {
             </h3>
             <p className="text-xs text-gray-500">
               {formatDate(post.createdAt)}
+              {post.postType && (
+                <span
+                  className={`ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                    post.postType === "skill"
+                      ? "bg-orange-100 text-orange-800"
+                      : post.postType === "progress"
+                      ? "bg-blue-100 text-blue-800"
+                      : post.postType === "plan"
+                      ? "bg-green-100 text-green-800"
+                      : "bg-indigo-100 text-indigo-800"
+                  }`}
+                >
+                  {post.postType}
+                </span>
+              )}
             </p>
           </div>
 

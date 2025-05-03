@@ -9,6 +9,7 @@ import CreatePostCard from "../Components/CreatePostCard";
 import EditIcon from "@/public/icons/EditIcon";
 import PostCard from "../Components/PostCard";
 import UserConnectionsModal from "../Components/Modals/UserConnections";
+import UserJoinDate from "../Components/UserJoinDate";
 const UserProfile = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -541,14 +542,7 @@ const UserProfile = () => {
                   onSharePost={handlePostShared} // Add this prop
                 />
               ))}
-
-              {posts.length >= 5 && (
-                <div className="mt-8 text-center">
-                  <button className="px-6 py-2 border border-indigo-600 text-indigo-600 rounded-full hover:bg-indigo-50 font-medium transition-colors">
-                    Load More Posts
-                  </button>
-                </div>
-              )}
+              <UserJoinDate user={user} />
             </div>
           </div>
         </div>

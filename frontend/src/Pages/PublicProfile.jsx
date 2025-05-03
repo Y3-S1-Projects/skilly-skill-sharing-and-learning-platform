@@ -7,6 +7,7 @@ import PostCard from "../Components/PostCard";
 import StarsIcon from "@/public/icons/StarsIcon";
 import { getSocket } from "../services/webSocketService";
 import UserConnectionsModal from "../Components/Modals/UserConnections";
+import UserJoinDate from "../Components/UserJoinDate";
 
 const PublicProfile = () => {
   const { userId } = useParams(); // Get userId from URL parameter
@@ -378,9 +379,6 @@ const PublicProfile = () => {
                       <h1 className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center gap-2">
                         {user.name}
                         {currentUser.id === user.id && " (You)"}
-                        <span className="text-sm text-gray-500">
-                          Public View
-                        </span>
                       </h1>
 
                       <p className="text-sm sm:text-base font-medium text-indigo-600">
@@ -721,6 +719,7 @@ const PublicProfile = () => {
                 </div>
               </div>
             )}
+            <UserJoinDate user={currentUser} isPublic={true} />
           </div>
         </div>
       </div>
