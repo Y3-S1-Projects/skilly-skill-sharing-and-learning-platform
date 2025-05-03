@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { Search } from "lucide-react";
 import debounce from "lodash/debounce";
+import { href } from "react-router-dom";
 
 export default function UserConnectionsModal({
   userId,
@@ -24,7 +25,7 @@ export default function UserConnectionsModal({
   useEffect(() => {
     setActiveTab(initialActiveTab);
   }, [initialActiveTab]);
-
+  console.log(userId);
   const handleTabChange = (tab) => {
     setActiveTab(tab);
     if (setExternalActiveTab) {
@@ -239,28 +240,46 @@ export default function UserConnectionsModal({
               >
                 {connections.length > 0 ? (
                   <div className="space-y-3">
-                    {connections.map((user) => (
-                      <div
-                        key={user.id}
-                        className="p-3 hover:bg-gray-200 rounded-lg transition-colors"
-                      >
-                        <div className="flex items-center gap-3">
-                          <img
-                            src={
-                              user.profilePicUrl ||
-                              "https://i.pravatar.cc/150?u=placeholder"
-                            }
-                            alt={user.username}
-                            className="w-12 h-12 rounded-full object-cover"
-                          />
-                          <div>
-                            <p className="font-semibold text-gray-800">
-                              {user.username}
-                            </p>
+                    {[...connections]
+                      .sort((a, b) => {
+                        // Move current user to top if they appear in the list
+                        if (a.id === userId) return -1;
+                        if (b.id === userId) return 1;
+
+                        // Then apply the original sorting logic (followed users first)
+                        const aIsFollowed = following.some(
+                          (followedUser) => followedUser.id === a.id
+                        );
+                        const bIsFollowed = following.some(
+                          (followedUser) => followedUser.id === b.id
+                        );
+                        return bIsFollowed - aIsFollowed;
+                      })
+                      .map((user) => (
+                        <div
+                          key={user.id}
+                          className="p-3 hover:bg-gray-200 rounded-lg transition-colors cursor-pointer"
+                          onClick={() =>
+                            (window.location.href = `/profile/${user.id}`)
+                          }
+                        >
+                          <div className="flex items-center gap-3">
+                            <img
+                              src={
+                                user.profilePicUrl ||
+                                "https://i.pravatar.cc/150?u=placeholder"
+                              }
+                              alt={user.username}
+                              className="w-12 h-12 rounded-full object-cover"
+                            />
+                            <div>
+                              <p className="font-semibold text-gray-800">
+                                {user.username}
+                              </p>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
                   </div>
                 ) : !isLoading ? (
                   <div className="text-center py-8 text-gray-500">
