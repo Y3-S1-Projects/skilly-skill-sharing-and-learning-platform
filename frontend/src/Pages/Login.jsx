@@ -1,8 +1,11 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
 import axios from "axios";
 import { isLoggedIn } from "../util/authGuard";
+import { motion } from "framer-motion";
+import FloatingLabelInput from "@/components/custom/FloatingLabelInput";
+import { toast } from "sonner";
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -13,6 +16,7 @@ const Login = () => {
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
   useEffect(() => {
@@ -20,6 +24,20 @@ const Login = () => {
       navigate("/socialfeed");
     }
   }, [navigate]);
+
+  useEffect(() => {
+    // Check if redirected from registration
+    if (location.state?.fromRegistration) {
+      toast.success("Registration complete!", {
+        description: "Please login with your credentials",
+        duration: 5000,
+        id: "registration-success", // 🚨 Unique ID prevents duplicates
+      });
+
+      // Clear the state to prevent showing again on refresh
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, []);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -102,167 +120,202 @@ const Login = () => {
 
   return (
     <GoogleOAuthProvider clientId={googleClientId}>
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-md w-full space-y-8 bg-white p-10 rounded-xl shadow-lg">
-          <div className="flex justify-center">
-            <img
-              src="/skilly-logo-blue-text.png"
-              alt="Skilly Logo"
-              style={{ width: "75px", height: "auto" }}
-            />
-          </div>
-          <div>
-            <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-              Sign in to Skilly
-            </h2>
-            <p className="mt-2 text-center text-sm text-gray-600">
-              Or{" "}
-              <Link
-                to="/register"
-                className="font-medium text-indigo-600 hover:text-indigo-500"
-              >
-                create a new account
-              </Link>
-            </p>
-          </div>
-          {errors.general && (
-            <div className="bg-red-50 p-4 rounded-md">
-              <p className="text-sm text-red-700">{errors.general}</p>
-            </div>
-          )}
-          <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-            <div className="rounded-md -space-y-px">
-              <div className="mb-4">
-                <label
-                  htmlFor="email"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Email address
-                </label>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  className={`mt-1 appearance-none block w-full px-3 py-2 border ${
-                    errors.email ? "border-red-300" : "border-gray-300"
-                  } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
-                  placeholder="Email address"
+      <div className="min-h-screen bg-black flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl w-full bg-gray-800 rounded-xl shadow-lg overflow-hidden">
+          <div className="flex flex-col md:flex-row">
+            {/* Left side - Logo and branding */}
+            <div className="w-full md:w-1/3 bg-gray-900 p-10 flex flex-col justify-center items-center md:items-start">
+              <div className="flex items-center mb-8">
+                <img
+                  src="/skilly-logo-blue-text.png"
+                  alt="Skilly Logo"
+                  className="h-24 w-24"
                 />
-                {errors.email && (
-                  <p className="mt-1 text-sm text-red-600">{errors.email}</p>
-                )}
+                <h1 className="ml-4 text-3xl font-bold text-blue-400">
+                  Skilly
+                </h1>
               </div>
-              <div className="mb-4">
-                <label
-                  htmlFor="password"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Password
-                </label>
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  autoComplete="current-password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  className={`mt-1 appearance-none block w-full px-3 py-2 border ${
-                    errors.password ? "border-red-300" : "border-gray-300"
-                  } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
-                  placeholder="Password"
-                />
-                {errors.password && (
-                  <p className="mt-1 text-sm text-red-600">{errors.password}</p>
-                )}
-              </div>
+              <p className="text-gray-300 text-center md:text-left">
+                Enhance your skills and track your progress with our
+                comprehensive learning platform.
+              </p>
             </div>
 
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <input
-                  id="rememberMe"
-                  name="rememberMe"
-                  type="checkbox"
-                  checked={formData.rememberMe}
-                  onChange={handleChange}
-                  className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                />
-                <label
-                  htmlFor="rememberMe"
-                  className="ml-2 block text-sm text-gray-900"
-                >
-                  Remember me
-                </label>
+            {/* Right side - Login form */}
+            <div className="w-full md:w-2/3 p-10">
+              <div>
+                <h2 className="text-center md:text-left text-2xl font-bold text-white mb-6">
+                  Sign in to your account
+                </h2>
+                <p className="text-center md:text-left text-sm text-gray-400 mb-8">
+                  Or{" "}
+                  <Link
+                    to="/register"
+                    className="font-medium text-blue-400 hover:text-blue-300"
+                  >
+                    create a new account
+                  </Link>
+                </p>
               </div>
 
-              <div className="text-sm">
-                <Link
-                  to="/forgot-password"
-                  className="font-medium text-indigo-600 hover:text-indigo-500"
-                >
-                  Forgot your password?
-                </Link>
-              </div>
-            </div>
+              {errors.general && (
+                <div className="bg-red-900/50 p-4 rounded-md mb-6">
+                  <p className="text-sm text-red-300">{errors.general}</p>
+                </div>
+              )}
 
-            <div>
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-indigo-400"
-              >
-                {isLoading ? "Signing in..." : "Sign in"}
-              </button>
-            </div>
-          </form>
-          <div className="mt-6">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300"></div>
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">
-                  Or continue with
-                </span>
-              </div>
-            </div>
-
-            <div className="mt-6 flex flex-col items-center gap-4">
-              <GoogleLogin
-                onSuccess={handleGoogleSuccess}
-                onError={() =>
-                  setErrors({
-                    general: "Google login failed. Please try again.",
-                  })
-                }
-                useOneTap
-                theme="outline"
-                size="large"
-                width="300"
-                text="signin_with"
-                shape="rectangular"
-              />
-
-              {/* <button
-                onClick={handleGithubLogin}
-                className="flex items-center justify-center h-10 px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-              >
-                <svg
-                  className="h-5 w-5 mr-2"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"
-                    clipRule="evenodd"
+              <form className="space-y-6" onSubmit={handleSubmit}>
+                <div className="relative">
+                  <FloatingLabelInput
+                    id="email"
+                    name="email"
+                    type="email"
+                    autoComplete="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    error={errors.email}
+                    label="Email address"
+                    className="mb-4"
                   />
-                </svg>
-                Sign in with GitHub
-              </button> */}
+
+                  {errors.email && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="flex items-center mt-1 text-sm text-red-400"
+                    >
+                      <svg
+                        className="w-4 h-4 mr-1"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      {errors.email}
+                    </motion.div>
+                  )}
+                </div>
+                <div>
+                  <FloatingLabelInput
+                    id="password"
+                    name="password"
+                    type="password"
+                    autoComplete="current-password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    error={errors.password}
+                    label="Password"
+                    className="mb-4"
+                  />
+                  {errors.password && (
+                    <p className="mt-1 text-sm text-red-400">
+                      {errors.password}
+                    </p>
+                  )}
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <input
+                      id="rememberMe"
+                      name="rememberMe"
+                      type="checkbox"
+                      checked={formData.rememberMe}
+                      onChange={handleChange}
+                      className="h-4 w-4 text-blue-500 focus:ring-blue-500 border-gray-700 rounded bg-gray-800 focus:ring-2 focus:ring-offset-0 focus:outline-none"
+                    />
+                    <label
+                      htmlFor="rememberMe"
+                      className="ml-2 block text-sm text-gray-300 hover:text-gray-200 transition-colors cursor-pointer"
+                    >
+                      Remember me
+                    </label>
+                  </div>
+
+                  <div className="text-sm">
+                    <Link
+                      to="/forgot-password"
+                      className="font-medium text-blue-400 hover:text-blue-300 transition-colors"
+                    >
+                      Forgot password?
+                    </Link>
+                  </div>
+                </div>
+
+                <div>
+                  <button
+                    type="submit"
+                    disabled={isLoading}
+                    className={`group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-offset-0 transition-colors ${
+                      isLoading
+                        ? "bg-blue-400 cursor-not-allowed"
+                        : "bg-blue-600 hover:bg-blue-700 focus:ring-blue-500"
+                    }`}
+                  >
+                    {isLoading ? (
+                      <span className="flex items-center">
+                        <svg
+                          className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          ></circle>
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          ></path>
+                        </svg>
+                        Signing in...
+                      </span>
+                    ) : (
+                      "Sign in"
+                    )}
+                  </button>
+                </div>
+              </form>
+
+              <div className="mt-6">
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-gray-700"></div>
+                  </div>
+                  <div className="relative flex justify-center text-sm">
+                    <span className="px-2 bg-gray-800 text-gray-400">
+                      Or continue with
+                    </span>
+                  </div>
+                </div>
+
+                <div className="mt-6 flex justify-center">
+                  <GoogleLogin
+                    onSuccess={handleGoogleSuccess}
+                    onError={() =>
+                      setErrors({
+                        general: "Google login failed. Please try again.",
+                      })
+                    }
+                    useOneTap
+                    theme="filled_black"
+                    size="large"
+                    width="300"
+                    text="signin_with"
+                    shape="circle"
+                  />
+                </div>
+              </div>
             </div>
           </div>
         </div>

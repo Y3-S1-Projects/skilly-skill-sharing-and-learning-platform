@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
+import FloatingLabelInput from "@/components/custom/FloatingLabelInput";
+import { toast } from "sonner";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -91,8 +92,12 @@ const Register = () => {
           return data;
         })
         .then((data) => {
-          toast.success("Account created successfully! Please log in.");
-          navigate("/login");
+          toast.success("Registration complete!", {
+            description: "Please login with your credentials",
+            duration: 5000,
+            id: "registration-success", // 🚨 Unique ID prevents duplicates
+          });
+          navigate("/login", { state: { fromRegistration: true } });
         })
         .catch((error) => {
           console.error("Error:", error);
@@ -111,262 +116,263 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 bg-white p-10 rounded-xl shadow-lg">
-        <div className="flex justify-center">
-          <img
-            src="/skilly-logo-blue-text.png"
-            alt="Skilly Logo"
-            style={{ width: "75px", height: "auto" }}
-          />
-        </div>
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Join Skilly
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            From Learner to Master
-          </p>
-        </div>
-
-        {serverError && (
-          <div className="bg-red-50 border-l-4 border-red-400 p-4">
-            <div className="flex">
-              <div className="flex-shrink-0">
-                <svg
-                  className="h-5 w-5 text-red-400"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </div>
-              <div className="ml-3">
-                <p className="text-sm text-red-700">{serverError}</p>
+    <div className="min-h-screen bg-black flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-6xl w-full bg-gray-800 rounded-xl shadow-lg overflow-hidden">
+        <div className="flex flex-col md:flex-row">
+          {/* Left column with logo and branding */}
+          <div className="bg-gray-900 p-10 flex flex-col justify-center items-center md:items-start md:w-1/3">
+            <div className="flex items-center mb-6">
+              <img
+                src="/skilly-logo-blue-text.png"
+                alt="Skilly Logo"
+                className="h-12 w-12"
+              />
+              <h1 className="ml-3 text-3xl font-bold text-blue-400">Skilly</h1>
+            </div>
+            <div className="text-center md:text-left">
+              <h2 className="text-2xl font-extrabold text-white mb-4">
+                Elevate Your Skills
+              </h2>
+              <p className="text-gray-300 mb-8">
+                Join our community of learners and masters. Track your progress,
+                connect with mentors, and achieve your goals.
+              </p>
+              <div className="hidden md:block space-y-4">
+                <div className="flex items-center">
+                  <div className="bg-blue-500 p-2 rounded-full">
+                    <svg
+                      className="h-5 w-5 text-white"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  </div>
+                  <span className="ml-3 text-gray-300">Track progress</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="bg-blue-500 p-2 rounded-full">
+                    <svg
+                      className="h-5 w-5 text-white"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906zm6.5 0C10.17 12.032 9.08 12 8 12c-1.08 0-2.17.032-3.25.094a3 3 0 00-2.025 2.168A6.004 6.004 0 008 18c1.995 0 3.76-.978 4.825-2.738a3 3 0 00-2.025-2.168z" />
+                    </svg>
+                  </div>
+                  <span className="ml-3 text-gray-300">
+                    Connect with mentors
+                  </span>
+                </div>
+                <div className="flex items-center">
+                  <div className="bg-blue-500 p-2 rounded-full">
+                    <svg
+                      className="h-5 w-5 text-white"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M6 6V5a3 3 0 013-3h2a3 3 0 013 3v1h2a2 2 0 012 2v3.57A22.952 22.952 0 0110 13a22.95 22.95 0 01-8-1.43V8a2 2 0 012-2h2zm2-1a1 1 0 011-1h2a1 1 0 011 1v1H8V5zm1 5a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z"
+                        clipRule="evenodd"
+                      />
+                      <path d="M2 13.692V16a2 2 0 002 2h12a2 2 0 002-2v-2.308A24.974 24.974 0 0110 15c-2.796 0-5.487-.46-8-1.308z" />
+                    </svg>
+                  </div>
+                  <span className="ml-3 text-gray-300">
+                    Earn certifications
+                  </span>
+                </div>
               </div>
             </div>
           </div>
-        )}
 
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="rounded-md -space-y-px">
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="mb-4">
-                <label
-                  htmlFor="firstName"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  First name
-                </label>
-                <input
+          {/* Right column with form */}
+          <div className="p-10 md:w-2/3">
+            <div>
+              <h2 className="text-center md:text-left text-2xl font-extrabold text-white">
+                Create your account
+              </h2>
+              <p className="mt-2 text-center md:text-left text-sm text-gray-400">
+                From Learner to Master
+              </p>
+            </div>
+
+            {serverError && (
+              <div className="mt-4 bg-red-900 border-l-4 border-red-500 p-4">
+                <div className="flex">
+                  <div className="flex-shrink-0">
+                    <svg
+                      className="h-5 w-5 text-red-400"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-sm text-red-400">{serverError}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 mb-4">
+                <FloatingLabelInput
                   id="firstName"
                   name="firstName"
                   type="text"
                   autoComplete="given-name"
                   value={formData.firstName}
                   onChange={handleChange}
-                  className={`mt-1 appearance-none block w-full px-3 py-2 border ${
-                    errors.firstName ? "border-red-300" : "border-gray-300"
-                  } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
-                  placeholder="First name"
+                  error={errors.firstName}
+                  label="First name"
                 />
-                {errors.firstName && (
-                  <p className="mt-1 text-sm text-red-600">
-                    {errors.firstName}
-                  </p>
-                )}
-              </div>
-
-              <div className="mb-4">
-                <label
-                  htmlFor="lastName"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Last name
-                </label>
-                <input
+                <FloatingLabelInput
                   id="lastName"
                   name="lastName"
                   type="text"
                   autoComplete="family-name"
                   value={formData.lastName}
                   onChange={handleChange}
-                  className={`mt-1 appearance-none block w-full px-3 py-2 border ${
-                    errors.lastName ? "border-red-300" : "border-gray-300"
-                  } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
-                  placeholder="Last name"
+                  error={errors.lastName}
+                  label="Last name"
                 />
-                {errors.lastName && (
-                  <p className="mt-1 text-sm text-red-600">{errors.lastName}</p>
-                )}
               </div>
-            </div>
 
-            <div className="mb-4">
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Email address
-              </label>
-              <input
+              <FloatingLabelInput
                 id="email"
                 name="email"
                 type="email"
                 autoComplete="email"
                 value={formData.email}
                 onChange={handleChange}
-                className={`mt-1 appearance-none block w-full px-3 py-2 border ${
-                  errors.email ? "border-red-300" : "border-gray-300"
-                } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
-                placeholder="Email address"
+                error={errors.email}
+                label="Email address"
+                className="mb-4"
               />
-              {errors.email && (
-                <p className="mt-1 text-sm text-red-600">{errors.email}</p>
-              )}
-            </div>
 
-            <div className="mb-4">
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Password
-              </label>
-              <input
+              <FloatingLabelInput
                 id="password"
                 name="password"
                 type="password"
                 autoComplete="new-password"
                 value={formData.password}
                 onChange={handleChange}
-                className={`mt-1 appearance-none block w-full px-3 py-2 border ${
-                  errors.password ? "border-red-300" : "border-gray-300"
-                } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
-                placeholder="Password"
+                error={errors.password}
+                label="Password"
+                className="mb-4"
               />
-              {errors.password && (
-                <p className="mt-1 text-sm text-red-600">{errors.password}</p>
-              )}
-            </div>
 
-            <div className="mb-4">
-              <label
-                htmlFor="confirmPassword"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Confirm Password
-              </label>
-              <input
+              <FloatingLabelInput
                 id="confirmPassword"
                 name="confirmPassword"
                 type="password"
                 autoComplete="new-password"
                 value={formData.confirmPassword}
                 onChange={handleChange}
-                className={`mt-1 appearance-none block w-full px-3 py-2 border ${
-                  errors.confirmPassword ? "border-red-300" : "border-gray-300"
-                } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
-                placeholder="Confirm password"
+                error={errors.confirmPassword}
+                label="Confirm Password"
+                className="mb-4"
               />
-              {errors.confirmPassword && (
-                <p className="mt-1 text-sm text-red-600">
-                  {errors.confirmPassword}
-                </p>
+
+              <div className="flex items-center">
+                <input
+                  id="agreeTerms"
+                  name="agreeTerms"
+                  type="checkbox"
+                  checked={formData.agreeTerms}
+                  onChange={handleChange}
+                  className={`h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-600 rounded ${
+                    errors.agreeTerms ? "border-red-500" : ""
+                  }`}
+                />
+                <label
+                  htmlFor="agreeTerms"
+                  className="ml-2 block text-sm text-gray-300"
+                >
+                  I agree to the{" "}
+                  <Link
+                    to="/terms"
+                    className="font-medium text-blue-400 hover:text-blue-300 transition-colors"
+                  >
+                    Terms and Conditions
+                  </Link>{" "}
+                  and{" "}
+                  <Link
+                    to="/privacy"
+                    className="font-medium text-blue-400 hover:text-blue-300 transition-colors"
+                  >
+                    Privacy Policy
+                  </Link>
+                </label>
+              </div>
+              {errors.agreeTerms && (
+                <p className="mt-1 text-sm text-red-400">{errors.agreeTerms}</p>
               )}
+
+              <div>
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className={`group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-offset-0 transition-colors ${
+                    isLoading
+                      ? "bg-blue-400 cursor-not-allowed"
+                      : "bg-blue-600 hover:bg-blue-700 focus:ring-blue-500"
+                  }`}
+                >
+                  {isLoading ? (
+                    <span className="flex items-center">
+                      <svg
+                        className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                      </svg>
+                      Creating Account...
+                    </span>
+                  ) : (
+                    "Create Account"
+                  )}
+                </button>
+              </div>
+            </form>
+
+            <div className="text-center mt-4">
+              <p className="text-sm text-gray-400">
+                Already have an account?{" "}
+                <Link
+                  to="/login"
+                  className="font-medium text-blue-400 hover:text-blue-300 transition-colors"
+                >
+                  Sign in
+                </Link>
+              </p>
             </div>
           </div>
-
-          <div className="flex items-center">
-            <input
-              id="agreeTerms"
-              name="agreeTerms"
-              type="checkbox"
-              checked={formData.agreeTerms}
-              onChange={handleChange}
-              className={`h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded ${
-                errors.agreeTerms ? "border-red-300" : ""
-              }`}
-            />
-            <label
-              htmlFor="agreeTerms"
-              className="ml-2 block text-sm text-gray-900"
-            >
-              I agree to the{" "}
-              <Link
-                to="/terms"
-                className="font-medium text-indigo-600 hover:text-indigo-500"
-              >
-                Terms and Conditions
-              </Link>{" "}
-              and{" "}
-              <Link
-                to="/privacy"
-                className="font-medium text-indigo-600 hover:text-indigo-500"
-              >
-                Privacy Policy
-              </Link>
-            </label>
-          </div>
-          {errors.agreeTerms && (
-            <p className="mt-1 text-sm text-red-600">{errors.agreeTerms}</p>
-          )}
-
-          <div>
-            <button
-              type="submit"
-              disabled={isLoading}
-              className={`group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white ${
-                isLoading
-                  ? "bg-indigo-400"
-                  : "bg-indigo-600 hover:bg-indigo-700"
-              } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`}
-            >
-              {isLoading ? (
-                <>
-                  <svg
-                    className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    ></circle>
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    ></path>
-                  </svg>
-                  Creating Account...
-                </>
-              ) : (
-                "Create Account"
-              )}
-            </button>
-          </div>
-        </form>
-
-        <div className="text-center mt-4">
-          <p className="text-sm text-gray-600">
-            Already have an account?{" "}
-            <Link
-              to="/login"
-              className="font-medium text-indigo-600 hover:text-indigo-500"
-            >
-              Sign in
-            </Link>
-          </p>
         </div>
       </div>
     </div>

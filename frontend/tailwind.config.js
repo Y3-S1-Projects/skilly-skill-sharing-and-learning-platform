@@ -6,7 +6,14 @@ export default {
     "./node_modules/@heroui/react/**/*.js",
   ],
   theme: {
-    extend: {},
+    extend: {
+      transitionProperty: {
+        padding: "padding",
+      },
+      fontFamily: {
+        poppins: ["Poppins", "sans-serif"],
+      },
+    },
   },
   plugins: [],
 };

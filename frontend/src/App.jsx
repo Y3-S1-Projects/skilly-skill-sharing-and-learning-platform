@@ -22,50 +22,61 @@ import CreateLearningPlan from "./Pages/CreateLearningPlan";
 import EditLearningPlan from "./Pages/EditLearningPlan";
 import ProtectedRoute from "./guards/authGuard";
 import LoginSuccess from "./Components/LoginSuccess";
+import { Toaster } from "sonner";
+
 function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<Login />} />
-        {/* <Route path="/auth/github/callback" element={<GitHubCallback />} /> */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route
-          path="/socialfeed"
-          element={
-            <ProtectedRoute>
-              <SocialFeed />
-            </ProtectedRoute>
-          }
-        />
-        <Route path="/login-success" element={<LoginSuccess />} />
-        <Route
-          path="/userprofile"
-          element={
-            <ProtectedRoute>
-              <UserProfile />
-            </ProtectedRoute>
-          }
-        />
-        <Route path="/auth" element={<Auth />} />
-        <Route path="/profile/:userId" element={<PublicProfile />} />
-        <Route path="/notification" element={<NotificationSystem />} />
-        <Route path="/learning-plan" element={<LearningPlan />} />
-        <Route path="/search" element={<SearchResults />} />
-        <Route path="/postcard" element={<PostCard />} />
-        <Route path="/profile/edit" element={<EditProfilePage />} />
-        <Route path="/learning-plans" element={<LearningPlans />} />
-        <Route path="/learning-plans/:id" element={<LearningPlanDetail />} />
-        <Route path="/learning-plans/create" element={<CreateLearningPlan />} />
-        <Route path="/learning-plans/edit/:id" element={<EditLearningPlan />} />
-        <Route
-          path="/learning-plan-creator"
-          element={<LearningPlanCreator />}
-        />
-        {/*Components */}
-        <Route path="/header" element={<Header />} />
-      </Routes>
-    </Router>
+    <>
+      <Router>
+        <Routes>
+          <Route path="/" element={<Login />} />
+          {/* <Route path="/auth/github/callback" element={<GitHubCallback />} /> */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route
+            path="/socialfeed"
+            element={
+              <ProtectedRoute>
+                <SocialFeed />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="/login-success" element={<LoginSuccess />} />
+          <Route
+            path="/userprofile"
+            element={
+              <ProtectedRoute>
+                <UserProfile />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="/auth" element={<Auth />} />
+          <Route path="/profile/:userId" element={<PublicProfile />} />
+          <Route path="/notification" element={<NotificationSystem />} />
+          <Route path="/learning-plan" element={<LearningPlan />} />
+          <Route path="/search" element={<SearchResults />} />
+          <Route path="/postcard" element={<PostCard />} />
+          <Route path="/profile/edit" element={<EditProfilePage />} />
+          <Route path="/learning-plans" element={<LearningPlans />} />
+          <Route path="/learning-plans/:id" element={<LearningPlanDetail />} />
+          <Route
+            path="/learning-plans/create"
+            element={<CreateLearningPlan />}
+          />
+          <Route
+            path="/learning-plans/edit/:id"
+            element={<EditLearningPlan />}
+          />
+          <Route
+            path="/learning-plan-creator"
+            element={<LearningPlanCreator />}
+          />
+          {/*Components */}
+          <Route path="/header" element={<Header />} />
+        </Routes>
+      </Router>
+      <Toaster position="bottom-right" theme="dark" />
+    </>
   );
 }
 
