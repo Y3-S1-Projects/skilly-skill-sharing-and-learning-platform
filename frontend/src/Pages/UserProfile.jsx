@@ -10,6 +10,7 @@ import EditIcon from "@/public/icons/EditIcon";
 import PostCard from "../Components/PostCard";
 import UserConnectionsModal from "../Components/Modals/UserConnections";
 import UserJoinDate from "../Components/UserJoinDate";
+import CustomLoader from "../Components/CustomLoader";
 const UserProfile = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -200,7 +201,7 @@ const UserProfile = () => {
     setUser(updatedUser);
   };
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-black">
       <Header user={user} />
       {/* Cover Photo & Profile Summary */}
       <div className="relative">
@@ -216,7 +217,7 @@ const UserProfile = () => {
         {/* Profile Summary Card */}
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="relative -mt-12 sm:-mt-16 mb-6">
-            <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+            <div className="bg-gray-800 rounded-xl shadow-sm overflow-hidden">
               <div className="p-4 sm:p-6">
                 <div className="sm:flex sm:items-center sm:justify-between">
                   <div className="sm:flex sm:space-x-5">
@@ -229,26 +230,24 @@ const UserProfile = () => {
                           alt={user?.name || "User"}
                         />
                       ) : (
-                        <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 font-medium">
+                        <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-300 font-medium">
                           {getInitials(user?.name)}
                         </div>
                       )}
                     </div>
                     <div className="mt-4 sm:mt-0 text-center sm:text-left sm:flex-1">
-                      <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
+                      <h1 className="text-xl sm:text-2xl font-bold text-gray-300">
                         {user.name}
                       </h1>
-                      <p className="text-sm sm:text-base font-medium text-indigo-600">
+                      <p className="text-sm sm:text-base font-medium text-indigo-500">
                         {user.title}
                       </p>
                       <div>
-                        {loading && (
-                          <div className="h-8 w-48 bg-gray-200 rounded animate-pulse"></div>
-                        )}
+                        {loading && <CustomLoader />}
                         {error && <p className="text-red-500">{error}</p>}
                       </div>
                       <div className="mt-1 flex flex-wrap items-center justify-center sm:justify-start text-sm text-gray-500 gap-x-4 gap-y-1">
-                        <span className="flex items-center">
+                        {/* <span className="flex items-center">
                           <svg
                             className="h-4 w-4 mr-1"
                             fill="none"
@@ -269,7 +268,7 @@ const UserProfile = () => {
                             />
                           </svg>
                           {user.location}
-                        </span>
+                        </span> */}
                         <span className="flex items-center">
                           <svg
                             className="h-4 w-4 mr-1"
@@ -293,50 +292,90 @@ const UserProfile = () => {
                     <Link
                       to="/profile/edit"
                       className="px-5 py-2.5 text-sm font-medium rounded-xl
-                      bg-gradient-to-r from-indigo-500 to-purple-500 text-white
-                      flex items-center justify-center gap-2
-                      shadow-md hover:shadow-lg transition-all duration-300
-                      hover:translate-y-px
-                      focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-opacity-75"
+    bg-gradient-to-r from-indigo-500 to-purple-500 text-white
+    flex items-center justify-center gap-2
+    shadow-md hover:shadow-lg transition-all duration-300
+    hover:from-indigo-600 hover:to-purple-600
+    active:scale-[0.98] transform
+    focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 focus:ring-offset-gray-800
+    relative overflow-hidden group"
                     >
-                      <EditIcon />
-                      Edit Profile
+                      {/* Gradient overlay on hover */}
+                      <span className="absolute inset-0 bg-gradient-to-r from-indigo-600 to-purple-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
+
+                      {/* Button content */}
+                      <span className="relative z-10 flex items-center gap-2">
+                        <EditIcon className="w-4 h-4" />
+                        Edit Profile
+                      </span>
                     </Link>
                   </div>
                 </div>
 
                 {/* Bio */}
-                <div className="mt-4 text-sm text-gray-700">
+                <div className="mt-4 text-sm text-gray-300">
                   <p>{user.bio}</p>
                 </div>
 
                 {/* User Stats */}
-                <div className="mt-6 grid grid-cols-3 lg:grid-cols-5 gap-4 text-center">
+                <div className="mt-6 grid grid-cols-3 lg:grid-cols-5 gap-3">
+                  {/* Followers */}
                   <div
-                    className="bg-gray-50 rounded-lg py-2 px-4 cursor-pointer hover:bg-gray-100 transition-colors"
+                    className="bg-gray-700 rounded-lg py-3 px-4 cursor-pointer hover:bg-gray-600 transition-colors duration-200 group"
                     onClick={() => {
                       setActiveConnectionTab("followers");
                       setIsModalOpen(true);
                     }}
                   >
-                    <div className="text-2xl font-bold text-indigo-600">
+                    <div className="text-2xl font-bold text-indigo-400 group-hover:text-indigo-300 transition-colors">
                       {user.stats.followers}
                     </div>
-                    <div className="text-xs text-gray-500">Followers</div>
+                    <div className="text-xs text-gray-300 group-hover:text-gray-200 transition-colors">
+                      Followers
+                    </div>
                   </div>
+
+                  {/* Following */}
                   <div
-                    className="bg-gray-50 rounded-lg py-2 px-4 cursor-pointer hover:bg-gray-100 transition-colors"
+                    className="bg-gray-700 rounded-lg py-3 px-4 cursor-pointer hover:bg-gray-600 transition-colors duration-200 group"
                     onClick={() => {
                       setActiveConnectionTab("following");
                       setIsModalOpen(true);
                     }}
                   >
-                    <div className="text-2xl font-bold text-indigo-600">
+                    <div className="text-2xl font-bold text-indigo-400 group-hover:text-indigo-300 transition-colors">
                       {user.stats.following}
                     </div>
-                    <div className="text-xs text-gray-500">Following</div>
+                    <div className="text-xs text-gray-300 group-hover:text-gray-200 transition-colors">
+                      Following
+                    </div>
                   </div>
 
+                  {/* Skills Learned */}
+                  <div className="bg-gray-700 rounded-lg py-3 px-4 hover:bg-gray-600 transition-colors duration-200">
+                    <div className="text-2xl font-bold text-indigo-400">
+                      {user.stats.skillsLearned}
+                    </div>
+                    <div className="text-xs text-gray-300">Skills</div>
+                  </div>
+
+                  {/* Skills in Progress */}
+                  <div className="bg-gray-700 rounded-lg py-3 px-4 hover:bg-gray-600 transition-colors duration-200">
+                    <div className="text-2xl font-bold text-indigo-400">
+                      {user.stats.skillsInProgress}
+                    </div>
+                    <div className="text-xs text-gray-300">Learning</div>
+                  </div>
+
+                  {/* Achievements */}
+                  <div className="bg-gray-700 rounded-lg py-3 px-4 hover:bg-gray-600 transition-colors duration-200 col-span-3 lg:col-span-1">
+                    <div className="text-2xl font-bold text-indigo-400">
+                      {user.stats.achievements}
+                    </div>
+                    <div className="text-xs text-gray-300">Achievements</div>
+                  </div>
+
+                  {/* Connections Modal */}
                   <UserConnectionsModal
                     userId={user.id}
                     isOwnProfile={true}
@@ -345,25 +384,6 @@ const UserProfile = () => {
                     activeTab={activeConnectionTab}
                     setActiveTab={setActiveConnectionTab}
                   />
-
-                  <div className="bg-gray-50 rounded-lg py-2 px-4">
-                    <div className="text-2xl font-bold text-indigo-600">
-                      {user.stats.skillsLearned}
-                    </div>
-                    <div className="text-xs text-gray-500">Skills</div>
-                  </div>
-                  <div className="bg-gray-50 rounded-lg py-2 px-4">
-                    <div className="text-2xl font-bold text-indigo-600">
-                      {user.stats.skillsInProgress}
-                    </div>
-                    <div className="text-xs text-gray-500">Learning</div>
-                  </div>
-                  <div className="bg-gray-50 rounded-lg py-2 px-4 col-span-3 lg:col-span-1">
-                    <div className="text-2xl font-bold text-indigo-600">
-                      {user.stats.achievements}
-                    </div>
-                    <div className="text-xs text-gray-500">Achievements</div>
-                  </div>
                 </div>
               </div>
             </div>
@@ -377,40 +397,48 @@ const UserProfile = () => {
           {/* Left Column - Skills, Badges, etc. */}
           <div className="md:w-1/3">
             {/* Skills Section */}
-            <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
-              <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
-                <h3 className="text-lg font-medium leading-6 text-gray-900">
+            <div className="bg-gray-800 rounded-xl shadow-sm overflow-hidden mb-6 border border-gray-700">
+              <div className="px-4 py-5 sm:px-6 border-b border-gray-700">
+                <h3 className="text-lg font-medium leading-6 text-white">
                   Skills
                 </h3>
-                <p className="mt-1 max-w-2xl text-sm text-gray-500">
+                <p className="mt-1 max-w-2xl text-sm text-gray-400">
                   Verified skills with community endorsements
                 </p>
               </div>
               <div className="px-4 py-3 sm:px-6">
-                <ul className="divide-y divide-gray-200">
+                <ul className="divide-y divide-gray-700">
                   {user.skills.map((skill, index) => (
-                    <li key={index} className="py-3">
-                      <div className="flex justify-between">
-                        <div>
-                          <h4 className="text-sm font-medium text-gray-900">
+                    <li
+                      key={index}
+                      className="py-3 hover:bg-gray-750 transition-colors duration-150"
+                    >
+                      <div className="flex justify-between items-center">
+                        <div className="flex-1 min-w-0">
+                          <h4 className="text-sm font-medium text-white truncate">
                             {skill.name}
                           </h4>
                           <div className="mt-1 flex items-center">
                             <span
                               className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
                                 skill.level === "Expert"
-                                  ? "bg-green-100 text-green-800"
+                                  ? "bg-green-900/30 text-green-400"
                                   : skill.level === "Advanced"
-                                  ? "bg-blue-100 text-blue-800"
+                                  ? "bg-blue-900/30 text-blue-400"
                                   : skill.level === "Intermediate"
-                                  ? "bg-indigo-100 text-indigo-800"
-                                  : "bg-purple-100 text-purple-800"
+                                  ? "bg-indigo-900/30 text-indigo-400"
+                                  : "bg-purple-900/30 text-purple-400"
                               }`}
                             >
                               {skill.level}
                             </span>
                           </div>
                         </div>
+                        {/* <div className="ml-4 flex-shrink-0">
+                          <span className="text-xs text-gray-400">
+                            {skill.endorsements} endorsements
+                          </span>
+                        </div> */}
                       </div>
                     </li>
                   ))}
@@ -419,21 +447,21 @@ const UserProfile = () => {
             </div>
 
             {/* Learning Goals Section */}
-            <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
+            <div className="bg-gray-800 rounded-xl shadow-sm overflow-hidden mb-6 border border-gray-700">
               <Link
                 to="/learning-plans"
                 className="block w-full p-4 rounded-lg transition-all 
-                hover:bg-gray-50 hover:shadow-sm 
-                focus:outline-none focus:ring-2 focus:ring-blue-500
-                group" // Added group for child hover effects
+    hover:bg-gray-700 hover:shadow-sm 
+    focus:outline-none focus:ring-2 focus:ring-indigo-500
+    group"
                 aria-label="View Learning Plans"
               >
                 <div className="transition-all group-hover:translate-x-1">
-                  <h3 className="text-lg font-medium leading-6 text-gray-900 flex items-center">
+                  <h3 className="text-lg font-medium leading-6 text-white flex items-center">
                     Learning Plans
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
-                      className="h-5 w-5 ml-1 text-gray-400 group-hover:text-blue-500 transition-colors"
+                      className="h-5 w-5 ml-1 text-gray-400 group-hover:text-indigo-400 transition-colors"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -446,33 +474,36 @@ const UserProfile = () => {
                       />
                     </svg>
                   </h3>
-                  <p className="mt-1 max-w-2xl text-sm text-gray-500 group-hover:text-gray-700">
+                  <p className="mt-1 max-w-2xl text-sm text-gray-400 group-hover:text-gray-300">
                     Skills currently in progress - Click to view details
                   </p>
                 </div>
               </Link>
               <div className="px-4 py-3 sm:px-6">
-                <ul className="divide-y divide-gray-200">
+                <ul className="divide-y divide-gray-700">
                   {user.learningGoals.map((goal) => (
-                    <li key={goal.id} className="py-3">
+                    <li
+                      key={goal.id}
+                      className="py-3 hover:bg-gray-750 transition-colors duration-150"
+                    >
                       <div>
                         <div className="flex justify-between items-center">
-                          <h4 className="text-sm font-medium text-gray-900">
+                          <h4 className="text-sm font-medium text-white">
                             {goal.name}
                           </h4>
-                          <span className="text-xs text-gray-500">
+                          <span className="text-xs text-gray-400">
                             {goal.category}
                           </span>
                         </div>
                         <div className="mt-2">
                           <div className="flex items-center justify-between">
-                            <div className="w-full bg-gray-200 rounded-full h-2.5 mr-2">
+                            <div className="w-full bg-gray-700 rounded-full h-2.5 mr-2">
                               <div
-                                className="bg-indigo-600 h-2.5 rounded-full"
+                                className="bg-indigo-500 h-2.5 rounded-full transition-all duration-300"
                                 style={{ width: `${goal.progress}%` }}
                               ></div>
                             </div>
-                            <span className="text-xs font-medium text-gray-500">
+                            <span className="text-xs font-medium text-gray-400">
                               {goal.progress}%
                             </span>
                           </div>
@@ -487,41 +518,43 @@ const UserProfile = () => {
 
           {/* Right Column - Activities Feed */}
           <div className="md:w-2/3">
-            {/* Tabs */}
-            <div className="mb-6 bg-white rounded-xl shadow-sm overflow-hidden">
-              <div className="border-b border-gray-200">
+            {/* Tabs Container */}
+            <div className="mb-6 bg-gray-800 rounded-xl shadow-sm overflow-hidden border border-gray-700">
+              <div className="border-b border-gray-700">
                 {/* Post Creation Card */}
                 <CreatePostCard
                   user={user}
                   setShowCreatePostModal={setShowCreatePostModal}
                 />
+
+                {/* Tabs Navigation */}
                 <nav className="flex" aria-label="Tabs">
                   <button
                     onClick={() => setActiveTab("activity")}
-                    className={`w-1/3 py-4 px-1 text-center border-b-2 font-medium text-sm ${
+                    className={`w-1/3 py-4 px-1 text-center border-b-2 font-medium text-sm transition-colors duration-200 ${
                       activeTab === "activity"
-                        ? "border-indigo-500 text-indigo-600"
-                        : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                        ? "border-indigo-500 text-indigo-400"
+                        : "border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-600"
                     }`}
                   >
                     Activity
                   </button>
                   <button
                     onClick={() => setActiveTab("shared")}
-                    className={`w-1/3 py-4 px-1 text-center border-b-2 font-medium text-sm ${
+                    className={`w-1/3 py-4 px-1 text-center border-b-2 font-medium text-sm transition-colors duration-200 ${
                       activeTab === "shared"
-                        ? "border-indigo-500 text-indigo-600"
-                        : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                        ? "border-indigo-500 text-indigo-400"
+                        : "border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-600"
                     }`}
                   >
                     Resources
                   </button>
                   <button
                     onClick={() => setActiveTab("achievements")}
-                    className={`w-1/3 py-4 px-1 text-center border-b-2 font-medium text-sm ${
+                    className={`w-1/3 py-4 px-1 text-center border-b-2 font-medium text-sm transition-colors duration-200 ${
                       activeTab === "achievements"
-                        ? "border-indigo-500 text-indigo-600"
-                        : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                        ? "border-indigo-500 text-indigo-400"
+                        : "border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-600"
                     }`}
                   >
                     Achievements
@@ -539,7 +572,7 @@ const UserProfile = () => {
                   currentUser={user}
                   onPostUpdate={handlePostUpdate}
                   onPostDelete={handlePostDelete}
-                  onSharePost={handlePostShared} // Add this prop
+                  onSharePost={handlePostShared}
                 />
               ))}
               <UserJoinDate user={user} />

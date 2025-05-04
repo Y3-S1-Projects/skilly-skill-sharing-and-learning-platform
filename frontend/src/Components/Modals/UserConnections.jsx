@@ -136,21 +136,19 @@ export default function UserConnectionsModal({
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           {/* Backdrop */}
           <div
-            className="fixed inset-0 bg-gray-400/30 backdrop-blur-md"
+            className="fixed inset-0 bg-gray-900/70 backdrop-blur-md"
             onClick={onClose}
           ></div>
 
           {/* Modal */}
-          <div className="relative bg-gray-50 w-full max-w-md rounded-2xl shadow-xl overflow-hidden z-10 mx-4 h-[70vh] flex flex-col">
+          <div className="relative bg-gray-800 w-full max-w-md rounded-2xl shadow-xl overflow-hidden z-10 mx-4 h-[70vh] flex flex-col border border-gray-700">
             {/* Header */}
-            <div className="p-6 border-b border-gray-200">
+            <div className="p-6 border-b border-gray-700">
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-2xl font-bold text-gray-800">
-                  Connections
-                </h2>
+                <h2 className="text-2xl font-bold text-white">Connections</h2>
                 <button
                   onClick={onClose}
-                  className="text-gray-500 hover:text-gray-700"
+                  className="text-gray-400 hover:text-gray-200 transition-colors"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -174,8 +172,8 @@ export default function UserConnectionsModal({
                 <button
                   className={`px-4 py-2 text-medium font-medium transition-colors border-b-2 ${
                     activeTab === "followers"
-                      ? "border-indigo-500 text-indigo-600"
-                      : "border-transparent text-gray-500 hover:text-gray-700"
+                      ? "border-indigo-500 text-indigo-400"
+                      : "border-transparent text-gray-400 hover:text-gray-300"
                   }`}
                   onClick={() => handleTabChange("followers")}
                 >
@@ -184,8 +182,8 @@ export default function UserConnectionsModal({
                 <button
                   className={`px-4 py-2 text-medium font-medium transition-colors border-b-2 ${
                     activeTab === "following"
-                      ? "border-indigo-500 text-indigo-600"
-                      : "border-transparent text-gray-500 hover:text-gray-700"
+                      ? "border-indigo-500 text-indigo-400"
+                      : "border-transparent text-gray-400 hover:text-gray-300"
                   }`}
                   onClick={() => handleTabChange("following")}
                 >
@@ -196,19 +194,19 @@ export default function UserConnectionsModal({
               {/* Search Input */}
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Search size={18} className="text-gray-400" />
+                  <Search size={18} className="text-gray-500" />
                 </div>
                 <input
                   type="text"
                   placeholder="Search users..."
                   value={displayedQuery}
                   onChange={handleInputChange}
-                  className="pl-10 pr-10 py-3 w-full bg-white border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="pl-10 pr-10 py-3 w-full bg-gray-700 border-2 border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-white placeholder-gray-400"
                 />
                 {displayedQuery && (
                   <button
                     onClick={handleClearSearch}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-300 transition-colors"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -231,7 +229,7 @@ export default function UserConnectionsModal({
 
             {/* Body */}
             <div className="flex-1 overflow-hidden flex flex-col">
-              <h3 className="text-lg font-semibold mb-4 text-gray-700 px-6 pt-2">
+              <h3 className="text-lg font-semibold mb-4 text-gray-300 px-6 pt-2">
                 {connectionText}
               </h3>
               <div
@@ -242,11 +240,8 @@ export default function UserConnectionsModal({
                   <div className="space-y-3">
                     {[...connections]
                       .sort((a, b) => {
-                        // Move current user to top if they appear in the list
                         if (a.id === userId) return -1;
                         if (b.id === userId) return 1;
-
-                        // Then apply the original sorting logic (followed users first)
                         const aIsFollowed = following.some(
                           (followedUser) => followedUser.id === a.id
                         );
@@ -258,7 +253,7 @@ export default function UserConnectionsModal({
                       .map((user) => (
                         <div
                           key={user.id}
-                          className="p-3 hover:bg-gray-200 rounded-lg transition-colors cursor-pointer"
+                          className="p-3 hover:bg-gray-700 rounded-lg transition-colors cursor-pointer"
                           onClick={() =>
                             (window.location.href = `/profile/${user.id}`)
                           }
@@ -270,10 +265,10 @@ export default function UserConnectionsModal({
                                 "https://i.pravatar.cc/150?u=placeholder"
                               }
                               alt={user.username}
-                              className="w-12 h-12 rounded-full object-cover"
+                              className="w-12 h-12 rounded-full object-cover border-2 border-gray-600"
                             />
                             <div>
-                              <p className="font-semibold text-gray-800">
+                              <p className="font-semibold text-white">
                                 {user.username}
                               </p>
                             </div>
@@ -282,7 +277,7 @@ export default function UserConnectionsModal({
                       ))}
                   </div>
                 ) : !isLoading ? (
-                  <div className="text-center py-8 text-gray-500">
+                  <div className="text-center py-8 text-gray-400">
                     {searchQuery
                       ? "No results found."
                       : activeTab === "followers"
