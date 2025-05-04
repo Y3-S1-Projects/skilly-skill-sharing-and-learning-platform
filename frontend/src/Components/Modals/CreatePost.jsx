@@ -20,7 +20,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { X, Camera, Lightbulb, Calendar, FileText, Video, Share2 } from "lucide-react";
+import {
+  X,
+  Camera,
+  Lightbulb,
+  Calendar,
+  FileText,
+  Video,
+  Share2,
+} from "lucide-react";
 
 const CreatePostModal = ({ isOpen, onClose, onPostCreated }) => {
   const [postType, setPostType] = useState("skill"); // skill, progress, plan
@@ -104,7 +112,7 @@ const CreatePostModal = ({ isOpen, onClose, onPostCreated }) => {
     }
 
     // Check if there's any content
-    if ((images.length === 0 && !video) && !description.trim()) {
+    if (images.length === 0 && !video && !description.trim()) {
       setError("Please add a description, images, or a video to your post");
       return;
     }
@@ -195,7 +203,7 @@ const CreatePostModal = ({ isOpen, onClose, onPostCreated }) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-2xl bg-white rounded-2xl border-0 shadow-xl">
+      <DialogContent className="sm:max-w-2xl bg-gray-800 rounded-2xl border-0 shadow-xl">
         <DialogHeader
           className={`rounded-t-xl bg-gradient-to-r ${getPostTypeColor()} p-4 -m-6 mb-2`}
         >
@@ -221,30 +229,30 @@ const CreatePostModal = ({ isOpen, onClose, onPostCreated }) => {
 
         <form onSubmit={handleSubmit} className="space-y-5 pt-2">
           <div className="space-y-2">
-            <Label className="text-gray-700 font-medium">Post Type</Label>
+            <Label className="text-gray-300 font-medium">Post Type</Label>
             <Tabs
               value={postType}
               onValueChange={setPostType}
               className="w-full"
             >
-              <TabsList className="grid w-full grid-cols-3 bg-gray-100 p-1 rounded-xl">
+              <TabsList className="grid w-full grid-cols-3 bg-gray-600 p-1 rounded-xl">
                 <TabsTrigger
                   value="skill"
-                  className="rounded-lg flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-amber-700 data-[state=active]:shadow"
+                  className="rounded-lg flex items-center gap-2 data-[state=active]:bg-gray-900 data-[state=active]:text-amber-700 data-[state=active]:shadow"
                 >
                   <Lightbulb className="h-4 w-4" />
                   <span>Skill Sharing</span>
                 </TabsTrigger>
                 <TabsTrigger
                   value="progress"
-                  className="rounded-lg flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-blue-700 data-[state=active]:shadow"
+                  className="rounded-lg flex items-center gap-2 data-[state=active]:bg-gray-900 data-[state=active]:text-blue-700 data-[state=active]:shadow"
                 >
                   <FileText className="h-4 w-4" />
                   <span>Learning Progress</span>
                 </TabsTrigger>
                 <TabsTrigger
                   value="plan"
-                  className="rounded-lg flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-emerald-700 data-[state=active]:shadow"
+                  className="rounded-lg flex items-center gap-2 data-[state=active]:bg-gray-900 data-[state=active]:text-emerald-700 data-[state=active]:shadow"
                 >
                   <Calendar className="h-4 w-4" />
                   <span>Learning Plan</span>
@@ -257,7 +265,7 @@ const CreatePostModal = ({ isOpen, onClose, onPostCreated }) => {
           <div className="min-h-96">
             <div className="space-y-5">
               <div className="space-y-2">
-                <Label htmlFor="title" className="text-gray-700 font-medium">
+                <Label htmlFor="title" className="text-gray-300 font-medium">
                   Title
                 </Label>
                 <Input
@@ -272,7 +280,7 @@ const CreatePostModal = ({ isOpen, onClose, onPostCreated }) => {
               <div className="space-y-2">
                 <Label
                   htmlFor="description"
-                  className="text-gray-700 font-medium"
+                  className="text-gray-300 font-medium"
                 >
                   Description
                 </Label>
@@ -293,17 +301,17 @@ const CreatePostModal = ({ isOpen, onClose, onPostCreated }) => {
                   onValueChange={setActiveTab}
                   className="w-full"
                 >
-                  <TabsList className="grid w-full grid-cols-2 bg-gray-100 p-1 rounded-xl">
+                  <TabsList className="grid w-full grid-cols-2 bg-gray-600 p-1 rounded-xl">
                     <TabsTrigger
                       value="images"
-                      className="rounded-lg flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-indigo-700 data-[state=active]:shadow"
+                      className="rounded-lg flex items-center gap-2 data-[state=active]:bg-gray-900 data-[state=active]:text-indigo-700 data-[state=active]:shadow"
                     >
                       <Camera className="h-4 w-4" />
                       <span>Images (max 3)</span>
                     </TabsTrigger>
                     <TabsTrigger
                       value="video"
-                      className="rounded-lg flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-indigo-700 data-[state=active]:shadow"
+                      className="rounded-lg flex items-center gap-2 data-[state=active]:bg-gray-900 data-[state=active]:text-indigo-700 data-[state=active]:shadow"
                     >
                       <Video className="h-4 w-4" />
                       <span>Video (max 30s)</span>
@@ -315,15 +323,21 @@ const CreatePostModal = ({ isOpen, onClose, onPostCreated }) => {
                   <>
                     <div className="flex items-center justify-center w-full">
                       <label
-                        className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-xl cursor-pointer bg-gradient-to-r from-gray-50 to-gray-100 hover:from-indigo-50 hover:to-purple-50 transition-all duration-300 ${images.length >= 3 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-xl cursor-pointer bg-gradient-to-r from-gray-800 to-gray-700 hover:from-indigo-900/30 hover:to-purple-900/30 transition-all duration-300 border-gray-600 ${
+                          images.length >= 3
+                            ? "opacity-50 cursor-not-allowed"
+                            : ""
+                        }`}
                       >
                         <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                          <Camera className="w-8 h-8 mb-2 text-indigo-500" />
-                          <p className="mb-1 text-sm text-gray-700">
-                            <span className="font-semibold">Click to upload</span>{" "}
+                          <Camera className="w-8 h-8 mb-2 text-indigo-400" />
+                          <p className="mb-1 text-sm text-gray-300">
+                            <span className="font-semibold">
+                              Click to upload
+                            </span>{" "}
                             or drag and drop
                           </p>
-                          <p className="text-xs text-gray-500">
+                          <p className="text-xs text-gray-400">
                             PNG, JPG, GIF up to 10MB ({images.length}/3)
                           </p>
                         </div>
@@ -341,7 +355,9 @@ const CreatePostModal = ({ isOpen, onClose, onPostCreated }) => {
 
                     {previewImages.length > 0 && (
                       <div className="space-y-3">
-                        <Label className="text-gray-700 font-medium">Preview</Label>
+                        <Label className="text-gray-700 font-medium">
+                          Preview
+                        </Label>
                         <div className="grid grid-cols-3 gap-4">
                           {previewImages.map((url, index) => (
                             <div
@@ -374,14 +390,18 @@ const CreatePostModal = ({ isOpen, onClose, onPostCreated }) => {
                   <>
                     <div className="flex items-center justify-center w-full">
                       <label
-                        className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-xl cursor-pointer bg-gradient-to-r from-gray-50 to-gray-100 hover:from-indigo-50 hover:to-purple-50 transition-all duration-300 ${video ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-xl cursor-pointer bg-gradient-to-r from-gray-800 to-gray-700 hover:from-indigo-900/30 hover:to-purple-900/30 transition-all duration-300 border-gray-600 ${
+                          video ? "opacity-50 cursor-not-allowed" : ""
+                        }`}
                       >
                         <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                          <Video className="w-8 h-8 mb-2 text-indigo-500" />
-                          <p className="mb-1 text-sm text-gray-700">
-                            <span className="font-semibold">Upload a short video</span>
+                          <Video className="w-8 h-8 mb-2 text-indigo-400" />
+                          <p className="mb-1 text-sm text-gray-300">
+                            <span className="font-semibold">
+                              Upload a short video
+                            </span>
                           </p>
-                          <p className="text-xs text-gray-500">
+                          <p className="text-xs text-gray-400">
                             MP4, WebM, max 30 seconds
                           </p>
                         </div>
@@ -398,7 +418,9 @@ const CreatePostModal = ({ isOpen, onClose, onPostCreated }) => {
 
                     {videoPreview && (
                       <div className="space-y-3">
-                        <Label className="text-gray-700 font-medium">Video Preview</Label>
+                        <Label className="text-gray-700 font-medium">
+                          Video Preview
+                        </Label>
                         <div className="relative rounded-xl overflow-hidden shadow-sm border border-indigo-100">
                           <video
                             src={videoPreview}
@@ -416,7 +438,8 @@ const CreatePostModal = ({ isOpen, onClose, onPostCreated }) => {
                           </Button>
                         </div>
                         <p className="text-xs text-gray-500">
-                          Note: Videos longer than 30 seconds will be trimmed automatically.
+                          Note: Videos longer than 30 seconds will be trimmed
+                          automatically.
                         </p>
                       </div>
                     )}
@@ -426,14 +449,14 @@ const CreatePostModal = ({ isOpen, onClose, onPostCreated }) => {
 
               {postType === "progress" && (
                 <div className="space-y-2">
-                  <Label className="text-gray-700 font-medium">
+                  <Label className="text-gray-300 font-medium">
                     Progress Template
                   </Label>
                   <Select defaultValue="course">
-                    <SelectTrigger className="rounded-xl border-gray-200">
+                    <SelectTrigger className="rounded-xl border-gray-200 text-white">
                       <SelectValue placeholder="Select a template" />
                     </SelectTrigger>
-                    <SelectContent className="rounded-xl">
+                    <SelectContent className="rounded-xl bg-gray-700 border-gray-700">
                       <SelectItem value="course">Completed Course</SelectItem>
                       <SelectItem value="milestone">
                         Reached Milestone
@@ -449,21 +472,21 @@ const CreatePostModal = ({ isOpen, onClose, onPostCreated }) => {
 
               {postType === "plan" && (
                 <div className="space-y-2">
-                  <Label className="text-gray-700 font-medium">
+                  <Label className="text-gray-300 font-medium">
                     Estimated Completion Time
                   </Label>
                   <div className="flex gap-2">
                     <Input
                       type="number"
                       min="1"
-                      className="w-20 rounded-xl border-gray-200"
+                      className="w-20 rounded-xl border-gray-500 text-white placeholder:text-white"
                       placeholder="1"
                     />
                     <Select defaultValue="days">
-                      <SelectTrigger className="rounded-xl border-gray-200">
+                      <SelectTrigger className="rounded-xl border-gray-500 text-white">
                         <SelectValue placeholder="Select unit" />
                       </SelectTrigger>
-                      <SelectContent className="rounded-xl">
+                      <SelectContent className="rounded-xl bg-gray-700 border-gray-700">
                         <SelectItem value="days">Days</SelectItem>
                         <SelectItem value="weeks">Weeks</SelectItem>
                         <SelectItem value="months">Months</SelectItem>
@@ -481,7 +504,7 @@ const CreatePostModal = ({ isOpen, onClose, onPostCreated }) => {
               variant="outline"
               onClick={onClose}
               disabled={loading}
-              className="rounded-xl border-gray-300 hover:bg-gray-100 text-gray-700"
+              className="rounded-xl border-gray-700 hover:bg-gray-500 bg-gray-500 text-gray-100"
             >
               Cancel
             </Button>

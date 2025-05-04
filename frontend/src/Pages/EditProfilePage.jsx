@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Header from "../Components/Header";
 import Cropper from "react-easy-crop";
+import CustomLoader from "../Components/CustomLoader";
 
 // Function to generate a cropped image from the crop area
 const createCroppedImage = async (imageSrc, pixelCrop) => {
@@ -318,34 +319,21 @@ const EditProfilePage = () => {
 
   if (initialLoading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen">
         <Header user={user} />
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="bg-white shadow-sm rounded-xl p-6">
-            <div className="animate-pulse flex space-x-4">
-              <div className="flex-1 space-y-6 py-1">
-                <div className="h-6 bg-gray-200 rounded w-1/4"></div>
-                <div className="space-y-3">
-                  <div className="h-4 bg-gray-200 rounded"></div>
-                  <div className="h-4 bg-gray-200 rounded"></div>
-                  <div className="h-4 bg-gray-200 rounded"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <CustomLoader />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-black">
       <Header user={user} />
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-white shadow-sm rounded-xl overflow-hidden">
+        <div className="bg-gray-800 shadow-sm rounded-xl overflow-hidden">
           <div className="px-6 py-5 border-b border-gray-200">
-            <h1 className="text-xl font-bold text-gray-900">Edit Profile</h1>
-            <p className="mt-1 text-sm text-gray-500">
+            <h1 className="text-xl font-bold text-gray-300">Edit Profile</h1>
+            <p className="mt-1 text-sm text-gray-400">
               Update your profile information and preferences
             </p>
           </div>
@@ -461,10 +449,11 @@ const EditProfilePage = () => {
             )}
 
             <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Profile Picture Section */}
               <div>
                 <label
                   htmlFor="profilePicture"
-                  className="block text-sm font-medium text-gray-700 mb-2"
+                  className="block text-sm font-medium text-gray-300 mb-2"
                 >
                   Profile Picture
                 </label>
@@ -478,7 +467,7 @@ const EditProfilePage = () => {
                       onMouseLeave={() => setImageHover(false)}
                     >
                       {/* Profile image container */}
-                      <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-100 shadow-md border-4 border-white flex items-center justify-center">
+                      <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-700 shadow-md border-4 border-gray-800 flex items-center justify-center">
                         {previewUrl ? (
                           <img
                             src={previewUrl}
@@ -487,7 +476,7 @@ const EditProfilePage = () => {
                           />
                         ) : (
                           <svg
-                            className="h-16 w-16 text-gray-400"
+                            className="h-16 w-16 text-gray-500"
                             fill="currentColor"
                             viewBox="0 0 24 24"
                           >
@@ -499,7 +488,7 @@ const EditProfilePage = () => {
                       {/* Hover overlay */}
                       <div
                         className={`absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center transition-opacity duration-200 
-                        ${imageHover ? "opacity-100" : "opacity-0"}`}
+            ${imageHover ? "opacity-100" : "opacity-0"}`}
                       >
                         <div className="text-white text-sm font-medium">
                           Change Photo
@@ -510,7 +499,7 @@ const EditProfilePage = () => {
                     <button
                       type="button"
                       onClick={triggerFileInput}
-                      className="mt-2 text-sm font-medium text-indigo-600 hover:text-indigo-500"
+                      className="mt-2 text-sm font-medium text-indigo-400 hover:text-indigo-300 transition-colors"
                     >
                       Upload new image
                     </button>
@@ -526,7 +515,7 @@ const EditProfilePage = () => {
                   </div>
 
                   <div className="flex-1">
-                    <p className="text-sm text-gray-600 mb-2">
+                    <p className="text-sm text-gray-400 mb-2">
                       Choose a square image in JPG or PNG format.
                     </p>
                     <ul className="text-xs text-gray-500 list-disc pl-4 space-y-1">
@@ -541,10 +530,11 @@ const EditProfilePage = () => {
                 </div>
               </div>
 
+              {/* Username Field */}
               <div>
                 <label
                   htmlFor="username"
-                  className="block text-sm font-medium text-gray-700"
+                  className="block text-sm font-medium text-gray-300"
                 >
                   Username
                 </label>
@@ -554,15 +544,16 @@ const EditProfilePage = () => {
                   id="username"
                   value={formData.username}
                   onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
+                  className="mt-1 block w-full rounded-md bg-gray-700 border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-white sm:text-sm p-2 border"
                   required
                 />
               </div>
 
+              {/* Email Field */}
               <div>
                 <label
                   htmlFor="email"
-                  className="block text-sm font-medium text-gray-700"
+                  className="block text-sm font-medium text-gray-300"
                 >
                   Email
                 </label>
@@ -572,18 +563,19 @@ const EditProfilePage = () => {
                   id="email"
                   value={formData.email}
                   onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
+                  className="mt-1 block w-full rounded-md bg-gray-700 border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-white sm:text-sm p-2 border"
                   required
                 />
-                <p className="mt-1 text-xs text-gray-500">
+                <p className="mt-1 text-xs text-gray-400">
                   This email will be used for notifications and account recovery
                 </p>
               </div>
 
+              {/* Bio Field */}
               <div>
                 <label
                   htmlFor="bio"
-                  className="block text-sm font-medium text-gray-700"
+                  className="block text-sm font-medium text-gray-300"
                 >
                   Bio
                 </label>
@@ -593,26 +585,27 @@ const EditProfilePage = () => {
                   rows="4"
                   value={formData.bio}
                   onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
+                  className="mt-1 block w-full rounded-md bg-gray-700 border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-white sm:text-sm p-2 border"
                   placeholder="Tell others about yourself"
                   maxLength={200}
                 ></textarea>
-                <p className="mt-1 text-xs text-gray-500">
+                <p className="mt-1 text-xs text-gray-400">
                   Brief description for your profile. Maximum 200 characters.
                 </p>
               </div>
 
-              {/* Hidden field to maintain the URL in formData */}
+              {/* Hidden field */}
               <input
                 type="hidden"
                 name="profilePicUrl"
                 value={formData.profilePicUrl}
               />
 
+              {/* Skills Section */}
               <div>
                 <label
                   htmlFor="skills"
-                  className="block text-sm font-medium text-gray-700"
+                  className="block text-sm font-medium text-gray-300"
                 >
                   Skills
                 </label>
@@ -623,12 +616,12 @@ const EditProfilePage = () => {
                     value={newSkill}
                     onChange={(e) => setNewSkill(e.target.value)}
                     placeholder="Add a skill (e.g., JavaScript, Design)"
-                    className="block w-full rounded-l-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
+                    className="block w-full rounded-l-md bg-gray-700 border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-white sm:text-sm p-2 border"
                   />
                   <button
                     type="button"
                     onClick={handleAddSkill}
-                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-r-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-r-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
                   >
                     Add
                   </button>
@@ -638,13 +631,13 @@ const EditProfilePage = () => {
                   {formData.skills.map((skill, index) => (
                     <div
                       key={index}
-                      className="inline-flex items-center bg-indigo-100 text-indigo-800 rounded-full px-3 py-1 text-sm"
+                      className="inline-flex items-center bg-indigo-900/50 text-indigo-300 rounded-full px-3 py-1 text-sm border border-indigo-800"
                     >
                       {skill}
                       <button
                         type="button"
                         onClick={() => handleRemoveSkill(skill)}
-                        className="ml-1.5 text-indigo-600 hover:text-indigo-900"
+                        className="ml-1.5 text-indigo-400 hover:text-indigo-200 transition-colors"
                       >
                         <svg
                           className="h-4 w-4"
@@ -661,16 +654,17 @@ const EditProfilePage = () => {
                     </div>
                   ))}
                 </div>
-                <p className="mt-1 text-xs text-gray-500">
+                <p className="mt-1 text-xs text-gray-400">
                   Add skills that showcase your expertise
                 </p>
               </div>
 
-              <div className="pt-4 border-t border-gray-200 flex justify-end space-x-3">
+              {/* Form Actions */}
+              <div className="pt-4 border-t border-gray-700 flex justify-end space-x-3">
                 <button
                   type="button"
                   onClick={handleCancel}
-                  className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  className="px-4 py-2 border border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-300 bg-gray-700 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
                 >
                   Cancel
                 </button>
@@ -678,9 +672,9 @@ const EditProfilePage = () => {
                   type="submit"
                   disabled={loading}
                   className={`px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white 
-                  bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600
-                  focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 
-                  ${loading ? "opacity-70 cursor-not-allowed" : ""}`}
+      bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600
+      focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all
+      ${loading ? "opacity-70 cursor-not-allowed" : ""}`}
                 >
                   {loading ? "Saving..." : "Save Changes"}
                 </button>

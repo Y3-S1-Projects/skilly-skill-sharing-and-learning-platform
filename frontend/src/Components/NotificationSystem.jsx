@@ -260,7 +260,7 @@ function NotificationSystem({ currentUser }) {
   return (
     <div className="notification-system relative">
       <button
-        className="relative p-1 text-gray-400 hover:text-gray-500 focus:outline-none"
+        className="relative p-1 text-gray-400 hover:text-white focus:outline-none transition-colors duration-200"
         onClick={() => setShowDropdown(!showDropdown)}
         aria-label="Notifications"
       >
@@ -278,7 +278,7 @@ function NotificationSystem({ currentUser }) {
           />
         </svg>
         {unreadCount > 0 && (
-          <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full">
+          <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-500 rounded-full">
             {unreadCount > 99 ? "99+" : unreadCount}
           </span>
         )}
@@ -288,14 +288,14 @@ function NotificationSystem({ currentUser }) {
       {showDropdown && (
         <div
           ref={dropdownRef}
-          className="origin-top-right absolute right-0 mt-2 w-80 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-10 overflow-hidden"
+          className="origin-top-right absolute right-0 mt-2 w-80 rounded-md shadow-lg bg-gray-800 border border-gray-700 focus:outline-none z-10 overflow-hidden"
         >
-          <div className="flex justify-between items-center px-4 py-2 bg-gray-50 border-b border-gray-200">
-            <h3 className="text-sm font-medium text-gray-700">Notifications</h3>
+          <div className="flex justify-between items-center px-4 py-2 bg-gray-900 border-b border-gray-700">
+            <h3 className="text-sm font-medium text-white">Notifications</h3>
             {unreadCount > 0 && (
               <button
                 onClick={markAllAsRead}
-                className="text-xs text-indigo-600 hover:text-indigo-800"
+                className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors"
               >
                 Mark all as read
               </button>
@@ -304,7 +304,7 @@ function NotificationSystem({ currentUser }) {
 
           <div className="max-h-96 overflow-y-auto">
             {notifications.length === 0 ? (
-              <div className="py-4 px-4 text-center text-gray-500 text-sm">
+              <div className="py-4 px-4 text-center text-gray-400 text-sm">
                 No notifications yet
               </div>
             ) : (
@@ -312,8 +312,8 @@ function NotificationSystem({ currentUser }) {
                 <div
                   key={notification.id}
                   onClick={() => handleNotificationClick(notification)}
-                  className={`px-4 py-3 border-b border-gray-100 cursor-pointer hover:bg-gray-50 ${
-                    !notification.read ? "bg-blue-50" : ""
+                  className={`px-4 py-3 border-b border-gray-700 cursor-pointer hover:bg-gray-700 transition-colors ${
+                    !notification.read ? "bg-indigo-900/30" : ""
                   }`}
                 >
                   <div className="flex items-start">
@@ -321,25 +321,25 @@ function NotificationSystem({ currentUser }) {
                       <img
                         src={notification.senderAvatar}
                         alt=""
-                        className="h-8 w-8 rounded-full mr-3"
+                        className="h-8 w-8 rounded-full mr-3 border border-gray-600"
                       />
                     ) : (
-                      <div className="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center mr-3">
-                        <span className="text-xs font-medium text-indigo-600">
+                      <div className="h-8 w-8 rounded-full bg-indigo-900/50 flex items-center justify-center mr-3 border border-gray-600">
+                        <span className="text-xs font-medium text-indigo-300">
                           {notification.senderName?.charAt(0) || "?"}
                         </span>
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm text-gray-800">
+                      <p className="text-sm text-gray-100">
                         {notification.message}
                       </p>
-                      <p className="text-xs text-gray-500 mt-1">
+                      <p className="text-xs text-gray-400 mt-1">
                         {formatTimeAgo(notification.createdAt)}
                       </p>
                     </div>
                     {!notification.read && (
-                      <span className="ml-2 h-2 w-2 rounded-full bg-blue-600"></span>
+                      <span className="ml-2 h-2 w-2 rounded-full bg-indigo-400"></span>
                     )}
                   </div>
                 </div>
@@ -348,13 +348,13 @@ function NotificationSystem({ currentUser }) {
           </div>
 
           {notifications.length > 10 && (
-            <div className="px-4 py-2 text-center border-t border-gray-100">
-              <a
-                href="/notifications"
-                className="text-sm text-indigo-600 hover:text-indigo-800"
+            <div className="px-4 py-2 text-center border-t border-gray-700">
+              <Link
+                to="/notifications"
+                className="text-sm text-indigo-400 hover:text-indigo-300 transition-colors"
               >
                 View all notifications
-              </a>
+              </Link>
             </div>
           )}
         </div>

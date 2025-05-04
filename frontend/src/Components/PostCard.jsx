@@ -315,7 +315,7 @@ const PostCard = ({
   };
   const isPostOwner = post.userId === loggedInUser?.id;
   return (
-    <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200 hover:shadow-md transition-shadow">
+    <div className="bg-gray-800 rounded-xl shadow-sm overflow-hidden border border-gray-800 hover:shadow-md transition-shadow">
       {/* Shared post header */}
       {post.originalPostId && (
         <div className="px-4 pt-4 flex items-center text-sm text-gray-500">
@@ -362,7 +362,7 @@ const PostCard = ({
 
           {/* Name and timestamp */}
           <div>
-            <h3 className="font-medium text-gray-900">
+            <h3 className="font-medium text-gray-100">
               {isViewingProfile
                 ? post.userId === currentUser.id
                   ? postOwner?.username
@@ -370,7 +370,7 @@ const PostCard = ({
                 : postOwner?.username}
 
               {post.originalUserId && post.originalUserId !== post.userId && (
-                <span className="text-sm text-gray-500 ml-1">
+                <span className="text-sm text-gray-200 ml-1">
                   (original post by{" "}
                   {post.originalUserId === currentUser.id
                     ? "you"
@@ -379,7 +379,7 @@ const PostCard = ({
                 </span>
               )}
             </h3>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-gray-400">
               {formatDate(post.createdAt)}
               {post.postType && (
                 <span
@@ -422,13 +422,13 @@ const PostCard = ({
               </button>
 
               {actionsDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 py-1 border border-gray-200">
+                <div className="absolute right-0 mt-2 w-48 bg-gray-700 rounded-md shadow-lg z-10 py-1 border border-gray-700">
                   <button
                     onClick={() => {
                       setIsEditing(true);
                       setActionsDropdownOpen(false);
                     }}
-                    className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    className="flex items-center w-full px-4 py-2 text-sm text-gray-300 hover:bg-gray-600"
                   >
                     <svg
                       className="h-4 w-4 mr-2"
@@ -450,7 +450,7 @@ const PostCard = ({
                       handleDeletePost();
                       setActionsDropdownOpen(false);
                     }}
-                    className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                    className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-600"
                   >
                     <svg
                       className="h-4 w-4 mr-2"
@@ -474,7 +474,7 @@ const PostCard = ({
         </div>
 
         {/* Post Content */}
-        <h2 className="text-xl font-semibold text-gray-900 mb-2">
+        <h2 className="text-xl font-semibold text-gray-300 mb-2">
           {isEditing ? (
             <input
               type="text"
@@ -485,14 +485,17 @@ const PostCard = ({
                   title: e.target.value,
                 })
               }
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 placeholder-gray-400"
+              placeholder="Post title"
             />
           ) : (
-            post.title
+            <span className="hover:text-white transition-colors duration-200">
+              {post.title}
+            </span>
           )}
         </h2>
 
-        <p className="text-gray-700 mb-3">
+        <p className="text-gray-300 mb-3">
           {isEditing ? (
             <textarea
               value={editData.content}
@@ -502,15 +505,17 @@ const PostCard = ({
                   content: e.target.value,
                 })
               }
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 resize-none placeholder-gray-400"
               rows="3"
+              placeholder="Share your thoughts..."
             />
           ) : (
-            post.content
+            <span className="hover:text-gray-100 transition-colors duration-200">
+              {post.content}
+            </span>
           )}
         </p>
 
-        {/* Post Media */}
         {/* Post Media */}
         {((post.mediaUrls && post.mediaUrls.length > 0) || post.videoUrl) && (
           <div className="mt-3">
@@ -890,7 +895,7 @@ const PostCard = ({
                   value={commentInput}
                   onChange={(e) => setCommentInput(e.target.value)}
                   placeholder="Write a comment..."
-                  className="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+                  className="flex-1 border text-white border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
                 />
                 <button
                   onClick={handleAddComment}
@@ -933,7 +938,7 @@ const PostCard = ({
 
                   {/* Comment content section */}
                   <div className="flex-1">
-                    <div className="bg-gray-50 rounded-lg p-3">
+                    <div className="bg-gray-600 rounded-lg p-3">
                       {editingCommentId === comment.id ||
                       editingCommentId === comment._id ? (
                         <div className="space-y-2">
@@ -966,17 +971,17 @@ const PostCard = ({
                         <>
                           <div className="flex justify-between items-start">
                             {/* Username from comment owner data */}
-                            <p className="text-sm font-medium text-gray-900">
+                            <p className="text-sm font-medium text-gray-300">
                               {commentOwners[comment.userId]?.username ||
                                 (comment.userId === currentUser.id
                                   ? currentUser.name
                                   : "User")}
                             </p>
-                            <p className="text-xs text-gray-500">
+                            <p className="text-xs text-gray-300">
                               {formatDate(comment.createdAt)}
                             </p>
                           </div>
-                          <p className="text-sm text-gray-700 mt-1">
+                          <p className="text-sm text-gray-300 mt-1">
                             {comment.content}
                           </p>
                           {comment.userId === loggedInUser?.id && (

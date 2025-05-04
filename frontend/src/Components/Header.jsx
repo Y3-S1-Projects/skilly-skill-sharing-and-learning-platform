@@ -134,39 +134,38 @@ const Header = ({ onLogout }) => {
   };
 
   return (
-    <header className="bg-white shadow-sm border-b border-gray-200">
+    <header className="bg-gray-900 text-white shadow-sm sticky top-0 z-50 transition-all duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
+        <div className="flex justify-between h-16 items-center">
           {/* Logo and navigation */}
-          <div className="flex">
+          <div className="flex items-center">
             <div className="flex-shrink-0 flex items-center">
-              {/* <img className="h-8 w-auto" src="/logo.svg" alt="Skilly" /> */}
-              <span className="ml-2 text-xl font-bold text-indigo-600">
+              <span className="ml-2 text-xl font-bold text-indigo-600 hover:text-indigo-500 transition-colors duration-200 transform hover:scale-105">
                 Skilly
               </span>
             </div>
             <nav className="hidden sm:ml-6 sm:flex sm:space-x-8">
               <a
                 href="/socialfeed"
-                className="border-indigo-500 text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                className="border-indigo-500 text-white inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-all duration-300 hover:border-indigo-400 hover:translate-y-[-2px]"
               >
                 Home
               </a>
               <a
                 href="#"
-                className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                className="border-transparent text-gray-300 hover:text-white inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-all duration-300 hover:border-gray-300 hover:translate-y-[-2px]"
               >
                 Explore
               </a>
               <a
                 href="#"
-                className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                className="border-transparent text-gray-300 hover:text-white inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-all duration-300 hover:border-gray-300 hover:translate-y-[-2px]"
               >
                 Learn
               </a>
               <a
                 href="#"
-                className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                className="border-transparent text-gray-300 hover:text-white inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-all duration-300 hover:border-gray-300 hover:translate-y-[-2px]"
               >
                 Community
               </a>
@@ -182,7 +181,7 @@ const Header = ({ onLogout }) => {
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <svg
-                    className="h-5 w-5 text-gray-400"
+                    className="h-5 w-5 text-gray-400 transition-colors duration-200"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -198,7 +197,7 @@ const Header = ({ onLogout }) => {
                 <input
                   id="search"
                   name="search"
-                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  className="block w-full pl-10 pr-3 py-2 border border-gray-700 rounded-md leading-5 bg-gray-800 placeholder-gray-400 focus:outline-none focus:placeholder-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-transparent sm:text-sm transition-all duration-200"
                   placeholder="Search skills, people..."
                   type="search"
                   value={searchQuery}
@@ -210,14 +209,19 @@ const Header = ({ onLogout }) => {
           </div>
 
           {/* Right side - user menu and notifications */}
-          <div className="flex items-center">
+          <div className="flex items-center space-x-4">
             {/* Notification System Integration */}
-            <div className="relative mr-4" ref={notificationsRef}>
-              {currentUser && <NotificationSystem currentUser={currentUser} />}
+            <div className="relative" ref={notificationsRef}>
+              {currentUser && (
+                <NotificationSystem
+                  currentUser={currentUser}
+                  className="hover:scale-110 transition-transform duration-200"
+                />
+              )}
             </div>
 
             {/* Messages button */}
-            <button className="p-1 text-gray-400 hover:text-gray-500 focus:outline-none">
+            <button className="p-1 text-gray-400 hover:text-white focus:outline-none transition-colors duration-200 transform hover:scale-110">
               <svg
                 className="h-6 w-6"
                 fill="none"
@@ -234,11 +238,11 @@ const Header = ({ onLogout }) => {
             </button>
 
             {/* Profile dropdown */}
-            <div className="ml-4 relative flex-shrink-0" ref={dropdownRef}>
+            <div className="relative" ref={dropdownRef}>
               <div>
                 <button
                   type="button"
-                  className="bg-white rounded-full flex items-center focus:outline-none"
+                  className="bg-gray-900 rounded-full flex items-center focus:outline-none transition-all duration-200 hover:ring-2 hover:ring-indigo-500"
                   id="user-menu"
                   aria-expanded={isDropdownOpen}
                   aria-haspopup="true"
@@ -248,13 +252,13 @@ const Header = ({ onLogout }) => {
                   {currentUser?.avatar &&
                   !currentUser.avatar.includes("/api/placeholder/") ? (
                     <img
-                      className="h-8 w-8 rounded-full"
+                      className="h-8 w-8 rounded-full transition-transform duration-200 hover:scale-110"
                       src={currentUser.avatar}
                       alt={currentUser?.name || "User"}
                     />
                   ) : (
                     <div
-                      className={`h-8 w-8 rounded-full flex items-center justify-center ${getColorClass(
+                      className={`h-8 w-8 rounded-full flex items-center justify-center transition-transform duration-200 hover:scale-110 ${getColorClass(
                         currentUser?.id
                       )}`}
                     >
@@ -262,12 +266,14 @@ const Header = ({ onLogout }) => {
                     </div>
                   )}
                   {currentUser?.name && (
-                    <span className="ml-2 text-sm font-medium text-gray-700 hidden md:block">
+                    <span className="ml-2 text-sm font-medium text-white hidden md:block">
                       {currentUser.name}
                     </span>
                   )}
                   <svg
-                    className="ml-1 h-5 w-5 text-gray-400"
+                    className={`ml-1 h-5 w-5 text-gray-400 transition-transform duration-200 ${
+                      isDropdownOpen ? "rotate-180" : ""
+                    }`}
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 20 20"
                     fill="currentColor"
@@ -285,43 +291,43 @@ const Header = ({ onLogout }) => {
               {/* Dropdown menu */}
               {isDropdownOpen && (
                 <div
-                  className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-10"
+                  className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-gray-900 ring-1 ring-black ring-opacity-5 focus:outline-none z-10 animate-fadeIn"
                   role="menu"
                   aria-orientation="vertical"
                   aria-labelledby="user-menu"
                 >
-                  <div className="px-4 py-2 border-b border-gray-100">
-                    <p className="text-sm font-medium text-gray-900 truncate">
+                  <div className="px-4 py-2 border-b border-gray-700">
+                    <p className="text-sm font-medium text-white truncate">
                       {currentUser?.name || "Guest"}
                     </p>
-                    <p className="text-xs text-gray-500 truncate">
+                    <p className="text-xs text-gray-300 truncate">
                       {currentUser?.title || "Beginner"}
                     </p>
                   </div>
                   <a
                     href="/userprofile"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    className="block px-4 py-2 text-sm text-gray-200 hover:bg-gray-800 transition-colors duration-150"
                     role="menuitem"
                   >
                     Your Profile
                   </a>
                   <a
                     href="/settings"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    className="block px-4 py-2 text-sm text-gray-200 hover:bg-gray-800 transition-colors duration-150"
                     role="menuitem"
                   >
                     Settings
                   </a>
                   <a
                     href="/learning-dashboard"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    className="block px-4 py-2 text-sm text-gray-200 hover:bg-gray-800 transition-colors duration-150"
                     role="menuitem"
                   >
                     Learning Dashboard
                   </a>
                   <button
                     onClick={handleLogout}
-                    className="block w-full text-left px-4 py-2 text-sm text-red-700 hover:bg-gray-100"
+                    className="block w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-gray-800 transition-colors duration-150"
                     role="menuitem"
                   >
                     Sign out

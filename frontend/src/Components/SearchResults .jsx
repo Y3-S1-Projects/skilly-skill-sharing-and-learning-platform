@@ -67,7 +67,7 @@ const SearchResults = () => {
     if (users.length === 0) {
       return (
         <div className="text-center py-8">
-          <p className="text-gray-500">
+          <p className="text-gray-400">
             No users found matching "{searchQuery}"
           </p>
         </div>
@@ -79,19 +79,21 @@ const SearchResults = () => {
         {users.map((user) => (
           <div
             key={user.id}
-            className="bg-white rounded-lg shadow p-4 flex items-center border border-gray-100 hover:shadow-md transition-shadow"
+            className="bg-gray-800 rounded-lg shadow p-4 flex items-center border border-gray-700 hover:shadow-lg hover:border-gray-600 transition-all duration-200"
           >
             <img
               src={user.profilePicUrl || "/api/placeholder/64/64"}
               alt={user.username}
-              className="w-16 h-16 rounded-full object-cover"
+              className="w-16 h-16 rounded-full object-cover border-2 border-gray-700"
             />
             <div className="ml-4">
-              <h3 className="font-medium text-gray-900">
+              <h3 className="font-medium text-white">
                 {user.username}
-                {user.id === loggedInUserId && " (You)"}
+                {user.id === loggedInUserId && (
+                  <span className="text-indigo-400 ml-1">(You)</span>
+                )}
               </h3>
-              <p className="text-sm text-gray-500">{user.title}</p>
+              <p className="text-sm text-gray-400">{user.title}</p>
               <div className="mt-2">
                 <Link
                   to={
@@ -99,7 +101,7 @@ const SearchResults = () => {
                       ? "/userprofile"
                       : `/profile/${user.id}`
                   }
-                  className="text-sm bg-indigo-50 text-indigo-600 px-3 py-1 rounded-full hover:bg-indigo-100"
+                  className="text-sm bg-indigo-900/50 text-indigo-400 px-3 py-1 rounded-full hover:bg-indigo-800 hover:text-white transition-colors duration-200"
                 >
                   View Profile
                 </Link>
@@ -115,7 +117,7 @@ const SearchResults = () => {
     if (posts.length === 0) {
       return (
         <div className="text-center py-8">
-          <p className="text-gray-500">
+          <p className="text-gray-400">
             No posts found matching "{searchQuery}"
           </p>
         </div>
@@ -138,7 +140,7 @@ const SearchResults = () => {
           return (
             <div
               key={post.id}
-              className="bg-white rounded-lg shadow p-6 border border-gray-100 hover:shadow-md transition-shadow"
+              className="bg-gray-800 rounded-lg shadow p-6 border border-gray-700 hover:shadow-lg hover:border-gray-600 transition-all duration-200"
             >
               {/* Author section */}
               <div className="flex items-center mb-4">
@@ -148,9 +150,9 @@ const SearchResults = () => {
                   className="w-10 h-10 rounded-full object-cover"
                 />
                 <div className="ml-3">
-                  <h4 className="font-medium text-gray-900">{author.name}</h4>
+                  <h4 className="font-medium text-white">{author.name}</h4>
                   {author.title && (
-                    <p className="text-xs text-gray-500">{author.title}</p>
+                    <p className="text-xs text-gray-400">{author.title}</p>
                   )}
                   <p className="text-xs text-gray-500">
                     {post.createdAt
@@ -161,16 +163,16 @@ const SearchResults = () => {
               </div>
 
               {/* Post content */}
-              <h3 className="text-lg font-semibold mb-2">
+              <h3 className="text-lg font-semibold mb-2 text-white">
                 {post.title || "Untitled post"}
               </h3>
-              <p className="text-gray-600 line-clamp-3">
+              <p className="text-gray-300 line-clamp-3">
                 {post.content || "No content available"}
               </p>
 
               {/* Post stats */}
               <div className="mt-4 flex">
-                <div className="flex items-center text-gray-500 text-sm mr-4">
+                <div className="flex items-center text-gray-400 text-sm mr-4 hover:text-gray-300 transition-colors">
                   <svg
                     className="h-4 w-4 mr-1"
                     fill="currentColor"
@@ -184,7 +186,7 @@ const SearchResults = () => {
                   </svg>
                   {post.comments?.length || 0}
                 </div>
-                <div className="flex items-center text-gray-500 text-sm">
+                <div className="flex items-center text-gray-400 text-sm hover:text-gray-300 transition-colors">
                   <svg
                     className="h-4 w-4 mr-1"
                     fill="currentColor"
@@ -201,41 +203,41 @@ const SearchResults = () => {
       </div>
     );
   };
-
   return (
-    <>
+    <div className="bg-black h-screen">
       <Header user={user} />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {/* Search Header */}
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold text-white">
             Search results for "{searchQuery}"
           </h1>
-          <p className="text-gray-500 mt-1">
+          <p className="text-gray-400 mt-1">
             Found {users.length} users and {posts.length} posts matching your
             search
           </p>
         </div>
 
-        {/* Tabs */}
-        <div className="border-b border-gray-200 mb-6">
+        {/* Tabs Navigation */}
+        <div className="border-b border-gray-700 mb-6">
           <nav className="flex -mb-px">
             <button
               onClick={() => setActiveTab("users")}
-              className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${
+              className={`py-4 px-6 text-center border-b-2 font-medium text-sm transition-colors duration-200 ${
                 activeTab === "users"
-                  ? "border-indigo-500 text-indigo-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                  ? "border-indigo-500 text-indigo-400"
+                  : "border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-600"
               }`}
             >
               Users ({users.length})
             </button>
             <button
               onClick={() => setActiveTab("posts")}
-              className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${
+              className={`py-4 px-6 text-center border-b-2 font-medium text-sm transition-colors duration-200 ${
                 activeTab === "posts"
-                  ? "border-indigo-500 text-indigo-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                  ? "border-indigo-500 text-indigo-400"
+                  : "border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-600"
               }`}
             >
               Posts ({posts.length})
@@ -243,7 +245,7 @@ const SearchResults = () => {
           </nav>
         </div>
 
-        {/* Loading and error states */}
+        {/* Loading and Error States */}
         {loading && (
           <div className="flex justify-center py-8">
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
@@ -251,19 +253,19 @@ const SearchResults = () => {
         )}
 
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md">
+          <div className="bg-red-900/30 border border-red-700 text-red-400 px-4 py-3 rounded-md">
             {error}
           </div>
         )}
 
-        {/* Results content */}
+        {/* Results Content */}
         {!loading && !error && (
           <div className="mt-6">
             {activeTab === "users" ? renderUserResults() : renderPostResults()}
           </div>
         )}
       </div>
-    </>
+    </div>
   );
 };
 
