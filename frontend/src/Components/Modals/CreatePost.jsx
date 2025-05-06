@@ -247,15 +247,8 @@ const CreatePostModal = ({ isOpen, onClose, onPostCreated }) => {
                   value="progress"
                   className="rounded-lg flex items-center gap-2 data-[state=active]:bg-gray-900 data-[state=active]:text-blue-700 data-[state=active]:shadow"
                 >
-                  <FileText className="h-4 w-4" />
+                  <FileText className="h-4444 w-4" />
                   <span>Learning Progress</span>
-                </TabsTrigger>
-                <TabsTrigger
-                  value="plan"
-                  className="rounded-lg flex items-center gap-2 data-[state=active]:bg-gray-900 data-[state=active]:text-emerald-700 data-[state=active]:shadow"
-                >
-                  <Calendar className="h-4 w-4" />
-                  <span>Learning Plan</span>
                 </TabsTrigger>
               </TabsList>
             </Tabs>
