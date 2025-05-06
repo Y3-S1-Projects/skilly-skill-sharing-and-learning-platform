@@ -288,7 +288,7 @@ const CreatePostModal = ({ isOpen, onClose, onPostCreated }) => {
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     placeholder="Enter a title for your post"
-                    className="rounded-xl border-gray-200 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                    className="text-white rounded-xl border-gray-200 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                   />
                 </div>
 
@@ -302,7 +302,7 @@ const CreatePostModal = ({ isOpen, onClose, onPostCreated }) => {
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     placeholder="Share details about your skill, progress, or learning plan"
-                    className="rounded-xl border-gray-200 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                    className="text-white rounded-xl border-gray-200 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                   />
                 </div>
 
