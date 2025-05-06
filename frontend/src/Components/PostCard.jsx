@@ -566,7 +566,7 @@ const PostCard = ({
                     <img
                       src={url}
                       alt={`Post media ${index}`}
-                      className="rounded-lg object-cover w-full h-48"
+                      className="rounded-lg object-cover w-full h-auto"
                     />
                     {isEditing && (
                       <button
