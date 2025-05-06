@@ -257,7 +257,7 @@ const CreatePostModal = ({ isOpen, onClose, onPostCreated }) => {
             <div className="space-y-2">
               <Label className="text-gray-300 font-medium">Post Type</Label>
               <Tabs value={postType} onValueChange={setPostType} className="w-full">
-                <TabsList className="grid w-full grid-cols-3 bg-gray-600 p-1 rounded-xl">
+                <TabsList className="grid w-full grid-cols-2 bg-gray-600 p-1 rounded-xl">
                   <TabsTrigger
                     value="skill"
                     className="rounded-lg flex items-center gap-2 data-[state=active]:bg-gray-900 data-[state=active]:text-amber-700 data-[state=active]:shadow"
@@ -269,7 +269,7 @@ const CreatePostModal = ({ isOpen, onClose, onPostCreated }) => {
                     value="progress"
                     className="rounded-lg flex items-center gap-2 data-[state=active]:bg-gray-900 data-[state=active]:text-blue-700 data-[state=active]:shadow"
                   >
-                    <FileText className="h-4444 w-4" />
+                    <FileText className="h-4 w-4" />
                     <span>Learning Progress</span>
                   </TabsTrigger>
                 </TabsList>
