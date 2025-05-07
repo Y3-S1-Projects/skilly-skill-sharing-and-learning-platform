@@ -7,19 +7,18 @@ const LearningPlanForm = ({ plan, onSubmit, onCancel }) => {
     description: "",
     isPublic: false,
     completionDeadline: "",
-    topics: []
+    topics: [],
   });
 
   useEffect(() => {
     if (plan) {
-      // Format date for input field
       const deadline = plan.completionDeadline
-        ? new Date(plan.completionDeadline).toISOString().split('T')[0]
+        ? new Date(plan.completionDeadline).toISOString().split("T")[0]
         : "";
 
       setFormData({
         ...plan,
-        completionDeadline: deadline
+        completionDeadline: deadline,
       });
     }
   }, [plan]);
@@ -28,7 +27,7 @@ const LearningPlanForm = ({ plan, onSubmit, onCancel }) => {
     const { name, value, type, checked } = e.target;
     setFormData({
       ...formData,
-      [name]: type === "checkbox" ? checked : value
+      [name]: type === "checkbox" ? checked : value,
     });
   };
 
@@ -42,32 +41,32 @@ const LearningPlanForm = ({ plan, onSubmit, onCancel }) => {
           name: "",
           description: "",
           resources: [],
-          completed: false
-        }
-      ]
+          completed: false,
+        },
+      ],
     });
   };
 
   const handleRemoveTopic = (topicId) => {
     setFormData({
       ...formData,
-      topics: formData.topics.filter(topic => topic.id !== topicId)
+      topics: formData.topics.filter((topic) => topic.id !== topicId),
     });
   };
 
   const handleTopicChange = (topicId, field, value) => {
     setFormData({
       ...formData,
-      topics: formData.topics.map(topic =>
+      topics: formData.topics.map((topic) =>
         topic.id === topicId ? { ...topic, [field]: value } : topic
-      )
+      ),
     });
   };
 
   const handleAddResource = (topicId) => {
     setFormData({
       ...formData,
-      topics: formData.topics.map(topic => {
+      topics: formData.topics.map((topic) => {
         if (topic.id === topicId) {
           return {
             ...topic,
@@ -78,319 +77,84 @@ const LearningPlanForm = ({ plan, onSubmit, onCancel }) => {
                 title: "",
                 type: "article",
                 url: "",
-                completed: false
-              }
-            ]
+                completed: false,
+              },
+            ],
           };
         }
         return topic;
-      })
+      }),
     });
   };
 
   const handleRemoveResource = (topicId, resourceId) => {
     setFormData({
       ...formData,
-      topics: formData.topics.map(topic => {
+      topics: formData.topics.map((topic) => {
         if (topic.id === topicId) {
           return {
             ...topic,
-            resources: topic.resources.filter(resource => resource.id !== resourceId)
+            resources: topic.resources.filter(
+              (resource) => resource.id !== resourceId
+            ),
           };
         }
         return topic;
-      })
+      }),
     });
   };
 
   const handleResourceChange = (topicId, resourceId, field, value) => {
     setFormData({
       ...formData,
-      topics: formData.topics.map(topic => {
+      topics: formData.topics.map((topic) => {
         if (topic.id === topicId) {
           return {
             ...topic,
-            resources: topic.resources.map(resource =>
-              resource.id === resourceId ? { ...resource, [field]: value } : resource
-            )
+            resources: topic.resources.map((resource) =>
+              resource.id === resourceId
+                ? { ...resource, [field]: value }
+                : resource
+            ),
           };
         }
         return topic;
-      })
+      }),
     });
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
-    // Format date for API
     const formattedData = {
       ...formData,
       completionDeadline: formData.completionDeadline
         ? new Date(formData.completionDeadline)
-        : null
+        : null,
     };
-
     onSubmit(formattedData);
   };
 
-  // Styles
-  const styles = {
-    form: {
-      maxWidth: "800px",
-      margin: "0 auto",
-      padding: "2rem",
-      backgroundColor: "#ffffff",
-      borderRadius: "12px",
-      boxShadow: "0 4px 20px rgba(0, 0, 0, 0.08)",
-      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif"
-    },
-    formHeader: {
-      textAlign: "center",
-      marginBottom: "2rem",
-      paddingBottom: "1.5rem",
-      borderBottom: "1px solid #f0f0f0"
-    },
-    formTitle: {
-      color: "#4f46e5",
-      fontSize: "1.75rem",
-      marginBottom: "0.5rem",
-      fontWeight: "700"
-    },
-    formSubtitle: {
-      color: "#6b7280",
-      fontSize: "1rem"
-    },
-    formSection: {
-      marginBottom: "1.5rem"
-    },
-    label: {
-      display: "block",
-      fontWeight: "500",
-      color: "#374151",
-      fontSize: "0.95rem",
-      marginBottom: "0.5rem"
-    },
-    requiredStar: {
-      color: "#ef4444",
-      marginLeft: "2px"
-    },
-    input: {
-      display: "block",
-      width: "100%",
-      padding: "0.75rem 1rem",
-      marginTop: "0.5rem",
-      border: "1px solid #d1d5db",
-      borderRadius: "8px",
-      backgroundColor: "#f9fafb",
-      fontSize: "0.95rem",
-      transition: "all 0.2s ease"
-    },
-    textarea: {
-      display: "block",
-      width: "100%",
-      padding: "0.75rem 1rem",
-      marginTop: "0.5rem",
-      border: "1px solid #d1d5db",
-      borderRadius: "8px",
-      backgroundColor: "#f9fafb",
-      fontSize: "0.95rem",
-      resize: "vertical",
-      minHeight: "100px"
-    },
-    checkbox: {
-      width: "18px",
-      height: "18px",
-      marginRight: "10px",
-      accentColor: "#4f46e5"
-    },
-    checkboxContainer: {
-      display: "flex",
-      alignItems: "center",
-      marginBottom: "1.5rem"
-    },
-    checkboxLabel: {
-      fontSize: "0.95rem",
-      color: "#374151"
-    },
-    sectionHeader: {
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center",
-      marginBottom: "1.25rem"
-    },
-    sectionTitle: {
-      fontSize: "1.25rem",
-      fontWeight: "600",
-      color: "#111827",
-      margin: "0"
-    },
-    subsectionTitle: {
-      fontSize: "1rem",
-      fontWeight: "600",
-      color: "#4b5563",
-      margin: "0"
-    },
-    addButton: {
-      backgroundColor: "#4f46e5",
-      color: "white",
-      border: "none",
-      borderRadius: "6px",
-      padding: "0.5rem 1rem",
-      fontSize: "0.875rem",
-      fontWeight: "500",
-      cursor: "pointer",
-      display: "flex",
-      alignItems: "center"
-    },
-    addResourceButton: {
-      backgroundColor: "#6366f1",
-      color: "white",
-      border: "none",
-      borderRadius: "6px",
-      padding: "0.4rem 0.75rem",
-      fontSize: "0.8rem",
-      fontWeight: "500",
-      cursor: "pointer",
-      display: "flex",
-      alignItems: "center"
-    },
-    topicsSection: {
-      marginTop: "2rem"
-    },
-    emptyState: {
-      textAlign: "center",
-      padding: "2rem",
-      backgroundColor: "#f9fafb",
-      borderRadius: "8px",
-      border: "1px dashed #d1d5db",
-      color: "#6b7280",
-      marginBottom: "1.5rem"
-    },
-    topicCard: {
-      border: "1px solid #e5e7eb",
-      borderRadius: "10px",
-      padding: "1.5rem",
-      marginBottom: "1.5rem",
-      backgroundColor: "#f9fafb",
-      boxShadow: "0 2px 5px rgba(0, 0, 0, 0.05)"
-    },
-    topicHeader: {
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center",
-      marginBottom: "1.25rem",
-      paddingBottom: "0.75rem",
-      borderBottom: "1px solid #e5e7eb"
-    },
-    topicTitle: {
-      fontSize: "1.125rem",
-      fontWeight: "600",
-      color: "#111827",
-      margin: "0"
-    },
-    removeButton: {
-      backgroundColor: "transparent",
-      color: "#ef4444",
-      border: "1px solid #ef4444",
-      borderRadius: "6px",
-      padding: "0.4rem 0.75rem",
-      fontSize: "0.8rem",
-      cursor: "pointer"
-    },
-    resourcesSection: {
-      marginTop: "1.5rem",
-      paddingTop: "1rem",
-      borderTop: "1px dashed #e5e7eb"
-    },
-    resourceCard: {
-      backgroundColor: "white",
-      border: "1px solid #e5e7eb",
-      borderRadius: "8px",
-      padding: "1rem",
-      marginBottom: "1rem"
-    },
-    resourceHeader: {
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center",
-      marginBottom: "1rem"
-    },
-    resourceTitle: {
-      fontSize: "0.875rem",
-      fontWeight: "600",
-      color: "#4b5563",
-      margin: "0"
-    },
-    resourceGrid: {
-      display: "grid",
-      gridTemplateColumns: "1fr 1fr",
-      gap: "1rem"
-    },
-    resourceField: {
-      marginBottom: "0.75rem"
-    },
-    fullWidth: {
-      gridColumn: "span 2"
-    },
-    select: {
-      display: "block",
-      width: "100%",
-      padding: "0.75rem 1rem",
-      marginTop: "0.5rem",
-      border: "1px solid #d1d5db",
-      borderRadius: "8px",
-      backgroundColor: "#f9fafb",
-      fontSize: "0.95rem",
-      appearance: "none",
-      backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E\")",
-      backgroundRepeat: "no-repeat",
-      backgroundPosition: "right 0.75rem center",
-      backgroundSize: "16px 12px",
-      paddingRight: "2.5rem"
-    },
-    formActions: {
-      display: "flex",
-      justifyContent: "flex-end",
-      gap: "1rem",
-      marginTop: "2rem",
-      paddingTop: "1.5rem",
-      borderTop: "1px solid #f0f0f0"
-    },
-    cancelButton: {
-      backgroundColor: "white",
-      color: "#4b5563",
-      border: "1px solid #d1d5db",
-      borderRadius: "6px",
-      padding: "0.75rem 1.5rem",
-      fontSize: "0.95rem",
-      fontWeight: "500",
-      cursor: "pointer"
-    },
-    submitButton: {
-      backgroundColor: "#4f46e5",
-      color: "white",
-      border: "none",
-      borderRadius: "6px",
-      padding: "0.75rem 1.5rem",
-      fontSize: "0.95rem",
-      fontWeight: "500",
-      cursor: "pointer",
-      boxShadow: "0 2px 4px rgba(79, 70, 229, 0.2)"
-    }
-  };
-
   return (
-    <form onSubmit={handleSubmit} style={styles.form}>
-      <div style={styles.formHeader}>
-        <h2 style={styles.formTitle}>{plan ? "Update" : "Create"} Your Learning Journey</h2>
-        <p style={styles.formSubtitle}>Design a structured path to achieve your learning goals</p>
+    <form
+      onSubmit={handleSubmit}
+      className="max-w-3xl mx-auto p-8 bg-gray-800 rounded-xl shadow-lg border border-gray-700 font-sans"
+    >
+      <div className="text-center mb-8 pb-6 border-b border-gray-700">
+        <h2 className="text-2xl font-bold text-indigo-400 mb-2">
+          {plan ? "Update" : "Create"} Your Learning Journey
+        </h2>
+        <p className="text-gray-400">
+          Design a structured path to achieve your learning goals
+        </p>
       </div>
 
-      <div style={styles.formSection}>
-        <label htmlFor="title" style={styles.label}>
+      <div className="mb-6">
+        <label
+          htmlFor="title"
+          className="block text-sm font-medium text-gray-300 mb-1"
+        >
           <span>Title</span>
-          <span style={styles.requiredStar}>*</span>
+          <span className="text-red-500 ml-1">*</span>
         </label>
         <input
           type="text"
@@ -400,12 +164,15 @@ const LearningPlanForm = ({ plan, onSubmit, onCancel }) => {
           onChange={handleChange}
           required
           placeholder="e.g., Mastering React Development"
-          style={styles.input}
+          className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-gray-200 placeholder-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
         />
       </div>
 
-      <div style={styles.formSection}>
-        <label htmlFor="description" style={styles.label}>
+      <div className="mb-6">
+        <label
+          htmlFor="description"
+          className="block text-sm font-medium text-gray-300 mb-1"
+        >
           <span>Description</span>
         </label>
         <textarea
@@ -415,26 +182,29 @@ const LearningPlanForm = ({ plan, onSubmit, onCancel }) => {
           value={formData.description}
           onChange={handleChange}
           placeholder="Describe your learning goals and what you hope to achieve..."
-          style={styles.textarea}
+          className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-gray-200 placeholder-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all min-h-[100px]"
         ></textarea>
       </div>
 
-      <div style={styles.checkboxContainer}>
+      <div className="flex items-center mb-6">
         <input
           type="checkbox"
           id="isPublic"
           name="isPublic"
           checked={formData.isPublic}
           onChange={handleChange}
-          style={styles.checkbox}
+          className="w-5 h-5 text-indigo-600 bg-gray-700 border-gray-600 rounded focus:ring-indigo-500"
         />
-        <label htmlFor="isPublic" style={styles.checkboxLabel}>
+        <label htmlFor="isPublic" className="ml-2 text-sm text-gray-300">
           Make this learning plan public
         </label>
       </div>
 
-      <div style={styles.formSection}>
-        <label htmlFor="completionDeadline" style={styles.label}>
+      <div className="mb-6">
+        <label
+          htmlFor="completionDeadline"
+          className="block text-sm font-medium text-gray-300 mb-1"
+        >
           <span>Completion Deadline</span>
         </label>
         <input
@@ -443,166 +213,211 @@ const LearningPlanForm = ({ plan, onSubmit, onCancel }) => {
           name="completionDeadline"
           value={formData.completionDeadline}
           onChange={handleChange}
-          style={styles.input}
+          className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-gray-200 placeholder-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
         />
       </div>
 
-      <div style={styles.topicsSection}>
-        <div style={styles.sectionHeader}>
-          <h3 style={styles.sectionTitle}>Topics</h3>
+      <div className="mt-10">
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="text-xl font-semibold text-gray-200">Topics</h3>
           <button
             type="button"
             onClick={handleAddTopic}
-            style={styles.addButton}
+            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium flex items-center transition-all"
           >
-            <span style={{ marginRight: "4px" }}>+</span> Add Topic
+            <span className="mr-1">+</span> Add Topic
           </button>
         </div>
 
         {formData.topics.length === 0 && (
-          <div style={styles.emptyState}>
-            <p>No topics added yet. Add your first learning topic to get started!</p>
+          <div className="text-center p-8 bg-gray-700/50 rounded-lg border-2 border-dashed border-gray-600 text-gray-400 mb-6">
+            <p>
+              No topics added yet. Add your first learning topic to get started!
+            </p>
           </div>
         )}
 
         {formData.topics.map((topic, topicIndex) => (
-          <div key={topic.id} style={styles.topicCard}>
-            <div style={styles.topicHeader}>
-              <h4 style={styles.topicTitle}>Topic {topicIndex + 1}</h4>
+          <div
+            key={topic.id}
+            className="bg-gray-700/30 rounded-xl p-6 mb-6 border border-gray-700 shadow"
+          >
+            <div className="flex justify-between items-center mb-4 pb-4 border-b border-gray-700">
+              <h4 className="text-lg font-semibold text-gray-200">
+                Topic {topicIndex + 1}
+              </h4>
               <button
                 type="button"
                 onClick={() => handleRemoveTopic(topic.id)}
-                style={styles.removeButton}
+                className="px-3 py-1 text-red-400 hover:text-red-300 border border-red-500 hover:border-red-400 rounded text-sm font-medium transition-all"
               >
                 Remove
               </button>
             </div>
 
             <div>
-              <div style={styles.formSection}>
-                <label style={styles.label}>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-300 mb-1">
                   <span>Topic Name</span>
-                  <span style={styles.requiredStar}>*</span>
+                  <span className="text-red-500 ml-1">*</span>
                 </label>
                 <input
                   type="text"
                   value={topic.name}
-                  onChange={(e) => handleTopicChange(topic.id, "name", e.target.value)}
+                  onChange={(e) =>
+                    handleTopicChange(topic.id, "name", e.target.value)
+                  }
                   required
                   placeholder="e.g., React Hooks"
-                  style={styles.input}
+                  className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-gray-200 placeholder-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
                 />
               </div>
 
-              <div style={styles.formSection}>
-                <label style={styles.label}>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-300 mb-1">
                   <span>Description</span>
                 </label>
                 <textarea
                   rows="2"
                   value={topic.description}
-                  onChange={(e) => handleTopicChange(topic.id, "description", e.target.value)}
+                  onChange={(e) =>
+                    handleTopicChange(topic.id, "description", e.target.value)
+                  }
                   placeholder="What will you learn in this topic?"
-                  style={styles.textarea}
+                  className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-gray-200 placeholder-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all min-h-[80px]"
                 ></textarea>
               </div>
 
-              <div style={styles.resourcesSection}>
-                <div style={styles.sectionHeader}>
-                  <h5 style={styles.subsectionTitle}>Resources</h5>
+              <div className="mt-8 pt-6 border-t border-gray-700">
+                <div className="flex justify-between items-center mb-4">
+                  <h5 className="text-base font-medium text-gray-300">
+                    Resources
+                  </h5>
                   <button
                     type="button"
                     onClick={() => handleAddResource(topic.id)}
-                    style={styles.addResourceButton}
+                    className="px-3 py-1 bg-indigo-500 hover:bg-indigo-600 text-white rounded text-sm font-medium flex items-center transition-all"
                   >
-                    <span style={{ marginRight: "4px" }}>+</span> Add Resource
+                    <span className="mr-1">+</span> Add Resource
                   </button>
                 </div>
 
                 {(!topic.resources || topic.resources.length === 0) && (
-                  <div style={{ ...styles.emptyState, padding: "1.5rem" }}>
-                    <p>No resources added yet. Add materials to help you learn this topic.</p>
+                  <div className="text-center p-6 bg-gray-700/50 rounded-lg border border-dashed border-gray-600 text-gray-400 mb-4">
+                    <p>
+                      No resources added yet. Add materials to help you learn
+                      this topic.
+                    </p>
                   </div>
                 )}
 
-                {topic.resources && topic.resources.map((resource, resourceIndex) => (
-                  <div key={resource.id} style={styles.resourceCard}>
-                    <div style={styles.resourceHeader}>
-                      <h6 style={styles.resourceTitle}>Resource {resourceIndex + 1}</h6>
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveResource(topic.id, resource.id)}
-                        style={{ ...styles.removeButton, padding: "0.25rem 0.5rem", fontSize: "0.75rem" }}
-                      >
-                        Remove
-                      </button>
-                    </div>
-
-                    <div style={styles.resourceGrid}>
-                      <div style={styles.resourceField}>
-                        <label style={{ ...styles.label, fontSize: "0.9rem" }}>
-                          <span>Title</span>
-                          <span style={styles.requiredStar}>*</span>
-                        </label>
-                        <input
-                          type="text"
-                          value={resource.title}
-                          onChange={(e) => handleResourceChange(topic.id, resource.id, "title", e.target.value)}
-                          required
-                          placeholder="e.g., React Hooks Tutorial"
-                          style={{ ...styles.input, fontSize: "0.875rem", padding: "0.6rem 0.8rem" }}
-                        />
-                      </div>
-
-                      <div style={styles.resourceField}>
-                        <label style={{ ...styles.label, fontSize: "0.9rem" }}>
-                          <span>Type</span>
-                        </label>
-                        <select
-                          value={resource.type}
-                          onChange={(e) => handleResourceChange(topic.id, resource.id, "type", e.target.value)}
-                          style={styles.select}
+                {topic.resources &&
+                  topic.resources.map((resource, resourceIndex) => (
+                    <div
+                      key={resource.id}
+                      className="bg-gray-700 rounded-lg p-4 mb-4 border border-gray-600"
+                    >
+                      <div className="flex justify-between items-center mb-3">
+                        <h6 className="text-sm font-semibold text-gray-300">
+                          Resource {resourceIndex + 1}
+                        </h6>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            handleRemoveResource(topic.id, resource.id)
+                          }
+                          className="px-2 py-1 text-red-400 hover:text-red-300 border border-red-500 hover:border-red-400 rounded text-xs font-medium transition-all"
                         >
-                          <option value="article">Article</option>
-                          <option value="video">Video</option>
-                          <option value="book">Book</option>
-                          <option value="course">Course</option>
-                          <option value="other">Other</option>
-                        </select>
+                          Remove
+                        </button>
                       </div>
 
-                      <div style={{ ...styles.resourceField, ...styles.fullWidth }}>
-                        <label style={{ ...styles.label, fontSize: "0.9rem" }}>
-                          <span>URL</span>
-                        </label>
-                        <input
-                          type="url"
-                          value={resource.url}
-                          onChange={(e) => handleResourceChange(topic.id, resource.id, "url", e.target.value)}
-                          placeholder="https://example.com/resource"
-                          style={{ ...styles.input, fontSize: "0.875rem", padding: "0.6rem 0.8rem" }}
-                        />
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-xs font-medium text-gray-400 mb-1">
+                            <span>Title</span>
+                            <span className="text-red-500 ml-1">*</span>
+                          </label>
+                          <input
+                            type="text"
+                            value={resource.title}
+                            onChange={(e) =>
+                              handleResourceChange(
+                                topic.id,
+                                resource.id,
+                                "title",
+                                e.target.value
+                              )
+                            }
+                            required
+                            placeholder="e.g., React Hooks Tutorial"
+                            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-200 placeholder-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all text-sm"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-medium text-gray-400 mb-1">
+                            <span>Type</span>
+                          </label>
+                          <select
+                            value={resource.type}
+                            onChange={(e) =>
+                              handleResourceChange(
+                                topic.id,
+                                resource.id,
+                                "type",
+                                e.target.value
+                              )
+                            }
+                            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all text-sm appearance-none bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiM5Y2EzYWIiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cGF0aCBkPSJNNiA5bDYgNiA2LTYiLz48L3N2Zz4=')] bg-no-repeat bg-[right_0.75rem_center] bg-[length:16px_12px] pr-8"
+                          >
+                            <option value="article">Article</option>
+                            <option value="video">Video</option>
+                            <option value="book">Book</option>
+                            <option value="course">Course</option>
+                            <option value="other">Other</option>
+                          </select>
+                        </div>
+
+                        <div className="md:col-span-2">
+                          <label className="block text-xs font-medium text-gray-400 mb-1">
+                            <span>URL</span>
+                          </label>
+                          <input
+                            type="url"
+                            value={resource.url}
+                            onChange={(e) =>
+                              handleResourceChange(
+                                topic.id,
+                                resource.id,
+                                "url",
+                                e.target.value
+                              )
+                            }
+                            placeholder="https://example.com/resource"
+                            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-200 placeholder-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all text-sm"
+                          />
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
               </div>
             </div>
           </div>
         ))}
       </div>
 
-      <div style={styles.formActions}>
+      <div className="flex justify-end gap-3 mt-10 pt-6 border-t border-gray-700">
         <button
           type="button"
           onClick={onCancel}
-          style={styles.cancelButton}
+          className="px-6 py-2 bg-transparent hover:bg-gray-700 text-gray-300 hover:text-white border border-gray-600 rounded-lg font-medium transition-all"
         >
           Cancel
         </button>
         <button
           type="submit"
-          style={styles.submitButton}
+          className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium shadow-md hover:shadow-indigo-500/20 transition-all"
         >
           {plan ? "Update" : "Create"} Learning Plan
         </button>
