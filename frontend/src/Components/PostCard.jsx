@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import CustomVideoPlayer from "./CustomeVideoPlayer";
 import CommentsModal from "./Modals/CommentModal";
@@ -14,6 +14,7 @@ const PostCard = ({
   const [commentInput, setCommentInput] = useState("");
   const [editingCommentId, setEditingCommentId] = useState(null);
   const [postOwner, setPostOwner] = useState(null);
+  const modalRef = useRef();
   const [commentOwners, setCommentOwners] = useState({});
   const [actionsDropdownOpen, setActionsDropdownOpen] = useState(false);
   const [commentDropdowns, setCommentDropdowns] = useState({});
@@ -27,6 +28,21 @@ const PostCard = ({
     content: post.content,
     mediaUrls: post.mediaUrls || [],
   });
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setActionsDropdownOpen(false);
+        setCommentDropdowns({});
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   useEffect(() => {
     const fetchPostOwnerDetails = async () => {
@@ -288,23 +304,27 @@ const PostCard = ({
     setEditCommentContent("");
   };
 
-  const handleUpdateComment = async (commentId) => {
+  const handleUpdateComment = async (commentId, commentContent) => {
     try {
       const token = localStorage.getItem("authToken");
 
       const response = await axios.put(
         `http://localhost:8080/api/posts/${post.id}/comments/${commentId}`,
-        { content: editCommentContent },
+        { content: commentContent },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
       onPostUpdate(response.data);
-      setEditingCommentId(null);
-      setEditCommentContent("");
+
+      // Reset editing state in the modal
+      if (modalRef.current) {
+        modalRef.current.resetEditingState();
+      }
     } catch (err) {
       console.error("Error updating comment:", err);
     }
   };
+
   const handleDeleteComment = async (commentId) => {
     try {
       const token = localStorage.getItem("authToken");
@@ -442,7 +462,10 @@ const PostCard = ({
               </button>
 
               {actionsDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-gray-700 rounded-md shadow-lg z-10 py-1 border border-gray-700">
+                <div
+                  ref={dropdownRef}
+                  className="absolute right-0 mt-2 w-48 bg-gray-700 rounded-md shadow-lg z-10 py-1 border border-gray-700"
+                >
                   <button
                     onClick={() => {
                       setIsEditing(true);
@@ -867,6 +890,7 @@ const PostCard = ({
           </button>
 
           <CommentsModal
+            ref={modalRef}
             isOpen={isModalOpen}
             onClose={closeModal}
             post={post}
