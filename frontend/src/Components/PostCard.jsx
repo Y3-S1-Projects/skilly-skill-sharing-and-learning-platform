@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import CustomVideoPlayer from "./CustomeVideoPlayer";
 import CommentsModal from "./Modals/CommentModal";
+import { Link } from "react-router-dom";
 
 const PostCard = ({
   post,
@@ -368,18 +369,32 @@ const PostCard = ({
           {/* Name and timestamp */}
           <div>
             <h3 className="font-medium text-gray-100">
-              {isViewingProfile
-                ? post.userId === currentUser.id
-                  ? postOwner?.username
-                  : "User"
-                : postOwner?.username}
+              {isViewingProfile && post.userId === currentUser.id ? (
+                // Display as plain text if viewing own profile
+                postOwner?.username
+              ) : (
+                // Otherwise make it a link
+                <Link
+                  to={`/profile/${postOwner?.id}`}
+                  className="hover:underline"
+                >
+                  {postOwner?.username}
+                </Link>
+              )}
 
               {post.originalUserId && post.originalUserId !== post.userId && (
                 <span className="text-sm text-gray-200 ml-1">
                   (original post by{" "}
-                  {post.originalUserId === currentUser.id
-                    ? "you"
-                    : commentOwners[post.originalUserId]?.username || "user"}
+                  {post.originalUserId === currentUser.id ? (
+                    "you"
+                  ) : (
+                    <Link
+                      to={`/profile/${post.originalUserId}`}
+                      className="hover:underline"
+                    >
+                      {commentOwners[post.originalUserId]?.username || "user"}
+                    </Link>
+                  )}
                   )
                 </span>
               )}
