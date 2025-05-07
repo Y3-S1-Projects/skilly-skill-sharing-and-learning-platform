@@ -29,7 +29,7 @@ public class PostService {
     private String uploadDir;
 
     public List<Post> findAll() {
-        return postRepository.findAll();
+        return postRepository.findAllByOrderByCreatedAtDesc();
     }
 
     public Optional<Post> findById(String id) {
@@ -52,6 +52,7 @@ public class PostService {
             postRepository.deleteById(id);
         });
     }
+
     public Optional<Post> likePost(String id, String userId) {
         return postRepository.findById(id).map(post -> {
             if (!post.getLikes().contains(userId)) {
@@ -68,6 +69,7 @@ public class PostService {
             return postRepository.save(post);
         });
     }
+
     public Optional<Post> sharePost(String id, String userId) {
         return postRepository.findById(id).map(originalPost -> {
             // Prevent sharing own posts
@@ -157,7 +159,7 @@ public class PostService {
     }
 
     public Post createPost(String userId, String username, String title, String content,
-                           String postType, MultipartFile[] images, MultipartFile video) throws IOException {
+            String postType, MultipartFile[] images, MultipartFile video) throws IOException {
         Post post = new Post();
         post.setUserId(userId);
         post.setUsername(username);
@@ -291,8 +293,6 @@ public class PostService {
             return Optional.empty();
         }
     }
-
-
 
     // Comment operations
     public Optional<Post> addComment(String postId, String userId, String content) {

@@ -340,7 +340,7 @@ const PublicProfile = () => {
     );
   }
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-black">
       <Header user={currentUser} />
 
       {/* Cover Photo & Profile Summary */}
@@ -357,7 +357,7 @@ const PublicProfile = () => {
         {/* Profile Summary Card */}
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="relative -mt-12 sm:-mt-16 mb-6">
-            <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+            <div className="bg-gray-800 rounded-xl shadow-sm overflow-hidden">
               <div className="p-4 sm:p-6">
                 <div className="sm:flex sm:items-center sm:justify-between">
                   <div className="sm:flex sm:space-x-5">
@@ -370,13 +370,13 @@ const PublicProfile = () => {
                           alt={user?.name || "User"}
                         />
                       ) : (
-                        <div className="h-20 w-20 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 font-medium text-xl border-4 border-white">
+                        <div className="h-20 w-20 rounded-full bg-gray-200 flex items-center justify-center text-gray-200 font-medium text-xl border-4 border-white">
                           {getInitials(user?.name)}
                         </div>
                       )}
                     </div>
                     <div className="mt-4 sm:mt-0 text-center sm:text-left sm:flex-1">
-                      <h1 className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center gap-2">
+                      <h1 className="text-xl sm:text-2xl font-bold text-gray-200 flex items-center gap-2">
                         {user.name}
                         {currentUser.id === user.id && " (You)"}
                       </h1>
@@ -435,9 +435,9 @@ const PublicProfile = () => {
                         disabled={followLoading}
                         className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
                           followLoading
-                            ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                            ? "bg-gray-600 text-gray-100 cursor-not-allowed"
                             : isFollowing
-                            ? "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                            ? "bg-gray-600 text-gray-100 hover:bg-gray-700"
                             : "bg-indigo-600 text-white hover:bg-indigo-700"
                         }`}
                       >
@@ -452,35 +452,35 @@ const PublicProfile = () => {
                 </div>
 
                 {/* Bio */}
-                <div className="mt-4 text-sm text-gray-700">
+                <div className="mt-4 text-sm text-gray-300">
                   <p>{user.bio}</p>
                 </div>
 
                 {/* User Stats */}
                 <div className="mt-6 grid grid-cols-3 lg:grid-cols-5 gap-4 text-center">
                   <div
-                    className="bg-gray-50 rounded-lg py-2 px-4 cursor-pointer hover:bg-gray-100 transition-colors"
+                    className="bg-gray-700  rounded-lg py-2 px-4 cursor-pointer hover:bg-gray-600 transition-colors"
                     onClick={() => {
                       setActiveConnectionTab("followers");
                       setIsModalOpen(true);
                     }}
                   >
-                    <div className="text-2xl font-bold text-indigo-600">
+                    <div className="text-2xl font-bold text-indigo-400 ">
                       {user.stats.followers}
                     </div>
-                    <div className="text-xs text-gray-500">Followers</div>
+                    <div className="text-xs text-gray-300">Followers</div>
                   </div>
                   <div
-                    className="bg-gray-50 rounded-lg py-2 px-4 cursor-pointer hover:bg-gray-100 transition-colors"
+                    className="bg-gray-700 rounded-lg py-2 px-4 cursor-pointer hover:bg-gray-600 transition-colors"
                     onClick={() => {
                       setActiveConnectionTab("following");
                       setIsModalOpen(true);
                     }}
                   >
-                    <div className="text-2xl font-bold text-indigo-600">
+                    <div className="text-2xl font-bold text-indigo-400">
                       {user.stats.following}
                     </div>
-                    <div className="text-xs text-gray-500">Following</div>
+                    <div className="text-xs text-gray-300">Following</div>
                   </div>
                   <UserConnectionsModal
                     userId={user.id}
@@ -491,23 +491,23 @@ const PublicProfile = () => {
                     setActiveTab={setActiveConnectionTab}
                   />
 
-                  <div className="bg-gray-50 rounded-lg py-2 px-4">
-                    <div className="text-2xl font-bold text-indigo-600">
+                  <div className="bg-gray-700 rounded-lg py-2 px-4">
+                    <div className="text-2xl font-bold text-indigo-400">
                       {user.stats.skillsLearned}
                     </div>
-                    <div className="text-xs text-gray-500">Skills</div>
+                    <div className="text-xs text-gray-300">Skills</div>
                   </div>
-                  <div className="bg-gray-50 rounded-lg py-2 px-4">
-                    <div className="text-2xl font-bold text-indigo-600">
+                  <div className="bg-gray-700 rounded-lg py-2 px-4">
+                    <div className="text-2xl font-bold text-indigo-400">
                       {user.stats.skillsInProgress}
                     </div>
-                    <div className="text-xs text-gray-500">Learning</div>
+                    <div className="text-xs text-gray-300">Learning</div>
                   </div>
-                  <div className="bg-gray-50 rounded-lg py-2 px-4 col-span-3 lg:col-span-1">
-                    <div className="text-2xl font-bold text-indigo-600">
+                  <div className="bg-gray-700 rounded-lg py-2 px-4 col-span-3 lg:col-span-1">
+                    <div className="text-2xl font-bold text-indigo-400">
                       {user.stats.achievements}
                     </div>
-                    <div className="text-xs text-gray-500">Achievements</div>
+                    <div className="text-xs text-gray-300">Achievements</div>
                   </div>
                 </div>
               </div>
@@ -522,12 +522,12 @@ const PublicProfile = () => {
           {/* Left Column - Skills, Badges, etc. */}
           <div className="md:w-1/3">
             {/* Skills Section */}
-            <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
+            <div className="bg-gray-800 rounded-xl shadow-sm overflow-hidden mb-6">
               <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
-                <h3 className="text-lg font-medium leading-6 text-gray-900">
+                <h3 className="text-lg font-medium leading-6 text-white">
                   Skills
                 </h3>
-                <p className="mt-1 max-w-2xl text-sm text-gray-500">
+                <p className="mt-1 max-w-2xl text-sm text-gray-400">
                   Verified skills with community endorsements
                 </p>
               </div>
@@ -570,17 +570,17 @@ const PublicProfile = () => {
             </div>
 
             {/* Learning Goals Section */}
-            <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
+            <div className="bg-gray-800 rounded-xl shadow-sm overflow-hidden mb-6">
               <Link
                 to="#"
                 className="block w-full p-4 rounded-lg transition-all 
-                hover:bg-gray-50 hover:shadow-sm 
+                hover:bg-gray-700 hover:shadow-sm 
                 focus:outline-none focus:ring-2 focus:ring-blue-500
                 group" // Added group for child hover effects
                 aria-label="View Learning Plans"
               >
                 <div className="transition-all group-hover:translate-x-1">
-                  <h3 className="text-lg font-medium leading-6 text-gray-900 flex items-center">
+                  <h3 className="text-lg font-medium leading-6 text-white flex items-center">
                     Learning Plans
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -597,7 +597,7 @@ const PublicProfile = () => {
                       />
                     </svg>
                   </h3>
-                  <p className="mt-1 max-w-2xl text-sm text-gray-500 group-hover:text-gray-700">
+                  <p className="mt-1 max-w-2xl text-sm text-gray-400 group-hover:text-gray-700">
                     Skills currently in progress - Click to view details
                   </p>
                 </div>
@@ -639,15 +639,15 @@ const PublicProfile = () => {
           {/* Right Column - Activities Feed */}
           <div className="md:w-2/3">
             {/* Tabs */}
-            <div className="mb-6 bg-white rounded-xl shadow-sm overflow-hidden">
+            <div className="mb-6 bg-gray-800 rounded-xl shadow-sm overflow-hidden">
               <div className="border-b border-gray-200">
                 <nav className="flex" aria-label="Tabs">
                   <button
                     onClick={() => setActiveTab("activity")}
                     className={`w-1/3 py-4 px-1 text-center border-b-2 font-medium text-sm ${
                       activeTab === "activity"
-                        ? "border-indigo-500 text-indigo-600"
-                        : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                        ? "border-indigo-500 text-indigo-400"
+                        : "border-transparent text-gray-300 hover:text-gray-500 hover:border-gray-300"
                     }`}
                   >
                     Activity
@@ -656,8 +656,8 @@ const PublicProfile = () => {
                     onClick={() => setActiveTab("shared")}
                     className={`w-1/3 py-4 px-1 text-center border-b-2 font-medium text-sm ${
                       activeTab === "shared"
-                        ? "border-indigo-500 text-indigo-600"
-                        : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                        ? "border-indigo-500 text-indigo-400"
+                        : "border-transparent text-gray-300 hover:text-gray-500 hover:border-gray-300"
                     }`}
                   >
                     Resources
@@ -666,8 +666,8 @@ const PublicProfile = () => {
                     onClick={() => setActiveTab("achievements")}
                     className={`w-1/3 py-4 px-1 text-center border-b-2 font-medium text-sm ${
                       activeTab === "achievements"
-                        ? "border-indigo-500 text-indigo-600"
-                        : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                        ? "border-indigo-500 text-indigo-400"
+                        : "border-transparent text-gray-300 hover:text-gray-500 hover:border-gray-300"
                     }`}
                   >
                     Achievements
@@ -677,27 +677,55 @@ const PublicProfile = () => {
             </div>
             {activeTab === "activity" && (
               <div>
-                {posts.map((post) => (
-                  <PostCard
-                    key={post.id}
-                    post={post}
-                    currentUser={user}
-                    onPostUpdate={handlePostUpdate}
-                    onPostDelete={handlePostDelete}
-                  />
-                ))}
+                {posts && posts.length > 0 ? (
+                  <div className="flex flex-col gap-4">
+                    {posts.map((post) => (
+                      <PostCard
+                        key={post.id}
+                        post={post}
+                        currentUser={user}
+                        onPostUpdate={handlePostUpdate}
+                        onPostDelete={handlePostDelete}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center text-gray-500 bg-gray-700 py-6">
+                    <svg
+                      className="mx-auto h-12 w-12 text-white"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      aria-hidden="true"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={1.5}
+                        d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+                      />
+                    </svg>
+                    <h3 className="mt-2 text-sm font-medium text-gray-200">
+                      No skill posts yet
+                    </h3>
+                    <p className="mt-1 text-sm text-gray-300">
+                      This user hasn't shared any skills, tutorials, or
+                      knowledge posts yet.
+                    </p>
+                  </div>
+                )}
               </div>
             )}
 
             {/* Resources Tab */}
             {activeTab === "shared" && (
-              <div className="bg-white rounded-xl shadow-sm overflow-hidden p-6">
+              <div className="bg-gray-700 rounded-xl shadow-sm overflow-hidden p-6">
                 <div className="text-center text-gray-500 py-6">
                   <DocsIcon />
-                  <h3 className="mt-2 text-sm font-medium text-gray-900">
+                  <h3 className="mt-2 text-sm font-medium text-gray-200">
                     No resources yet
                   </h3>
-                  <p className="mt-1 text-sm text-gray-500">
+                  <p className="mt-1 text-sm text-gray-300">
                     This user hasn't shared any learning resources, guides, or
                     materials yet.
                   </p>
@@ -706,13 +734,13 @@ const PublicProfile = () => {
             )}
             {/* Achievements Tab */}
             {activeTab === "achievements" && (
-              <div className="bg-white rounded-xl shadow-sm overflow-hidden p-6">
+              <div className="bg-gray-700 rounded-xl shadow-sm overflow-hidden p-6">
                 <div className="text-center text-gray-500 py-6">
                   <StarsIcon />
-                  <h3 className="mt-2 text-sm font-medium text-gray-900">
+                  <h3 className="mt-2 text-sm font-medium text-gray-200">
                     No achievements yet
                   </h3>
-                  <p className="mt-1 text-sm text-gray-500">
+                  <p className="mt-1 text-sm text-gray-300">
                     This user hasn't earned any badges or achievements yet in
                     their learning journey.
                   </p>

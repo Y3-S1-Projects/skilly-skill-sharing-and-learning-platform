@@ -13,8 +13,8 @@ export default function UserJoinDate({ user, isPublic = false }) {
 
   return (
     <div className="flex items-center justify-center mt-6 mb-8">
-      <div className="flex items-center gap-2 px-4 py-2 text-sm text-gray-600 bg-gray-50 rounded-full shadow-sm">
-        <CalendarDays size={16} className="text-gray-500" />
+      <div className="flex items-center gap-2 px-4 py-2 text-sm text-gray-200 bg-gray-600 rounded-full shadow-sm">
+        <CalendarDays size={16} className="text-white" />
         <span>
           Member since{" "}
           {formatDate(isPublic ? user.registrationDate : user.joinDate)}
