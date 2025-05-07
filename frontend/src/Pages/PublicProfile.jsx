@@ -8,6 +8,7 @@ import StarsIcon from "@/public/icons/StarsIcon";
 import { getSocket } from "../services/webSocketService";
 import UserConnectionsModal from "../Components/Modals/UserConnections";
 import UserJoinDate from "../Components/UserJoinDate";
+import CustomLoader from "../Components/CustomLoader";
 
 const PublicProfile = () => {
   const { userId } = useParams(); // Get userId from URL parameter
@@ -325,11 +326,7 @@ const PublicProfile = () => {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex justify-center items-center">
-        Loading...
-      </div>
-    );
+    return <CustomLoader />;
   }
 
   if (error) {
