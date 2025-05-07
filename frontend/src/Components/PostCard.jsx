@@ -807,8 +807,8 @@ const PostCard = ({
             onClick={handleLike}
             className={`flex items-center ${
               post.likes.includes(loggedInUser?.id)
-                ? "text-indigo-600"
-                : "text-gray-500 hover:text-indigo-600"
+                ? "text-indigo-500"
+                : "text-gray-300 hover:text-indigo-600"
             } transition-colors`}
           >
             <svg
@@ -833,7 +833,7 @@ const PostCard = ({
           </button>
           <button
             onClick={openModal}
-            className="flex items-center text-gray-500 hover:text-indigo-600 transition-colors"
+            className="flex items-center text-gray-300 hover:text-indigo-500 transition-colors"
           >
             <svg
               className="h-5 w-5 mr-1"
@@ -869,7 +869,7 @@ const PostCard = ({
             className={`flex items-center ${
               post.sharedBy?.includes(loggedInUser?.id)
                 ? "text-indigo-600"
-                : "text-gray-500 hover:text-indigo-600"
+                : "text-gray-300 hover:text-indigo-500"
             } transition-colors`}
           >
             <svg

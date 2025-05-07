@@ -319,7 +319,7 @@ const Header = ({ onLogout }) => {
                     Settings
                   </a>
                   <a
-                    href="/learning-dashboard"
+                    href="/learning-plans"
                     className="block px-4 py-2 text-sm text-gray-200 hover:bg-gray-800 transition-colors duration-150"
                     role="menuitem"
                   >
