@@ -539,7 +539,7 @@ const PublicProfile = () => {
                       <li key={index} className="py-3">
                         <div className="flex justify-between">
                           <div>
-                            <h4 className="text-sm font-medium text-gray-900">
+                            <h4 className="text-sm font-medium text-gray-200">
                               {skill.name}
                             </h4>
                             <div className="mt-1 flex items-center">

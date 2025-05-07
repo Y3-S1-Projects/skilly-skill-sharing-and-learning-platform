@@ -3,26 +3,37 @@ import { Link } from "react-router-dom";
 
 const LearningPlanCard = ({ plan, onEdit, onDelete }) => {
   const topicsCount = plan.topics?.length || 0;
-  const completedTopics = plan.topics?.filter(topic => topic.completed).length || 0;
-  const progress = topicsCount > 0 ? Math.round((completedTopics / topicsCount) * 100) : 0;
+  const completedTopics =
+    plan.topics?.filter((topic) => topic.completed).length || 0;
+  const progress =
+    topicsCount > 0 ? Math.round((completedTopics / topicsCount) * 100) : 0;
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200 hover:shadow-md transition-shadow">
+    <div className="bg-gray-800 rounded-xl shadow-sm overflow-hidden border border-gray-700 hover:shadow-md transition-shadow">
       <div className="p-4">
         <div className="flex justify-between items-start mb-2">
-          <h3 className="text-lg font-semibold text-gray-900">{plan.title}</h3>
+          <h3 className="text-lg font-semibold text-white">{plan.title}</h3>
           <div className="flex space-x-2">
             {onEdit && (
               <button
                 onClick={() => onEdit(plan)}
-                className="text-gray-500 hover:text-indigo-600"
+                className="text-gray-400 hover:text-indigo-400"
               >
-                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg
+                  className="h-5 w-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -35,9 +46,14 @@ const LearningPlanCard = ({ plan, onEdit, onDelete }) => {
             {onDelete && (
               <button
                 onClick={() => onDelete(plan.id)}
-                className="text-gray-500 hover:text-red-600"
+                className="text-gray-400 hover:text-red-400"
               >
-                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg
+                  className="h-5 w-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -50,34 +66,40 @@ const LearningPlanCard = ({ plan, onEdit, onDelete }) => {
           </div>
         </div>
 
-        <p className="text-sm text-gray-600 mb-3">{plan.description}</p>
+        <p className="text-sm text-gray-300 mb-3">{plan.description}</p>
 
         <div className="flex items-center justify-between mb-2">
-          <span className="text-xs text-gray-500">Progress</span>
-          <span className="text-xs font-medium text-gray-700">{progress}%</span>
+          <span className="text-xs text-gray-400">Progress</span>
+          <span className="text-xs font-medium text-gray-200">{progress}%</span>
         </div>
 
-        <div className="w-full bg-gray-200 rounded-full h-2">
+        <div className="w-full bg-gray-700 rounded-full h-2">
           <div
-            className="bg-indigo-600 h-2 rounded-full"
+            className="bg-indigo-500 h-2 rounded-full"
             style={{ width: `${progress}%` }}
           ></div>
         </div>
 
-        <div className="mt-4 flex items-center justify-between text-xs text-gray-500">
+        <div className="mt-4 flex items-center justify-between text-xs text-gray-400">
           <div>
-            <span className="font-medium">{topicsCount}</span> topics
+            <span className="font-medium text-gray-300">{topicsCount}</span>{" "}
+            topics
           </div>
           {plan.completionDeadline && (
-            <div>
+            <div className="text-gray-300">
               Deadline: {formatDate(plan.completionDeadline)}
             </div>
           )}
         </div>
 
-        <div className="mt-4 pt-3 border-t border-gray-100 flex justify-between items-center">
+        <div className="mt-4 pt-3 border-t border-gray-700 flex justify-between items-center">
           <div className="flex items-center">
-            <svg className="h-4 w-4 text-gray-400 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg
+              className="h-4 w-4 text-gray-500 mr-1"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -85,13 +107,13 @@ const LearningPlanCard = ({ plan, onEdit, onDelete }) => {
                 d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
               />
             </svg>
-            <span className="text-xs text-gray-500">
+            <span className="text-xs text-gray-400">
               Created {formatDate(plan.createdAt)}
             </span>
           </div>
           <Link
             to={`/learning-plans/${plan.id}`}
-            className="text-sm font-medium text-indigo-600 hover:text-indigo-800"
+            className="text-sm font-medium text-indigo-400 hover:text-indigo-300"
           >
             View Details
           </Link>
