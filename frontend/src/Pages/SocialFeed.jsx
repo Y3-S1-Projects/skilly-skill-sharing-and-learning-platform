@@ -6,6 +6,7 @@ import PostCard from "../Components/PostCard";
 import CreatePostCard from "../Components/CreatePostCard";
 import CreatePostModal from "../Components/Modals/CreatePost";
 import Header from "../Components/Header";
+import CustomLoader from "../Components/CustomLoader";
 
 const SocialFeed = () => {
   const [user, setUser] = useState({ name: "", avatar: "" });
@@ -13,6 +14,7 @@ const SocialFeed = () => {
   const [activeFilter, setActiveFilter] = useState("all");
   const [showCreatePostModal, setShowCreatePostModal] = useState(false);
   const [loggedInUserId, setLoggedInUserId] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const fetchUserId = async () => {
@@ -24,64 +26,69 @@ const SocialFeed = () => {
 
   useEffect(() => {
     if (loggedInUserId) {
-      const fetchUser = async () => {
+      const fetchData = async () => {
+        setIsLoading(true);
         try {
-          const response = await axios.get(
-            `http://localhost:8080/api/users/${loggedInUserId}`
-          );
-          setUser({
-            ...response.data,
-            name: response.data.username,
-            avatar: response.data.profilePicUrl,
-          });
+          // Fetch user data
+          const fetchUser = async () => {
+            const response = await axios.get(
+              `http://localhost:8080/api/users/${loggedInUserId}`
+            );
+            setUser({
+              ...response.data,
+              name: response.data.username,
+              avatar: response.data.profilePicUrl,
+            });
+          };
+
+          // Fetch posts data
+          const fetchPosts = async () => {
+            const postsResponse = await axios.get(
+              `http://localhost:8080/api/posts`
+            );
+            const postsData = postsResponse.data;
+
+            // Filter out posts from the logged-in user
+            const filteredPosts = postsData.filter(
+              (post) => post.userId !== loggedInUserId
+            );
+
+            const userIds = [
+              ...new Set(filteredPosts.map((post) => post.userId)),
+            ];
+
+            const userDetailsPromises = userIds.map((id) =>
+              axios
+                .get(`http://localhost:8080/api/users/${id}`)
+                .then((res) => ({ id, ...res.data }))
+                .catch(() => ({ id, username: "Unknown", profileImage: null }))
+            );
+
+            const usersDetails = await Promise.all(userDetailsPromises);
+
+            const userMap = {};
+            usersDetails.forEach((user) => {
+              userMap[user.id] = user;
+            });
+
+            const postsWithUserDetails = filteredPosts.map((post) => ({
+              ...post,
+              userDetails: userMap[post.userId] || {},
+            }));
+
+            setPosts(postsWithUserDetails);
+          };
+
+          // Execute both fetches in parallel
+          await Promise.all([fetchUser(), fetchPosts()]);
         } catch (error) {
-          console.error("Error fetching user:", error);
+          console.error("Error fetching data:", error);
+        } finally {
+          setIsLoading(false);
         }
       };
 
-      const fetchPosts = async () => {
-        try {
-          const postsResponse = await axios.get(
-            `http://localhost:8080/api/posts`
-          );
-          const postsData = postsResponse.data;
-
-          // Filter out posts from the logged-in user
-          const filteredPosts = postsData.filter(
-            (post) => post.userId !== loggedInUserId
-          );
-
-          const userIds = [
-            ...new Set(filteredPosts.map((post) => post.userId)),
-          ];
-
-          const userDetailsPromises = userIds.map((id) =>
-            axios
-              .get(`http://localhost:8080/api/users/${id}`)
-              .then((res) => ({ id, ...res.data }))
-              .catch(() => ({ id, username: "Unknown", profileImage: null }))
-          );
-
-          const usersDetails = await Promise.all(userDetailsPromises);
-
-          const userMap = {};
-          usersDetails.forEach((user) => {
-            userMap[user.id] = user;
-          });
-
-          const postsWithUserDetails = filteredPosts.map((post) => ({
-            ...post,
-            userDetails: userMap[post.userId] || {},
-          }));
-
-          setPosts(postsWithUserDetails);
-        } catch (error) {
-          console.error("Error fetching posts:", error);
-        }
-      };
-
-      fetchUser();
-      fetchPosts();
+      fetchData();
     }
   }, [loggedInUserId]);
 
@@ -108,13 +115,8 @@ const SocialFeed = () => {
     return String(post.content);
   };
 
-  const filterPosts = (filter) => {
-    setActiveFilter(filter);
-  };
+  if (isLoading) return <CustomLoader />;
 
-  const handleLike = (postId) => {
-    console.log(`Liked post ${postId}`);
-  };
   return (
     <div className="min-h-screen bg-black">
       <Header />

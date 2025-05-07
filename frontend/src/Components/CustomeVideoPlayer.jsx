@@ -534,9 +534,20 @@ const CustomVideoPlayer = ({ videoUrl, thumbnail, autoPlay = false }) => {
 
             {/* Volume control */}
             <div
-              className="relative flex items-center group"
-              onMouseEnter={() => setShowVolumeControl(true)}
-              onMouseLeave={() => setShowVolumeControl(false)}
+              className="relative flex items-center"
+              onMouseEnter={() => {
+                setShowVolumeControl(true);
+                // Clear any pending hide controls timeout
+                if (controlsTimeoutRef.current) {
+                  clearTimeout(controlsTimeoutRef.current);
+                }
+              }}
+              onMouseLeave={() => {
+                // Only hide after a small delay
+                controlsTimeoutRef.current = setTimeout(() => {
+                  setShowVolumeControl(false);
+                }, 300);
+              }}
             >
               <button
                 onClick={toggleMute}
@@ -572,7 +583,20 @@ const CustomVideoPlayer = ({ videoUrl, thumbnail, autoPlay = false }) => {
               </button>
 
               {showVolumeControl && (
-                <div className="absolute bottom-10 left-1/2 -translate-x-1/2 bg-black/80 rounded-lg p-2 min-w-32 shadow-lg">
+                <div
+                  className="absolute bottom-10 left-1/2 -translate-x-1/2 bg-black/80 rounded-lg p-2 min-w-32 shadow-lg"
+                  onMouseEnter={() => {
+                    setShowVolumeControl(true);
+                    if (controlsTimeoutRef.current) {
+                      clearTimeout(controlsTimeoutRef.current);
+                    }
+                  }}
+                  onMouseLeave={() => {
+                    controlsTimeoutRef.current = setTimeout(() => {
+                      setShowVolumeControl(false);
+                    }, 300);
+                  }}
+                >
                   <div className="flex items-center gap-2">
                     <input
                       type="range"
