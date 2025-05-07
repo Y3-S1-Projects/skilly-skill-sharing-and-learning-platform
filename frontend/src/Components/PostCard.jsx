@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import CustomVideoPlayer from "./CustomeVideoPlayer";
+import CommentsModal from "./Modals/CommentModal";
 
 const PostCard = ({
   post,
@@ -18,6 +19,7 @@ const PostCard = ({
   const [loggedInUser, setLoggedInUser] = useState(null);
   const [editCommentContent, setEditCommentContent] = useState("");
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({
     title: post.title,
@@ -154,6 +156,9 @@ const PostCard = ({
       : 0;
     return colors[index];
   };
+
+  const openModal = () => setIsModalOpen(true);
+  const closeModal = () => setIsModalOpen(false);
 
   // Post operations
   const handleLike = async () => {
@@ -826,7 +831,10 @@ const PostCard = ({
               {post.likes.includes(loggedInUser?.id) ? "Liked" : "Likes"}
             </span>
           </button>
-          <button className="flex items-center text-gray-500 hover:text-indigo-600 transition-colors">
+          <button
+            onClick={openModal}
+            className="flex items-center text-gray-500 hover:text-indigo-600 transition-colors"
+          >
             <svg
               className="h-5 w-5 mr-1"
               fill="none"
@@ -842,6 +850,20 @@ const PostCard = ({
             </svg>
             <span>{post.comments?.length || 0} Comments</span>
           </button>
+
+          <CommentsModal
+            isOpen={isModalOpen}
+            onClose={closeModal}
+            post={post}
+            commentOwners={commentOwners}
+            currentUser={currentUser}
+            loggedInUser={loggedInUser}
+            handleUpdateComment={handleUpdateComment}
+            handleDeleteComment={handleDeleteComment}
+            getColorClass={getColorClass}
+            getInitials={getInitials}
+            formatDate={formatDate}
+          />
           <button
             onClick={handleShare}
             className={`flex items-center ${
@@ -906,110 +928,6 @@ const PostCard = ({
               </div>
             </div>
           </div>
-
-          {/* Comments list */}
-          {post.comments && post.comments.length > 0 && (
-            <div className="space-y-3">
-              {post.comments.map((comment) => (
-                <div
-                  key={comment.id || comment._id}
-                  className="flex items-start space-x-3"
-                >
-                  {/* Avatar section */}
-                  <div className="flex-shrink-0">
-                    {commentOwners[comment.userId]?.profilePicUrl ? (
-                      <img
-                        className="h-8 w-8 rounded-full"
-                        src={commentOwners[comment.userId].profilePicUrl}
-                        alt={commentOwners[comment.userId]?.username || "User"}
-                      />
-                    ) : (
-                      <div
-                        className={`h-8 w-8 rounded-full flex items-center justify-center ${getColorClass(
-                          comment.userId
-                        )} font-medium`}
-                      >
-                        {getInitials(
-                          commentOwners[comment.userId]?.username || "U"
-                        )}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Comment content section */}
-                  <div className="flex-1">
-                    <div className="bg-gray-600 rounded-lg p-3">
-                      {editingCommentId === comment.id ||
-                      editingCommentId === comment._id ? (
-                        <div className="space-y-2">
-                          <textarea
-                            value={editCommentContent}
-                            onChange={(e) =>
-                              setEditCommentContent(e.target.value)
-                            }
-                            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
-                            rows="2"
-                          />
-                          <div className="flex space-x-2">
-                            <button
-                              onClick={() =>
-                                handleUpdateComment(comment.id || comment._id)
-                              }
-                              className="px-3 py-1 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 text-sm"
-                            >
-                              Save
-                            </button>
-                            <button
-                              onClick={cancelEditingComment}
-                              className="px-3 py-1 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 text-sm"
-                            >
-                              Cancel
-                            </button>
-                          </div>
-                        </div>
-                      ) : (
-                        <>
-                          <div className="flex justify-between items-start">
-                            {/* Username from comment owner data */}
-                            <p className="text-sm font-medium text-gray-300">
-                              {commentOwners[comment.userId]?.username ||
-                                (comment.userId === currentUser.id
-                                  ? currentUser.name
-                                  : "User")}
-                            </p>
-                            <p className="text-xs text-gray-300">
-                              {formatDate(comment.createdAt)}
-                            </p>
-                          </div>
-                          <p className="text-sm text-gray-300 mt-1">
-                            {comment.content}
-                          </p>
-                          {comment.userId === loggedInUser?.id && (
-                            <div className="flex space-x-2 mt-2">
-                              <button
-                                onClick={() => startEditingComment(comment)}
-                                className="text-xs text-indigo-600 hover:text-indigo-800"
-                              >
-                                Edit
-                              </button>
-                              <button
-                                onClick={() =>
-                                  handleDeleteComment(comment.id || comment._id)
-                                }
-                                className="text-xs text-red-600 hover:text-red-800"
-                              >
-                                Delete
-                              </button>
-                            </div>
-                          )}
-                        </>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
         </div>
       </div>
     </div>
