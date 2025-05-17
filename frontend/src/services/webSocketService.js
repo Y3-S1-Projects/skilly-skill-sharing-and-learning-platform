@@ -11,7 +11,7 @@ const MAX_RECONNECT_ATTEMPTS = 10;
 export const connectWebSocket = (userId, options = {}) => {
   // Disconnect any existing connections
   if (socket && socket.connected) {
-    console.log("Disconnecting existing socket connection");
+    // console.log("Disconnecting existing socket connection");
     socket.disconnect();
   }
 
@@ -20,7 +20,7 @@ export const connectWebSocket = (userId, options = {}) => {
   notificationRemoveCallback = options.onNotificationRemove || null;
   unreadCountCallback = options.onUnreadCount || null;
 
-  console.log("Attempting to connect to WebSocket server...");
+  // console.log("Attempting to connect to WebSocket server...");
 
   // Connect to Socket.IO server
   socket = io("http://localhost:8081", {
@@ -47,7 +47,7 @@ export const connectWebSocket = (userId, options = {}) => {
 
   // Connection handlers
   socket.on("connect", () => {
-    console.log("Connected to WebSocket with ID:", socket.id);
+    // console.log("Connected to WebSocket with ID:", socket.id);
     reconnectAttempts = 0;
 
     // Join a room for this user
@@ -86,22 +86,18 @@ export const connectWebSocket = (userId, options = {}) => {
 
   // Notification handlers
   socket.on("notification", (notification) => {
-    console.log("Received notification:", notification);
     if (notificationCallback) notificationCallback(notification);
   });
 
   socket.on("notification_remove", (notificationId) => {
-    console.log("Remove notification:", notificationId);
     if (notificationRemoveCallback) notificationRemoveCallback(notificationId);
   });
 
   socket.on("notifications_unread_count", (count) => {
-    console.log("Unread notifications:", count);
     if (unreadCountCallback) unreadCountCallback(count);
   });
 
   socket.on("notifications_initial", (notifications) => {
-    console.log("Initial notifications:", notifications);
     if (notificationCallback && Array.isArray(notifications)) {
       notifications.forEach((n) => notificationCallback(n));
     }

@@ -43,7 +43,6 @@ function NotificationSystem({ currentUser }) {
     // Set up periodic connection check
     const intervalId = setInterval(() => {
       if (!isConnected()) {
-        console.log("Socket disconnected, attempting to reconnect...");
         socketConnectionRef.current = connectWebSocket(currentUser.id, {
           onNotification: handleNewNotification,
           onNotificationRemove: handleRemoveNotification,
@@ -80,8 +79,6 @@ function NotificationSystem({ currentUser }) {
         `http://localhost:8080/api/notifications/${currentUser.id}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-
-      console.log("Fetched notifications:", notificationsResponse.data);
 
       // Get notifications sorted by createdAt
       const sortedNotifications = notificationsResponse.data.sort(
@@ -134,8 +131,6 @@ function NotificationSystem({ currentUser }) {
   };
 
   const handleNewNotification = async (notification) => {
-    console.log("New notification received:", notification);
-
     try {
       // Fetch sender details if senderId exists
       if (notification.senderId) {
@@ -186,8 +181,6 @@ function NotificationSystem({ currentUser }) {
 
   // Handler for removing notifications
   const handleRemoveNotification = (notificationId) => {
-    console.log("Removing notification:", notificationId);
-
     // Remove from notifications list
     setNotifications((prev) => {
       const updatedNotifications = prev.filter((n) => n.id !== notificationId);
@@ -204,7 +197,6 @@ function NotificationSystem({ currentUser }) {
   };
 
   const handleUnreadCount = (count) => {
-    console.log("Unread count updated:", count);
     setUnreadCount(count);
   };
 
