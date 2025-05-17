@@ -22,6 +22,7 @@ import CreateLearningPlan from "./Pages/CreateLearningPlan";
 import EditLearningPlan from "./Pages/EditLearningPlan";
 import ProtectedRoute from "./guards/authGuard";
 import LoginSuccess from "./Components/LoginSuccess";
+import PostView from "./Components/PostView";
 import { Toaster } from "sonner";
 
 function App() {
@@ -71,6 +72,7 @@ function App() {
             path="/learning-plan-creator"
             element={<LearningPlanCreator />}
           />
+          <Route path="/posts/:id" element={<PostView />} />
           {/*Components */}
           <Route path="/header" element={<Header />} />
         </Routes>

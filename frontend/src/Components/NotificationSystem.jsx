@@ -6,11 +6,14 @@ import {
 import { toast } from "react-toastify"; // Or your preferred notification library
 import axios from "axios";
 import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 function NotificationSystem({ currentUser }) {
+  const navigate = useNavigate();
   const [unreadCount, setUnreadCount] = useState(0);
   const [notifications, setNotifications] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const dropdownRef = useRef(null);
 
   useEffect(() => {
@@ -33,6 +36,9 @@ function NotificationSystem({ currentUser }) {
   }, [currentUser?.id]);
 
   const fetchNotifications = async () => {
+    // Set loading state at the beginning of the fetch process
+    setIsLoading(true);
+
     try {
       const token = localStorage.getItem("authToken");
 
@@ -51,7 +57,6 @@ function NotificationSystem({ currentUser }) {
       const enrichedNotifications = await Promise.all(
         sortedNotifications.map(async (notification) => {
           try {
-            // Only fetch user details if we have a senderId
             if (notification.senderId) {
               const userResponse = await axios.get(
                 `http://localhost:8080/api/users/${notification.senderId}`,
@@ -86,6 +91,9 @@ function NotificationSystem({ currentUser }) {
       setUnreadCount(unread);
     } catch (error) {
       console.error("Failed to fetch notifications:", error);
+    } finally {
+      // Set loading to false only after all processing is complete
+      setIsLoading(false);
     }
   };
 
@@ -118,7 +126,7 @@ function NotificationSystem({ currentUser }) {
       toast.info(notification.message, {
         onClick: () => {
           // Navigate to the relevant post
-          window.location.href = `/posts/${notification.postId}`;
+          navigate(`/posts/${notification.postId}`);
         },
       });
     } catch (error) {
@@ -194,11 +202,9 @@ function NotificationSystem({ currentUser }) {
   };
 
   const handleNotificationClick = async (notification) => {
-    // Early return if already handling this notification
     if (notification.isHandling) return;
 
     try {
-      // Mark as processing
       setNotifications((prev) =>
         prev.map((n) =>
           n.id === notification.id ? { ...n, isHandling: true } : n
@@ -209,9 +215,9 @@ function NotificationSystem({ currentUser }) {
         await markAsRead(notification.id);
       }
 
-      // Navigate
+      // Use navigate instead of window.location
       if (notification.postId) {
-        navigate(`/posts/${notification.postId}`); // Using react-router
+        navigate(`/posts/${notification.postId}`);
       } else if (notification.profileId) {
         navigate(`/profile/${notification.profileId}`);
       }
@@ -304,7 +310,14 @@ function NotificationSystem({ currentUser }) {
           </div>
 
           <div className="max-h-96 overflow-y-auto">
-            {notifications.length === 0 ? (
+            {isLoading ? (
+              <div className="py-8 px-4 text-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-400 mx-auto"></div>
+                <p className="text-gray-400 text-sm mt-2">
+                  Loading notifications...
+                </p>
+              </div>
+            ) : notifications.length === 0 ? (
               <div className="py-4 px-4 text-center text-gray-400 text-sm">
                 No notifications yet
               </div>
