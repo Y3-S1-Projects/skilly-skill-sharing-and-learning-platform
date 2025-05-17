@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import {
   connectWebSocket,
   disconnectWebSocket,
+  isConnected,
 } from "../services/webSocketService";
 import { toast } from "react-toastify"; // Or your preferred notification library
 import axios from "axios";
@@ -15,12 +16,22 @@ function NotificationSystem({ currentUser }) {
   const [showDropdown, setShowDropdown] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const dropdownRef = useRef(null);
+  const socketConnectionRef = useRef(null);
+
+  useEffect(() => {
+    if (showDropdown && dropdownRef.current) {
+      const dropdownContent = dropdownRef.current.querySelector(".max-h-96");
+      if (dropdownContent) {
+        dropdownContent.scrollTop = 0;
+      }
+    }
+  }, [notifications, showDropdown]);
 
   useEffect(() => {
     if (!currentUser) return;
 
     // Connect to WebSocket when component mounts or user changes
-    connectWebSocket(currentUser.id, {
+    socketConnectionRef.current = connectWebSocket(currentUser.id, {
       onNotification: handleNewNotification,
       onNotificationRemove: handleRemoveNotification,
       onUnreadCount: handleUnreadCount,
@@ -29,13 +40,35 @@ function NotificationSystem({ currentUser }) {
     // Fetch existing notifications
     fetchNotifications();
 
+    // Set up periodic connection check
+    const intervalId = setInterval(() => {
+      if (!isConnected()) {
+        console.log("Socket disconnected, attempting to reconnect...");
+        socketConnectionRef.current = connectWebSocket(currentUser.id, {
+          onNotification: handleNewNotification,
+          onNotificationRemove: handleRemoveNotification,
+          onUnreadCount: handleUnreadCount,
+        });
+      }
+    }, 10000);
+
     // Cleanup on unmount
     return () => {
+      clearInterval(intervalId);
       disconnectWebSocket();
     };
   }, [currentUser?.id]);
 
+  // Fetch notifications when dropdown is opened
+  useEffect(() => {
+    if (showDropdown && currentUser) {
+      fetchNotifications();
+    }
+  }, [showDropdown]);
+
   const fetchNotifications = async () => {
+    if (!currentUser) return;
+
     // Set loading state at the beginning of the fetch process
     setIsLoading(true);
 
@@ -47,6 +80,8 @@ function NotificationSystem({ currentUser }) {
         `http://localhost:8080/api/notifications/${currentUser.id}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
+
+      console.log("Fetched notifications:", notificationsResponse.data);
 
       // Get notifications sorted by createdAt
       const sortedNotifications = notificationsResponse.data.sort(
@@ -91,6 +126,7 @@ function NotificationSystem({ currentUser }) {
       setUnreadCount(unread);
     } catch (error) {
       console.error("Failed to fetch notifications:", error);
+      toast.error("Failed to load notifications");
     } finally {
       // Set loading to false only after all processing is complete
       setIsLoading(false);
@@ -98,6 +134,8 @@ function NotificationSystem({ currentUser }) {
   };
 
   const handleNewNotification = async (notification) => {
+    console.log("New notification received:", notification);
+
     try {
       // Fetch sender details if senderId exists
       if (notification.senderId) {
@@ -107,7 +145,6 @@ function NotificationSystem({ currentUser }) {
           { headers: { Authorization: `Bearer ${token}` } }
         );
 
-        // Enrich notification with sender details
         notification = {
           ...notification,
           senderAvatar: userResponse.data.profilePicUrl || null,
@@ -116,32 +153,41 @@ function NotificationSystem({ currentUser }) {
         };
       }
 
-      // Add to notifications list
-      setNotifications((prev) => [notification, ...prev]);
+      // Update notifications state in a way that forces the dropdown to show the new notification
+      setNotifications((prev) => {
+        // Check for duplicates
+        if (prev.some((n) => n.id === notification.id)) return prev;
+
+        // Add new notification at the top
+        return [notification, ...prev];
+      });
 
       // Update unread count
       setUnreadCount((prev) => prev + 1);
 
-      // Show toast notification
+      // Show toast
       toast.info(notification.message, {
         onClick: () => {
-          // Navigate to the relevant post
-          navigate(`/posts/${notification.postId}`);
+          if (notification.postId) {
+            navigate(`/posts/${notification.postId}`);
+          }
         },
       });
     } catch (error) {
-      console.error(
-        "Failed to fetch sender details for new notification:",
-        error
-      );
-      // Still add the notification even if we couldn't get sender details
-      setNotifications((prev) => [notification, ...prev]);
+      console.error("Failed to fetch sender details:", error);
+      // Still add the notification without sender details
+      setNotifications((prev) => {
+        if (prev.some((n) => n.id === notification.id)) return prev;
+        return [notification, ...prev];
+      });
       setUnreadCount((prev) => prev + 1);
     }
   };
 
   // Handler for removing notifications
   const handleRemoveNotification = (notificationId) => {
+    console.log("Removing notification:", notificationId);
+
     // Remove from notifications list
     setNotifications((prev) => {
       const updatedNotifications = prev.filter((n) => n.id !== notificationId);
@@ -158,6 +204,7 @@ function NotificationSystem({ currentUser }) {
   };
 
   const handleUnreadCount = (count) => {
+    console.log("Unread count updated:", count);
     setUnreadCount(count);
   };
 
@@ -174,6 +221,7 @@ function NotificationSystem({ currentUser }) {
       setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
     } catch (error) {
       console.error("Failed to mark notifications as read:", error);
+      toast.error("Failed to mark notifications as read");
     }
   };
 
@@ -198,6 +246,7 @@ function NotificationSystem({ currentUser }) {
         prev.map((n) => (n.id === notificationId ? { ...n, read: false } : n))
       );
       setUnreadCount((prev) => prev + 1);
+      toast.error("Failed to mark notification as read");
     }
   };
 
@@ -250,6 +299,15 @@ function NotificationSystem({ currentUser }) {
     }
   };
 
+  // Toggle dropdown and fetch notifications when opened
+  const toggleDropdown = () => {
+    const newState = !showDropdown;
+    setShowDropdown(newState);
+    if (newState) {
+      fetchNotifications();
+    }
+  };
+
   // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event) {
@@ -268,7 +326,7 @@ function NotificationSystem({ currentUser }) {
     <div className="notification-system relative">
       <button
         className="relative p-1 text-gray-400 hover:text-white focus:outline-none transition-colors duration-200"
-        onClick={() => setShowDropdown(!showDropdown)}
+        onClick={toggleDropdown}
         aria-label="Notifications"
       >
         <svg
