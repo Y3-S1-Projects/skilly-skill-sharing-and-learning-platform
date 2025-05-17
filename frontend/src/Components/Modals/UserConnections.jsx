@@ -25,7 +25,6 @@ export default function UserConnectionsModal({
   useEffect(() => {
     setActiveTab(initialActiveTab);
   }, [initialActiveTab]);
-  console.log(userId);
   const handleTabChange = (tab) => {
     setActiveTab(tab);
     if (setExternalActiveTab) {
