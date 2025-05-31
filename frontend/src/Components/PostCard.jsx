@@ -274,7 +274,7 @@ const PostCard = ({
     }
   };
 
-  // Comment operations
+
   const handleAddComment = async () => {
     try {
       const token = localStorage.getItem("authToken");
