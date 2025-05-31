@@ -316,7 +316,7 @@ const PostCard = ({
 
       onPostUpdate(response.data);
 
-      // Reset editing state in the modal
+     
       if (modalRef.current) {
         modalRef.current.resetEditingState();
       }
