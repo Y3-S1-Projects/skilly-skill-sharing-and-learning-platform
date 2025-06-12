@@ -24,13 +24,14 @@ import ProtectedRoute from "./guards/authGuard";
 import LoginSuccess from "./Components/LoginSuccess";
 import PostView from "./Components/PostView";
 import { Toaster } from "sonner";
+import LandingPage from "./Pages/landing";
 
 function App() {
   return (
     <>
       <Router>
         <Routes>
-          <Route path="/" element={<Login />} />
+          <Route path="/" element={<LandingPage />} />
           {/* <Route path="/auth/github/callback" element={<GitHubCallback />} /> */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
