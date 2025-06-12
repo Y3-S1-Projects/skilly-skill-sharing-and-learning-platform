@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import FloatingLabelInput from "@/components/custom/FloatingLabelInput";
 import { toast } from "sonner";
 
@@ -116,32 +117,39 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-6xl w-full bg-gray-800 rounded-xl shadow-lg overflow-hidden">
-        <div className="flex flex-col md:flex-row">
-          {/* Left column with logo and branding */}
-          <div className="bg-gray-900 p-10 flex flex-col justify-center items-center md:items-start md:w-1/3">
-            <div className="flex items-center mb-6">
-              <img
-                src="/skilly-logo-blue-text.png"
-                alt="Skilly Logo"
-                className="h-12 w-12"
-              />
-              <h1 className="ml-3 text-3xl font-bold text-blue-400">Skilly</h1>
-            </div>
-            <div className="text-center md:text-left">
-              <h2 className="text-2xl font-extrabold text-white mb-4">
-                Elevate Your Skills
-              </h2>
-              <p className="text-gray-300 mb-8">
-                Join our community of learners and masters. Track your progress,
-                connect with mentors, and achieve your goals.
-              </p>
-              <div className="hidden md:block space-y-4">
-                <div className="flex items-center">
-                  <div className="bg-blue-500 p-2 rounded-full">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-800 flex items-center justify-center p-4">
+      <motion.div
+        initial={{ opacity: 0, y: 50 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8 }}
+        className="w-full max-w-7xl"
+      >
+        <div className="grid lg:grid-cols-2 gap-0 bg-black/40 backdrop-blur-sm  overflow-hidden shadow-2xl border border-gray-800">
+          {/* Left Panel - Hero Section */}
+          <div className="bg-gradient-to-br from-purple-600 to-blue-700 p-8 lg:p-16 flex flex-col justify-center text-white">
+            <motion.div
+              initial={{ opacity: 0, x: -50 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+            >
+              <div className="mb-8 lg:mb-12">
+                <h1 className="text-5xl lg:text-7xl font-black mb-6 leading-none">
+                  JOIN
+                  <br />
+                  SKILLY
+                </h1>
+                <div className="w-24 h-2 bg-white  mb-6 lg:mb-8"></div>
+                <p className="text-lg lg:text-xl font-light opacity-90 leading-relaxed mb-8">
+                  From Learner to Master - Transform your potential into
+                  expertise
+                </p>
+              </div>
+
+              <div className="space-y-4 lg:space-y-6">
+                <div className="flex items-center space-x-4">
+                  <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
                     <svg
-                      className="h-5 w-5 text-white"
+                      className="w-6 h-6"
                       fill="currentColor"
                       viewBox="0 0 20 20"
                     >
@@ -152,64 +160,75 @@ const Register = () => {
                       />
                     </svg>
                   </div>
-                  <span className="ml-3 text-gray-300">Track progress</span>
+                  <span className="text-lg lg:text-xl font-medium">
+                    Track Your Progress
+                  </span>
                 </div>
-                <div className="flex items-center">
-                  <div className="bg-blue-500 p-2 rounded-full">
+                <div className="flex items-center space-x-4">
+                  <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
                     <svg
-                      className="h-5 w-5 text-white"
+                      className="w-6 h-6"
                       fill="currentColor"
                       viewBox="0 0 20 20"
                     >
-                      <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906zm6.5 0C10.17 12.032 9.08 12 8 12c-1.08 0-2.17.032-3.25.094a3 3 0 00-2.025 2.168A6.004 6.004 0 008 18c1.995 0 3.76-.978 4.825-2.738a3 3 0 00-2.025-2.168z" />
+                      <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM6 8a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
                   </div>
-                  <span className="ml-3 text-gray-300">
-                    Connect with mentors
+                  <span className="text-lg lg:text-xl font-medium">
+                    Connect with Mentors
                   </span>
                 </div>
-                <div className="flex items-center">
-                  <div className="bg-blue-500 p-2 rounded-full">
+                <div className="flex items-center space-x-4">
+                  <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
                     <svg
-                      className="h-5 w-5 text-white"
+                      className="w-6 h-6"
                       fill="currentColor"
                       viewBox="0 0 20 20"
                     >
                       <path
                         fillRule="evenodd"
-                        d="M6 6V5a3 3 0 013-3h2a3 3 0 013 3v1h2a2 2 0 012 2v3.57A22.952 22.952 0 0110 13a22.95 22.95 0 01-8-1.43V8a2 2 0 012-2h2zm2-1a1 1 0 011-1h2a1 1 0 011 1v1H8V5zm1 5a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z"
+                        d="M6 6V5a3 3 0 013-3h2a3 3 0 013 3v1h2a2 2 0 012 2v3.57A22.952 22.952 0 0110 13a22.95 22.95 0 01-8-1.43V8a2 2 0 012-2h2zm2-1a1 1 0 011-1h2a1 1 0 011 1v1H8V5z"
                         clipRule="evenodd"
                       />
-                      <path d="M2 13.692V16a2 2 0 002 2h12a2 2 0 002-2v-2.308A24.974 24.974 0 0110 15c-2.796 0-5.487-.46-8-1.308z" />
                     </svg>
                   </div>
-                  <span className="ml-3 text-gray-300">
-                    Earn certifications
+                  <span className="text-lg lg:text-xl font-medium">
+                    Earn Certifications
                   </span>
                 </div>
               </div>
-            </div>
+            </motion.div>
           </div>
 
-          {/* Right column with form */}
-          <div className="p-10 md:w-2/3">
-            <div>
-              <h2 className="text-center md:text-left text-2xl font-extrabold text-white">
-                Create your account
-              </h2>
-              <p className="mt-2 text-center md:text-left text-sm text-gray-400">
-                From Learner to Master
-              </p>
-            </div>
+          {/* Right Panel - Register Form */}
+          <div className="p-8 lg:p-16">
+            <motion.div
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, delay: 0.4 }}
+            >
+              <div className="mb-8 lg:mb-12">
+                <h2 className="text-4xl lg:text-5xl font-bold text-white mb-4 leading-tight">
+                  Create
+                  <br />
+                  Account
+                </h2>
+                <p className="text-lg lg:text-xl text-gray-400">
+                  Start your learning journey today
+                </p>
+              </div>
 
-            {serverError && (
-              <div className="mt-4 bg-red-900 border-l-4 border-red-500 p-4">
-                <div className="flex">
-                  <div className="flex-shrink-0">
+              {serverError && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="bg-red-500/10 border border-red-500/20 p-6  mb-8"
+                >
+                  <div className="flex items-center">
                     <svg
-                      className="h-5 w-5 text-red-400"
-                      viewBox="0 0 20 20"
+                      className="w-5 h-5 text-red-400 mr-3"
                       fill="currentColor"
+                      viewBox="0 0 20 20"
                     >
                       <path
                         fillRule="evenodd"
@@ -217,164 +236,199 @@ const Register = () => {
                         clipRule="evenodd"
                       />
                     </svg>
+                    <p className="text-red-400 text-lg">{serverError}</p>
                   </div>
-                  <div className="ml-3">
-                    <p className="text-sm text-red-400">{serverError}</p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 mb-4">
-                <FloatingLabelInput
-                  id="firstName"
-                  name="firstName"
-                  type="text"
-                  autoComplete="given-name"
-                  value={formData.firstName}
-                  onChange={handleChange}
-                  error={errors.firstName}
-                  label="First name"
-                />
-                <FloatingLabelInput
-                  id="lastName"
-                  name="lastName"
-                  type="text"
-                  autoComplete="family-name"
-                  value={formData.lastName}
-                  onChange={handleChange}
-                  error={errors.lastName}
-                  label="Last name"
-                />
-              </div>
-
-              <FloatingLabelInput
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                value={formData.email}
-                onChange={handleChange}
-                error={errors.email}
-                label="Email address"
-                className="mb-4"
-              />
-
-              <FloatingLabelInput
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="new-password"
-                value={formData.password}
-                onChange={handleChange}
-                error={errors.password}
-                label="Password"
-                className="mb-4"
-              />
-
-              <FloatingLabelInput
-                id="confirmPassword"
-                name="confirmPassword"
-                type="password"
-                autoComplete="new-password"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                error={errors.confirmPassword}
-                label="Confirm Password"
-                className="mb-4"
-              />
-
-              <div className="flex items-center">
-                <input
-                  id="agreeTerms"
-                  name="agreeTerms"
-                  type="checkbox"
-                  checked={formData.agreeTerms}
-                  onChange={handleChange}
-                  className={`h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-600 rounded ${
-                    errors.agreeTerms ? "border-red-500" : ""
-                  }`}
-                />
-                <label
-                  htmlFor="agreeTerms"
-                  className="ml-2 block text-sm text-gray-300"
-                >
-                  I agree to the{" "}
-                  <Link
-                    to="/terms"
-                    className="font-medium text-blue-400 hover:text-blue-300 transition-colors"
-                  >
-                    Terms and Conditions
-                  </Link>{" "}
-                  and{" "}
-                  <Link
-                    to="/privacy"
-                    className="font-medium text-blue-400 hover:text-blue-300 transition-colors"
-                  >
-                    Privacy Policy
-                  </Link>
-                </label>
-              </div>
-              {errors.agreeTerms && (
-                <p className="mt-1 text-sm text-red-400">{errors.agreeTerms}</p>
+                </motion.div>
               )}
 
-              <div>
-                <button
-                  type="submit"
+              <div className="space-y-6 lg:space-y-8">
+                {/* Name Fields */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
+                  <div>
+                    <FloatingLabelInput
+                      id="firstName"
+                      name="firstName"
+                      type="text"
+                      autoComplete="given-name"
+                      value={formData.firstName}
+                      onChange={handleChange}
+                      error={errors.firstName}
+                      label="First Name"
+                    />
+                    {errors.firstName && (
+                      <motion.p
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="text-red-400 text-base mt-2 ml-2"
+                      >
+                        {errors.firstName}
+                      </motion.p>
+                    )}
+                  </div>
+                  <div>
+                    <FloatingLabelInput
+                      id="lastName"
+                      name="lastName"
+                      type="text"
+                      autoComplete="family-name"
+                      value={formData.lastName}
+                      onChange={handleChange}
+                      error={errors.lastName}
+                      label="Last Name"
+                    />
+                    {errors.lastName && (
+                      <motion.p
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="text-red-400 text-base mt-2 ml-2"
+                      >
+                        {errors.lastName}
+                      </motion.p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Email */}
+                <div>
+                  <FloatingLabelInput
+                    id="email"
+                    name="email"
+                    type="email"
+                    autoComplete="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    error={errors.email}
+                    label="Email Address"
+                  />
+                  {errors.email && (
+                    <motion.p
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="text-red-400 text-base mt-2 ml-2"
+                    >
+                      {errors.email}
+                    </motion.p>
+                  )}
+                </div>
+
+                {/* Password */}
+                <div>
+                  <FloatingLabelInput
+                    id="password"
+                    name="password"
+                    type="password"
+                    autoComplete="new-password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    error={errors.password}
+                    label="Password"
+                  />
+                  {errors.password && (
+                    <motion.p
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="text-red-400 text-base mt-2 ml-2"
+                    >
+                      {errors.password}
+                    </motion.p>
+                  )}
+                </div>
+
+                {/* Confirm Password */}
+                <div>
+                  <FloatingLabelInput
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type="password"
+                    autoComplete="new-password"
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                    error={errors.confirmPassword}
+                    label="Confirm Password"
+                  />
+                  {errors.confirmPassword && (
+                    <motion.p
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="text-red-400 text-base mt-2 ml-2"
+                    >
+                      {errors.confirmPassword}
+                    </motion.p>
+                  )}
+                </div>
+
+                {/* Terms Checkbox */}
+                <div className="py-4">
+                  <label className="flex items-start cursor-pointer group">
+                    <input
+                      id="agreeTerms"
+                      name="agreeTerms"
+                      type="checkbox"
+                      checked={formData.agreeTerms}
+                      onChange={handleChange}
+                      className={`w-6 h-6 mt-1 text-blue-500 bg-transparent border-2  focus:ring-blue-500 focus:ring-2 ${
+                        errors.agreeTerms ? "border-red-500" : "border-gray-600"
+                      }`}
+                    />
+                    <span className="ml-4 text-base lg:text-lg text-gray-300 group-hover:text-white transition-colors leading-relaxed">
+                      I agree to the{" "}
+                      <button className="text-blue-400 hover:text-blue-300 transition-colors font-medium underline">
+                        Terms and Conditions
+                      </button>{" "}
+                      and{" "}
+                      <button className="text-blue-400 hover:text-blue-300 transition-colors font-medium underline">
+                        Privacy Policy
+                      </button>
+                    </span>
+                  </label>
+                  {errors.agreeTerms && (
+                    <motion.p
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="text-red-400 text-base mt-2 ml-10"
+                    >
+                      {errors.agreeTerms}
+                    </motion.p>
+                  )}
+                </div>
+
+                {/* Submit Button */}
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={handleSubmit}
                   disabled={isLoading}
-                  className={`group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-offset-0 transition-colors ${
+                  className={`w-full py-6 px-8 text-xl lg:text-2xl font-bold  transition-all duration-300 ${
                     isLoading
-                      ? "bg-blue-400 cursor-not-allowed"
-                      : "bg-blue-600 hover:bg-blue-700 focus:ring-blue-500"
-                  }`}
+                      ? "bg-gray-700 cursor-not-allowed"
+                      : "bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 shadow-lg hover:shadow-xl"
+                  } text-white`}
                 >
                   {isLoading ? (
-                    <span className="flex items-center">
-                      <svg
-                        className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        ></circle>
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        ></path>
-                      </svg>
+                    <div className="flex items-center justify-center">
+                      <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin mr-3"></div>
                       Creating Account...
-                    </span>
+                    </div>
                   ) : (
                     "Create Account"
                   )}
-                </button>
-              </div>
-            </form>
+                </motion.button>
 
-            <div className="text-center mt-4">
-              <p className="text-sm text-gray-400">
-                Already have an account?{" "}
-                <Link
-                  to="/login"
-                  className="font-medium text-blue-400 hover:text-blue-300 transition-colors"
-                >
-                  Sign in
-                </Link>
-              </p>
-            </div>
+                {/* Sign In Link */}
+                <p className="text-center text-base lg:text-lg text-gray-400 mt-8">
+                  Already have an account?{" "}
+                  <button
+                    className="text-blue-400 hover:text-blue-300 font-semibold transition-colors"
+                    onClick={() => navigate("/login")}
+                  >
+                    Sign In
+                  </button>
+                </p>
+              </div>
+            </motion.div>
           </div>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 };
