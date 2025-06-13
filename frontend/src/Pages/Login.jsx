@@ -6,6 +6,7 @@ import { isLoggedIn } from "../util/authGuard";
 import { motion } from "framer-motion";
 import FloatingLabelInput from "@/components/custom/FloatingLabelInput";
 import { toast } from "sonner";
+import { ScrollToTop } from "../util/dom-utils";
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -120,6 +121,7 @@ const Login = () => {
 
   return (
     <GoogleOAuthProvider clientId={googleClientId}>
+      <ScrollToTop />
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-800 flex items-center justify-center p-4">
         <motion.div
           initial={{ opacity: 0, y: 50 }}

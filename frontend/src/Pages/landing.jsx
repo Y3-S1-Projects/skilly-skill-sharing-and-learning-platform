@@ -114,7 +114,7 @@ const SkillyLanding = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
-                className="inline-flex items-center space-x-2 bg-indigo-100 text-indigo-700 px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-medium mb-4 sm:mb-6"
+                className="inline-flex items-center space-x-2 bg-indigo-100 text-indigo-700 px-3 sm:px-4 py-2  text-xs sm:text-sm font-medium mb-4 sm:mb-6"
               >
                 <Star className="w-3 h-3 sm:w-4 sm:h-4" />
                 <span>100% Free Knowledge Sharing</span>
@@ -137,7 +137,7 @@ const SkillyLanding = () => {
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                 <AnimatedButton
                   label="Start Learning"
-                  onClick={() => navigate("/login")}
+                  onClick={() => navigate("/register")}
                   className="w-full sm:w-auto px-6 sm:px-8 md:px-10 py-3 sm:py-4 text-base sm:text-lg flex items-center justify-center"
                 />
               </div>
@@ -153,7 +153,7 @@ const SkillyLanding = () => {
                 transition={{ delay: 0.4, duration: 0.8 }}
                 className="relative z-10"
               >
-                <div className="bg-white rounded-2xl sm:rounded-3xl shadow-xl sm:shadow-2xl p-4 sm:p-6 md:p-8 border border-gray-200">
+                <div className="bg-white   shadow-xl sm:shadow-2xl p-4 sm:p-6 md:p-8 border border-gray-200">
                   <div className="space-y-3 sm:space-y-4 md:space-y-6">
                     {skills.map((skill, index) => (
                       <motion.div
@@ -161,10 +161,10 @@ const SkillyLanding = () => {
                         initial={{ opacity: 0, x: 50 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: 0.6 + index * 0.1 }}
-                        className="flex items-center space-x-3 sm:space-x-4 p-3 sm:p-4 bg-gray-50 rounded-lg sm:rounded-xl hover:bg-gray-100 transition-colors cursor-pointer"
+                        className="flex items-center space-x-3 sm:space-x-4 p-3 sm:p-4 bg-gray-50  hover:bg-gray-100 transition-colors cursor-pointer"
                       >
                         <div
-                          className={`w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 ${skill.color} rounded-full flex items-center justify-center text-white font-bold text-sm sm:text-base`}
+                          className={`w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 ${skill.color}  flex items-center justify-center text-white font-bold text-sm sm:text-base`}
                         >
                           {skill.name[0]}
                         </div>
@@ -229,11 +229,11 @@ const SkillyLanding = () => {
                 transition={{ delay: index * 0.1, duration: 0.8 }}
                 viewport={{ once: true }}
                 whileHover={{ y: -5 }}
-                className="text-center p-4 sm:p-6 rounded-xl sm:rounded-2xl hover:shadow-lg transition-all duration-300"
+                className="text-center p-4 sm:p-6 hover:shadow-lg transition-all duration-300"
               >
                 <motion.div
                   whileHover={{ scale: 1.1, rotate: 5 }}
-                  className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-xl sm:rounded-2xl flex items-center justify-center mx-auto mb-3 sm:mb-4"
+                  className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 bg-gradient-to-br from-indigo-500 to-purple-500  flex items-center justify-center mx-auto mb-3 sm:mb-4"
                 >
                   <feature.icon className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 text-white" />
                 </motion.div>
@@ -280,7 +280,7 @@ const SkillyLanding = () => {
                 transition={{ delay: index * 0.2, duration: 0.8 }}
                 viewport={{ once: true }}
                 whileHover={{ y: -5 }}
-                className="bg-white p-6 sm:p-8 rounded-xl sm:rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300"
+                className="bg-white p-6 sm:p-8  shadow-lg hover:shadow-xl transition-all duration-300"
               >
                 <div className="flex items-center mb-4">
                   <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold mr-3 sm:mr-4 text-sm sm:text-base">
@@ -321,10 +321,9 @@ const SkillyLanding = () => {
               subscriptions, no hidden costs.
             </p>
             <motion.button
-              whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => navigate("/login")}
-              className="bg-white text-indigo-600 px-6 sm:px-8 py-3 sm:py-4 rounded-full font-semibold text-base sm:text-lg hover:bg-gray-100 transition-colors inline-flex items-center space-x-2"
+              className="bg-white text-indigo-600 px-6 sm:px-8 py-3 sm:py-4  font-semibold text-base sm:text-lg hover:bg-gray-300 transition-colors inline-flex items-center space-x-2 cursor-pointer"
             >
               <span>Get Started Today</span>
               <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />

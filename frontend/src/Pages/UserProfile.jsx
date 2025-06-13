@@ -39,7 +39,7 @@ const UserProfile = () => {
     certifications: [],
   });
 
-  const [activeTab, setActiveTab] = useState("activity");
+  const [activeTab, setActiveTab] = useState("posts");
 
   useEffect(() => {
     const fetchUserDetailsAndPosts = async () => {
@@ -205,263 +205,322 @@ const UserProfile = () => {
       <Header user={user} />
       {/* Cover Photo & Profile Summary */}
       <div className="relative">
-        {/* Cover Photo */}
-        <div className="h-48 sm:h-64 w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 overflow-hidden">
-          <img
-            src={user.coverPhoto}
-            alt="Cover"
-            className="w-full h-full object-cover opacity-70"
-          />
+        {/* Profile Header Section */}
+        <div className="bg-gray-600 px-6 py-12">
+          <div className="max-w-5xl mx-auto">
+            <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+              {/* Left Section - Profile Info */}
+              <div className="flex items-start gap-6">
+                {/* Profile Avatar */}
+                <div className="flex-shrink-0">
+                  {user?.avatar &&
+                  !user.avatar.includes("/api/placeholder/") ? (
+                    <img
+                      className="h-24 w-24 rounded-full border-4 border-white/20"
+                      src={user.avatar}
+                      alt={user?.name || "User"}
+                    />
+                  ) : (
+                    <div className="h-24 w-24 rounded-full bg-white/20 border-4 border-white/20 flex items-center justify-center text-white text-2xl font-medium">
+                      {getInitials(user?.name)}
+                    </div>
+                  )}
+                </div>
+
+                {/* Profile Details */}
+                <div className="flex-1">
+                  <h1 className="text-3xl font-bold text-white mb-2">
+                    {user.name}
+                  </h1>
+                  <p className="text-xl text-white/90 mb-4">{user.title}</p>
+
+                  {/* Bio */}
+                  <p className="text-white/80 text-base leading-relaxed mb-4 max-w-2xl">
+                    {user.bio}
+                  </p>
+
+                  {/* Skills Tags */}
+                  <div className="flex flex-wrap gap-2">
+                    <span className="px-3 py-1 bg-white/20 text-white text-sm ">
+                      UI/UX Design
+                    </span>
+                    <span className="px-3 py-1 bg-white/20 text-white text-sm ">
+                      React
+                    </span>
+                    <span className="px-3 py-1 bg-white/20 text-white text-sm ">
+                      Figma
+                    </span>
+                    <span className="px-3 py-1 bg-white/20 text-white text-sm ">
+                      Accessibility
+                    </span>
+                  </div>
+
+                  {/* Loading and Error States */}
+                  <div className="mt-4">
+                    {loading && <CustomLoader />}
+                    {error && <p className="text-red-300">{error}</p>}
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Section - Edit Profile Button */}
+              <div className="flex">
+                <Link
+                  to="/profile/edit"
+                  className="px-6 py-3 bg-white text-purple-600  font-medium hover:bg-gray-100 transition-all duration-200 flex items-center gap-2 shadow-sm"
+                >
+                  <EditIcon className="w-4 h-4" />
+                  Edit Profile
+                </Link>
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* Profile Summary Card */}
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="relative -mt-12 sm:-mt-16 mb-6">
-            <div className="bg-gray-800 rounded-xl shadow-sm overflow-hidden">
-              <div className="p-4 sm:p-6">
-                <div className="sm:flex sm:items-center sm:justify-between">
-                  <div className="sm:flex sm:space-x-5">
-                    <div className="flex-shrink-0">
-                      {user?.avatar &&
-                      !user.avatar.includes("/api/placeholder/") ? (
-                        <img
-                          className="h-8 w-8 rounded-full"
-                          src={user.avatar}
-                          alt={user?.name || "User"}
-                        />
-                      ) : (
-                        <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-300 font-medium">
-                          {getInitials(user?.name)}
-                        </div>
-                      )}
-                    </div>
-                    <div className="mt-4 sm:mt-0 text-center sm:text-left sm:flex-1">
-                      <h1 className="text-xl sm:text-2xl font-bold text-gray-300">
-                        {user.name}
-                      </h1>
-                      <p className="text-sm sm:text-base font-medium text-indigo-500">
-                        {user.title}
-                      </p>
-                      <div>
-                        {loading && <CustomLoader />}
-                        {error && <p className="text-red-500">{error}</p>}
-                      </div>
-                      <div className="mt-1 flex flex-wrap items-center justify-center sm:justify-start text-sm text-gray-500 gap-x-4 gap-y-1">
-                        {/* <span className="flex items-center">
-                          <svg
-                            className="h-4 w-4 mr-1"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                            />
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                            />
-                          </svg>
-                          {user.location}
-                        </span> */}
-                        <span className="flex items-center">
-                          <svg
-                            className="h-4 w-4 mr-1"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                            />
-                          </svg>
-                          Joined {user.joinDate}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="mt-5 sm:mt-0 flex justify-center">
-                    <Link
-                      to="/profile/edit"
-                      className="px-5 py-2.5 text-sm font-medium rounded-xl
-    bg-gradient-to-r from-indigo-500 to-purple-500 text-white
-    flex items-center justify-center gap-2
-    shadow-md hover:shadow-lg transition-all duration-300
-    hover:from-indigo-600 hover:to-purple-600
-    active:scale-[0.98] transform
-    focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 focus:ring-offset-gray-800
-    relative overflow-hidden group"
-                    >
-                      {/* Gradient overlay on hover */}
-                      <span className="absolute inset-0 bg-gradient-to-r from-indigo-600 to-purple-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
-
-                      {/* Button content */}
-                      <span className="relative z-10 flex items-center gap-2">
-                        <EditIcon className="w-4 h-4" />
-                        Edit Profile
-                      </span>
-                    </Link>
-                  </div>
+        {/* Stats Section */}
+        <div className="bg-white border-b">
+          <div className="max-w-5xl mx-auto px-6">
+            <div className="flex justify-center lg:justify-start">
+              <div className="grid grid-cols-3 divide-x divide-gray-200">
+                {/* Posts */}
+                <div className="px-8 py-6 text-center cursor-pointer hover:bg-gray-50 transition-colors">
+                  <div className="text-2xl font-bold text-gray-900">42</div>
+                  <div className="text-sm text-gray-600">Posts</div>
                 </div>
 
-                {/* Bio */}
-                <div className="mt-4 text-sm text-gray-300">
-                  <p>{user.bio}</p>
+                {/* Followers */}
+                <div
+                  className="px-8 py-6 text-center cursor-pointer hover:bg-gray-50 transition-colors"
+                  onClick={() => {
+                    setActiveConnectionTab("followers");
+                    setIsModalOpen(true);
+                  }}
+                >
+                  <div className="text-2xl font-bold text-gray-900">
+                    {user.stats.followers}
+                  </div>
+                  <div className="text-sm text-gray-600">Followers</div>
                 </div>
 
-                {/* User Stats */}
-                <div className="mt-6 grid grid-cols-3 lg:grid-cols-5 gap-3">
-                  {/* Followers */}
-                  <div
-                    className="bg-gray-700 rounded-lg py-3 px-4 cursor-pointer hover:bg-gray-600 transition-colors duration-200 group"
-                    onClick={() => {
-                      setActiveConnectionTab("followers");
-                      setIsModalOpen(true);
-                    }}
-                  >
-                    <div className="text-2xl font-bold text-indigo-400 group-hover:text-indigo-300 transition-colors">
-                      {user.stats.followers}
-                    </div>
-                    <div className="text-xs text-gray-300 group-hover:text-gray-200 transition-colors">
-                      Followers
-                    </div>
+                {/* Following */}
+                <div
+                  className="px-8 py-6 text-center cursor-pointer hover:bg-gray-50 transition-colors"
+                  onClick={() => {
+                    setActiveConnectionTab("following");
+                    setIsModalOpen(true);
+                  }}
+                >
+                  <div className="text-2xl font-bold text-gray-900">
+                    {user.stats.following}
                   </div>
-
-                  {/* Following */}
-                  <div
-                    className="bg-gray-700 rounded-lg py-3 px-4 cursor-pointer hover:bg-gray-600 transition-colors duration-200 group"
-                    onClick={() => {
-                      setActiveConnectionTab("following");
-                      setIsModalOpen(true);
-                    }}
-                  >
-                    <div className="text-2xl font-bold text-indigo-400 group-hover:text-indigo-300 transition-colors">
-                      {user.stats.following}
-                    </div>
-                    <div className="text-xs text-gray-300 group-hover:text-gray-200 transition-colors">
-                      Following
-                    </div>
-                  </div>
-
-                  {/* Skills Learned */}
-                  <div className="bg-gray-700 rounded-lg py-3 px-4 hover:bg-gray-600 transition-colors duration-200">
-                    <div className="text-2xl font-bold text-indigo-400">
-                      {user.stats.skillsLearned}
-                    </div>
-                    <div className="text-xs text-gray-300">Skills</div>
-                  </div>
-
-                  {/* Skills in Progress */}
-                  <div className="bg-gray-700 rounded-lg py-3 px-4 hover:bg-gray-600 transition-colors duration-200">
-                    <div className="text-2xl font-bold text-indigo-400">
-                      {user.stats.skillsInProgress}
-                    </div>
-                    <div className="text-xs text-gray-300">Learning</div>
-                  </div>
-
-                  {/* Achievements */}
-                  <div className="bg-gray-700 rounded-lg py-3 px-4 hover:bg-gray-600 transition-colors duration-200 col-span-3 lg:col-span-1">
-                    <div className="text-2xl font-bold text-indigo-400">
-                      {user.stats.achievements}
-                    </div>
-                    <div className="text-xs text-gray-300">Achievements</div>
-                  </div>
-
-                  {/* Connections Modal */}
-                  <UserConnectionsModal
-                    userId={user.id}
-                    isOwnProfile={true}
-                    isOpen={isModalOpen}
-                    onClose={() => setIsModalOpen(false)}
-                    activeTab={activeConnectionTab}
-                    setActiveTab={setActiveConnectionTab}
-                  />
+                  <div className="text-sm text-gray-600">Following</div>
                 </div>
               </div>
             </div>
           </div>
         </div>
+
+        {/* Join Date */}
+        {/* <div className="max-w-5xl mx-auto px-6 py-4">
+          <div className="flex items-center text-sm text-gray-500">
+            <svg
+              className="h-4 w-4 mr-1"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+              />
+            </svg>
+            Joined {user.joinDate}
+          </div>
+        </div> */}
+
+        {/* Connections Modal */}
+        <UserConnectionsModal
+          userId={user.id}
+          isOwnProfile={true}
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          activeTab={activeConnectionTab}
+          setActiveTab={setActiveConnectionTab}
+        />
       </div>
 
       {/* Main Content Area */}
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
-        <div className="flex flex-col md:flex-row gap-6">
-          {/* Left Column - Skills, Badges, etc. */}
-          <div className="md:w-1/3">
-            {/* Skills Section */}
-            <div className="bg-gray-800 rounded-xl shadow-sm overflow-hidden mb-6 border border-gray-700">
-              <div className="px-4 py-5 sm:px-6 border-b border-gray-700">
-                <h3 className="text-lg font-medium leading-6 text-white">
-                  Skills
-                </h3>
-                <p className="mt-1 max-w-2xl text-sm text-gray-400">
-                  Verified skills with community endorsements
-                </p>
-              </div>
-              <div className="px-4 py-3 sm:px-6">
-                <ul className="divide-y divide-gray-700">
-                  {user.skills.map((skill, index) => (
-                    <li
-                      key={index}
-                      className="py-3 hover:bg-gray-750 transition-colors duration-150"
-                    >
-                      <div className="flex justify-between items-center">
-                        <div className="flex-1 min-w-0">
-                          <h4 className="text-sm font-medium text-white truncate">
-                            {skill.name}
-                          </h4>
-                          <div className="mt-1 flex items-center">
+        {/* Navigation Tabs */}
+        <div className="bg-gray-300 border-b mb-8">
+          <nav className="flex space-x-8 " aria-label="Tabs">
+            <button
+              onClick={() => setActiveTab("posts")}
+              className={`py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
+                activeTab === "posts"
+                  ? "border-indigo-500 text-indigo-600"
+                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+              }`}
+            >
+              Posts
+            </button>
+            <button
+              onClick={() => setActiveTab("skills")}
+              className={`py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
+                activeTab === "skills"
+                  ? "border-indigo-500 text-indigo-600"
+                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+              }`}
+            >
+              Skills & Expertise
+            </button>
+            <button
+              onClick={() => setActiveTab("about")}
+              className={`py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
+                activeTab === "about"
+                  ? "border-indigo-500 text-indigo-600"
+                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+              }`}
+            >
+              About
+            </button>
+          </nav>
+        </div>
+
+        {/* Content based on active tab */}
+        {activeTab === "posts" && (
+          <div className="space-y-6">
+            {/* {[...posts].reverse().map((post) => (
+              <div
+                key={post.id}
+                className="bg-white rounded-lg shadow-sm border p-6"
+              >
+                <div className="flex items-start space-x-3">
+                  <div className="flex-shrink-0">
+                    {user?.avatar &&
+                    !user.avatar.includes("/api/placeholder/") ? (
+                      <img
+                        className="h-10 w-10 rounded-full"
+                        src={user.avatar}
+                        alt={user?.name || "User"}
+                      />
+                    ) : (
+                      <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-medium">
+                        {getInitials(user?.name)}
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center space-x-2">
+                      <p className="text-sm font-medium text-gray-900">
+                        {user.name}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        Posted {post.timeAgo || post.createdAt}
+                      </p>
+                    </div>
+                    <div className="mt-3">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                        {post.title}
+                      </h3>
+                      <p className="text-gray-600 text-sm leading-relaxed">
+                        {post.content}
+                      </p>
+                      {post.tags && post.tags.length > 0 && (
+                        <div className="mt-4 flex flex-wrap gap-2">
+                          {post.tags.map((tag, index) => (
                             <span
-                              className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                                skill.level === "Expert"
-                                  ? "bg-green-900/30 text-green-400"
-                                  : skill.level === "Advanced"
-                                  ? "bg-blue-900/30 text-blue-400"
-                                  : skill.level === "Intermediate"
-                                  ? "bg-indigo-900/30 text-indigo-400"
-                                  : "bg-purple-900/30 text-purple-400"
-                              }`}
+                              key={index}
+                              className="inline-flex items-center px-3 py-1 rounded-md text-xs font-medium bg-indigo-50 text-indigo-700 border border-indigo-200"
                             >
-                              {skill.level}
+                              {tag}
                             </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))} */}
+            {[...posts].reverse().map((post) => (
+              <PostCard
+                key={post.id}
+                post={post}
+                currentUser={user}
+                onPostUpdate={handlePostUpdate}
+                onPostDelete={handlePostDelete}
+                onSharePost={handlePostShared}
+              />
+            ))}
+            <UserJoinDate user={user} />
+          </div>
+        )}
+
+        {activeTab === "skills" && (
+          <div className="flex flex-col md:flex-row gap-6">
+            {/* Skills Section */}
+            <div className="md:w-1/2">
+              <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
+                <div className="px-6 py-4 border-b border-gray-200">
+                  <h3 className="text-lg font-medium text-gray-900">Skills</h3>
+                  <p className="mt-1 text-sm text-gray-600">
+                    Verified skills with community endorsements
+                  </p>
+                </div>
+                <div className="px-6 py-4">
+                  <ul className="divide-y divide-gray-200">
+                    {user.skills.map((skill, index) => (
+                      <li key={index} className="py-3">
+                        <div className="flex justify-between items-center">
+                          <div className="flex-1 min-w-0">
+                            <h4 className="text-sm font-medium text-gray-900">
+                              {skill.name}
+                            </h4>
+                            <div className="mt-1">
+                              <span
+                                className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                                  skill.level === "Expert"
+                                    ? "bg-green-100 text-green-800"
+                                    : skill.level === "Advanced"
+                                    ? "bg-blue-100 text-blue-800"
+                                    : skill.level === "Intermediate"
+                                    ? "bg-indigo-100 text-indigo-800"
+                                    : "bg-purple-100 text-purple-800"
+                                }`}
+                              >
+                                {skill.level}
+                              </span>
+                            </div>
                           </div>
                         </div>
-                        {/* <div className="ml-4 flex-shrink-0">
-                          <span className="text-xs text-gray-400">
-                            {skill.endorsements} endorsements
-                          </span>
-                        </div> */}
-                      </div>
-                    </li>
-                  ))}
-                </ul>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </div>
             </div>
 
             {/* Learning Goals Section */}
-            <div className="bg-gray-800 rounded-xl shadow-sm overflow-hidden mb-6 border border-gray-700">
-              <Link
-                to="/learning-plans"
-                className="block w-full p-4 rounded-lg transition-all 
-    hover:bg-gray-700 hover:shadow-sm 
-    focus:outline-none focus:ring-2 focus:ring-indigo-500
-    group"
-                aria-label="View Learning Plans"
-              >
-                <div className="transition-all group-hover:translate-x-1">
-                  <h3 className="text-lg font-medium leading-6 text-white flex items-center">
-                    Learning Plans
+            <div className="md:w-1/2">
+              <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
+                <Link
+                  to="/learning-plans"
+                  className="block w-full px-6 py-4 border-b border-gray-200 hover:bg-gray-50 transition-colors group"
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-lg font-medium text-gray-900">
+                        Learning Plans
+                      </h3>
+                      <p className="mt-1 text-sm text-gray-600">
+                        Skills currently in progress
+                      </p>
+                    </div>
                     <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-5 w-5 ml-1 text-gray-400 group-hover:text-indigo-400 transition-colors"
+                      className="h-5 w-5 text-gray-400 group-hover:text-indigo-500 transition-colors"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -473,112 +532,67 @@ const UserProfile = () => {
                         d="M9 5l7 7-7 7"
                       />
                     </svg>
-                  </h3>
-                  <p className="mt-1 max-w-2xl text-sm text-gray-400 group-hover:text-gray-300">
-                    Skills currently in progress - Click to view details
-                  </p>
-                </div>
-              </Link>
-              <div className="px-4 py-3 sm:px-6">
-                <ul className="divide-y divide-gray-700">
-                  {user.learningGoals.map((goal) => (
-                    <li
-                      key={goal.id}
-                      className="py-3 hover:bg-gray-750 transition-colors duration-150"
-                    >
-                      <div>
-                        <div className="flex justify-between items-center">
-                          <h4 className="text-sm font-medium text-white">
+                  </div>
+                </Link>
+                <div className="px-6 py-4">
+                  <ul className="divide-y divide-gray-200">
+                    {user.learningGoals.map((goal) => (
+                      <li key={goal.id} className="py-3">
+                        <div className="flex justify-between items-center mb-2">
+                          <h4 className="text-sm font-medium text-gray-900">
                             {goal.name}
                           </h4>
-                          <span className="text-xs text-gray-400">
+                          <span className="text-xs text-gray-500">
                             {goal.category}
                           </span>
                         </div>
-                        <div className="mt-2">
-                          <div className="flex items-center justify-between">
-                            <div className="w-full bg-gray-700 rounded-full h-2.5 mr-2">
-                              <div
-                                className="bg-indigo-500 h-2.5 rounded-full transition-all duration-300"
-                                style={{ width: `${goal.progress}%` }}
-                              ></div>
-                            </div>
-                            <span className="text-xs font-medium text-gray-400">
-                              {goal.progress}%
-                            </span>
+                        <div className="flex items-center">
+                          <div className="w-full bg-gray-200 rounded-full h-2 mr-3">
+                            <div
+                              className="bg-indigo-500 h-2 rounded-full transition-all duration-300"
+                              style={{ width: `${goal.progress}%` }}
+                            ></div>
                           </div>
+                          <span className="text-xs font-medium text-gray-600 min-w-0">
+                            {goal.progress}%
+                          </span>
                         </div>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </div>
             </div>
           </div>
+        )}
 
-          {/* Right Column - Activities Feed */}
-          <div className="md:w-2/3">
-            {/* Tabs Container */}
-            <div className="mb-6 bg-gray-800 rounded-xl shadow-sm overflow-hidden border border-gray-700">
-              <div className="border-b border-gray-700">
-                {/* Post Creation Card */}
-                <CreatePostCard
-                  user={user}
-                  setShowCreatePostModal={setShowCreatePostModal}
-                />
-
-                {/* Tabs Navigation */}
-                <nav className="flex" aria-label="Tabs">
-                  <button
-                    onClick={() => setActiveTab("activity")}
-                    className={`w-1/3 py-4 px-1 text-center border-b-2 font-medium text-sm transition-colors duration-200 ${
-                      activeTab === "activity"
-                        ? "border-indigo-500 text-indigo-400"
-                        : "border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-600"
-                    }`}
-                  >
-                    Activity
-                  </button>
-                  <button
-                    onClick={() => setActiveTab("shared")}
-                    className={`w-1/3 py-4 px-1 text-center border-b-2 font-medium text-sm transition-colors duration-200 ${
-                      activeTab === "shared"
-                        ? "border-indigo-500 text-indigo-400"
-                        : "border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-600"
-                    }`}
-                  >
-                    Resources
-                  </button>
-                  <button
-                    onClick={() => setActiveTab("achievements")}
-                    className={`w-1/3 py-4 px-1 text-center border-b-2 font-medium text-sm transition-colors duration-200 ${
-                      activeTab === "achievements"
-                        ? "border-indigo-500 text-indigo-400"
-                        : "border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-600"
-                    }`}
-                  >
-                    Achievements
-                  </button>
-                </nav>
+        {activeTab === "about" && (
+          <div className="bg-white rounded-lg shadow-sm border p-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">About</h3>
+            <div className="space-y-4">
+              <div>
+                <h4 className="text-sm font-medium text-gray-900 mb-2">Bio</h4>
+                <p className="text-gray-600">{user.bio}</p>
+              </div>
+              <div className="flex items-center text-sm text-gray-500">
+                <svg
+                  className="h-4 w-4 mr-1"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                  />
+                </svg>
+                Joined {user.joinDate}
               </div>
             </div>
-
-            {/* Activities Feed */}
-            <div className="space-y-6">
-              {[...posts].reverse().map((post) => (
-                <PostCard
-                  key={post.id}
-                  post={post}
-                  currentUser={user}
-                  onPostUpdate={handlePostUpdate}
-                  onPostDelete={handlePostDelete}
-                  onSharePost={handlePostShared}
-                />
-              ))}
-              <UserJoinDate user={user} />
-            </div>
           </div>
-        </div>
+        )}
       </div>
       {showCreatePostModal && (
         <CreatePostModal

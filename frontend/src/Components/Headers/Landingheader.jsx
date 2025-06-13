@@ -1,11 +1,13 @@
 import AnimatedButton from "@/components/custom/AnimatedButton";
 import { motion, AnimatePresence, useAnimation } from "framer-motion";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const LandingHeader = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const textControls = useAnimation();
   const bgControls = useAnimation();
+  const navigate = useNavigate();
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -100,7 +102,7 @@ const LandingHeader = () => {
           </div>
           {/* Desktop Get Started Button */}
           <AnimatedButton
-            label="Sign Up"
+            label="Login"
             onClick={() => navigate("/login")}
             className="hidden md:block  items-center justify-center text-3xl"
           />{" "}
@@ -225,7 +227,7 @@ const LandingHeader = () => {
               {/* Mobile Get Started Button */}
               <div className="p-6 border-t border-gray-200">
                 <motion.button
-                  onClick={closeMobileMenu}
+                  onClick={() => navigate("/register")}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   className="w-full bg-transparent border border-indigo-600 text-indigo-600 text-xl font-semibold px-8 py-4  transition-colors"
@@ -233,7 +235,7 @@ const LandingHeader = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.4 }}
                 >
-                  Sign Up
+                  Login
                 </motion.button>
               </div>
             </div>
