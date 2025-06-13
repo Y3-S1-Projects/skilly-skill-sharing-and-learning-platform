@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import FloatingLabelInput from "@/components/custom/FloatingLabelInput";
 import { toast } from "sonner";
+import { ScrollToTop } from "../util/dom-utils";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -118,6 +119,7 @@ const Register = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-800 flex items-center justify-center p-4">
+      <ScrollToTop />
       <motion.div
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}

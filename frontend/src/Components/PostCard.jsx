@@ -274,7 +274,6 @@ const PostCard = ({
     }
   };
 
-
   const handleAddComment = async () => {
     try {
       const token = localStorage.getItem("authToken");
@@ -316,7 +315,6 @@ const PostCard = ({
 
       onPostUpdate(response.data);
 
-     
       if (modalRef.current) {
         modalRef.current.resetEditingState();
       }
