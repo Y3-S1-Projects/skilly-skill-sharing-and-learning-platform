@@ -137,7 +137,7 @@ const Header = ({ onLogout }) => {
 
   return (
     <>
-      <header className="bg-gray-900 text-white shadow-sm sticky top-0 z-50 transition-all duration-300">
+      <header className="bg-gray-600 text-white sticky top-0 z-50 transition-all duration-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16 items-center">
             {/* Logo and navigation */}
@@ -162,10 +162,10 @@ const Header = ({ onLogout }) => {
                     href={`${item.href}`}
                     className="relative overflow-hidden inline-block group"
                   >
-                    <span className="block text-gray-600 text-2xl transition-transform duration-300 ease-in-out group-hover:-translate-y-full">
+                    <span className="block text-gray-200 text-2xl transition-transform duration-300 ease-in-out group-hover:-translate-y-full">
                       {item.name}
                     </span>
-                    <span className="absolute top-full left-0 w-full text-indigo-600 text-2xl font-medium transition-transform duration-300 ease-in-out group-hover:-translate-y-full">
+                    <span className="absolute top-full left-0 w-full text-black text-2xl font-medium transition-transform duration-300 ease-in-out group-hover:-translate-y-full">
                       {item.name}
                     </span>
                   </a>
@@ -241,7 +241,7 @@ const Header = ({ onLogout }) => {
               {/* Profile menu button */}
               <button
                 type="button"
-                className="bg-gray-900 rounded-full flex items-center focus:outline-none transition-all duration-200 hover:ring-2 hover:ring-indigo-500 cursor-pointer"
+                className="bg-gray-900 rounded-full flex items-center focus:outline-none transition-all duration-200 hover:ring-2 hover:ring-gray-400 cursor-pointer"
                 onClick={toggleSidebar}
               >
                 <span className="sr-only">Open user menu</span>

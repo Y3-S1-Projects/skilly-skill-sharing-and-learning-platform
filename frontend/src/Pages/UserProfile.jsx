@@ -264,23 +264,23 @@ const UserProfile = () => {
               </div>
 
               {/* Right Section - Edit Profile Button */}
-              <div className="flex">
+              {/* <div className="flex">
                 <Link
                   to="/profile/edit"
-                  className="px-6 py-3 bg-white text-purple-600  font-medium hover:bg-gray-100 transition-all duration-200 flex items-center gap-2 shadow-sm"
+                  className="px-6 py-3 bg-white text-black  font-medium hover:bg-gray-100 transition-all duration-200 flex items-center gap-2 shadow-sm"
                 >
                   <EditIcon className="w-4 h-4" />
                   Edit Profile
                 </Link>
-              </div>
+              </div> */}
             </div>
           </div>
         </div>
 
         {/* Stats Section */}
         <div className="bg-white border-b">
-          <div className="max-w-screen mx-auto px-6">
-            <div className="flex justify-center lg:justify-start">
+          <div className="max-w-7xl mx-auto">
+            <div className=" ">
               <div className="grid grid-cols-3 divide-x divide-gray-200">
                 {/* Posts */}
                 <div className="px-8 py-6 text-center cursor-pointer hover:bg-gray-50 transition-colors">
@@ -356,37 +356,24 @@ const UserProfile = () => {
         {" "}
         {/* Navigation Tabs */}
         <div className="bg-gray-300 border-b mb-8">
-          <nav className="flex space-x-8 " aria-label="Tabs">
-            <button
-              onClick={() => setActiveTab("posts")}
-              className={`py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
-                activeTab === "posts"
-                  ? "border-indigo-500 text-indigo-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-              }`}
-            >
-              Posts
-            </button>
-            <button
-              onClick={() => setActiveTab("skills")}
-              className={`py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
-                activeTab === "skills"
-                  ? "border-indigo-500 text-indigo-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-              }`}
-            >
-              Skills & Expertise
-            </button>
-            <button
-              onClick={() => setActiveTab("about")}
-              className={`py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
-                activeTab === "about"
-                  ? "border-indigo-500 text-indigo-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-              }`}
-            >
-              About
-            </button>
+          <nav className="flex space-x-8" aria-label="Tabs">
+            {[
+              { id: "posts", label: "Posts" },
+              { id: "skills", label: "Skills & Expertise" },
+              { id: "about", label: "About" },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
+                  activeTab === tab.id
+                    ? "border-black text-black"
+                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
           </nav>
         </div>
         {/* Content based on active tab */}
@@ -404,9 +391,6 @@ const UserProfile = () => {
                 />
               </div>
             ))}
-            <div className="break-inside-avoid columns-1">
-              <UserJoinDate user={user} />
-            </div>
           </div>
         )}
         {activeTab === "skills" && (
@@ -516,16 +500,35 @@ const UserProfile = () => {
           </div>
         )}
         {activeTab === "about" && (
-          <div className="bg-white rounded-lg shadow-sm border p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">About</h3>
-            <div className="space-y-4">
+          <div className="bg-white  border border-gray-100 p-6 shadow-sm">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-semibold text-gray-900">About</h3>
+              <Link
+                to="/profile/edit"
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-black hover:text-gray-500 transition-colors  hover:bg-gray-50"
+              >
+                <EditIcon className="w-4 h-4" />
+                Edit Profile
+              </Link>
+            </div>
+
+            <div className="space-y-6">
               <div>
-                <h4 className="text-sm font-medium text-gray-900 mb-2">Bio</h4>
-                <p className="text-gray-600">{user.bio}</p>
+                <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                  Bio
+                </h4>
+                <p className="text-gray-700 leading-relaxed">
+                  {user.bio || (
+                    <span className="text-gray-400 italic">
+                      No bio provided
+                    </span>
+                  )}
+                </p>
               </div>
+
               <div className="flex items-center text-sm text-gray-500">
                 <svg
-                  className="h-4 w-4 mr-1"
+                  className="h-4 w-4 mr-2 text-gray-400"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -537,7 +540,7 @@ const UserProfile = () => {
                     d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
                   />
                 </svg>
-                Joined {user.joinDate}
+                <span>Joined {user.joinDate}</span>
               </div>
             </div>
           </div>
