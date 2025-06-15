@@ -140,14 +140,14 @@ export default function UserConnectionsModal({
           ></div>
 
           {/* Modal */}
-          <div className="relative bg-gray-800 w-full max-w-md rounded-2xl shadow-xl overflow-hidden z-10 mx-4 h-[70vh] flex flex-col border border-gray-700">
+          <div className="relative bg-gray-200 w-full max-w-md  shadow-xl overflow-hidden z-10 mx-4 h-[70vh] flex flex-col border border-gray-700">
             {/* Header */}
             <div className="p-6 border-b border-gray-700">
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-2xl font-bold text-white">Connections</h2>
+                <h2 className="text-2xl font-bold text-black">Connections</h2>
                 <button
                   onClick={onClose}
-                  className="text-gray-400 hover:text-gray-200 transition-colors"
+                  className="text-gray-800 hover:text-red-500 transition-colors"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -171,8 +171,8 @@ export default function UserConnectionsModal({
                 <button
                   className={`px-4 py-2 text-medium font-medium transition-colors border-b-2 ${
                     activeTab === "followers"
-                      ? "border-indigo-500 text-indigo-400"
-                      : "border-transparent text-gray-400 hover:text-gray-300"
+                      ? "border-gray-800 text-black"
+                      : "border-transparent text-gray-600 hover:text-black"
                   }`}
                   onClick={() => handleTabChange("followers")}
                 >
@@ -181,8 +181,8 @@ export default function UserConnectionsModal({
                 <button
                   className={`px-4 py-2 text-medium font-medium transition-colors border-b-2 ${
                     activeTab === "following"
-                      ? "border-indigo-500 text-indigo-400"
-                      : "border-transparent text-gray-400 hover:text-gray-300"
+                      ? "border-gray-800 text-black"
+                      : "border-transparent text-gray-600 hover:text-black"
                   }`}
                   onClick={() => handleTabChange("following")}
                 >
@@ -193,14 +193,14 @@ export default function UserConnectionsModal({
               {/* Search Input */}
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Search size={18} className="text-gray-500" />
+                  <Search size={18} className="text-gray-700" />
                 </div>
                 <input
                   type="text"
                   placeholder="Search users..."
                   value={displayedQuery}
                   onChange={handleInputChange}
-                  className="pl-10 pr-10 py-3 w-full bg-gray-700 border-2 border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-white placeholder-gray-400"
+                  className="pl-10 pr-10 py-3 w-full bg-gray-300 border-2 border-gray-800 focus:ring-2 focus:ring-gray-800 focus:border-gray-800 text-black placeholder-gray-400"
                 />
                 {displayedQuery && (
                   <button
@@ -228,7 +228,7 @@ export default function UserConnectionsModal({
 
             {/* Body */}
             <div className="flex-1 overflow-hidden flex flex-col">
-              <h3 className="text-lg font-semibold mb-4 text-gray-300 px-6 pt-2">
+              <h3 className="text-lg font-semibold mb-4 text-gray-900 px-6 pt-2">
                 {connectionText}
               </h3>
               <div
@@ -252,12 +252,12 @@ export default function UserConnectionsModal({
                       .map((user) => (
                         <div
                           key={user.id}
-                          className="p-3 hover:bg-gray-700 rounded-lg transition-colors cursor-pointer"
+                          className="p-3 hover:bg-gray-300 transition-colors cursor-pointer"
                           onClick={() =>
                             (window.location.href = `/profile/${user.id}`)
                           }
                         >
-                          <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-3 ">
                             <img
                               src={
                                 user.profilePicUrl ||
@@ -267,7 +267,7 @@ export default function UserConnectionsModal({
                               className="w-12 h-12 rounded-full object-cover border-2 border-gray-600"
                             />
                             <div>
-                              <p className="font-semibold text-white">
+                              <p className="font-semibold text-black">
                                 {user.username}
                               </p>
                             </div>
@@ -287,7 +287,7 @@ export default function UserConnectionsModal({
 
                 {isLoading && (
                   <div className="flex justify-center py-6">
-                    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-500"></div>
+                    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-black"></div>
                   </div>
                 )}
               </div>
