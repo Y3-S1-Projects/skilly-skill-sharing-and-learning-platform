@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { getUserId } from "../util/auth";
 import PostCard from "../Components/PostCard";
@@ -7,6 +7,7 @@ import CreatePostCard from "../Components/CreatePostCard";
 import CreatePostModal from "../Components/Modals/CreatePost";
 import Header from "../Components/Header";
 import CustomLoader from "../Components/CustomLoader";
+import { PlusIcon } from "lucide-react";
 
 const SocialFeed = () => {
   const [user, setUser] = useState({ name: "", avatar: "" });
@@ -15,6 +16,7 @@ const SocialFeed = () => {
   const [showCreatePostModal, setShowCreatePostModal] = useState(false);
   const [loggedInUserId, setLoggedInUserId] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUserId = async () => {
@@ -118,33 +120,62 @@ const SocialFeed = () => {
   if (isLoading) return <CustomLoader />;
 
   return (
-    <div className="min-h-screen bg-black">
+    <div className="min-h-screen bg-gray-200">
       <Header />
-      <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+
+      <div className="mr-10 ml-10 mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Sticky Create Post Card */}
         <CreatePostCard
           user={user}
           setShowCreatePostModal={setShowCreatePostModal}
         />
-        {posts.map((post) => (
-          <div key={post.id} className="mb-6">
-            <PostCard
-              key={post.id}
-              post={post}
-              currentUser={user}
-              onPostUpdate={handlePostUpdate}
-              onPostDelete={handlePostDelete}
-              isViewingProfile={false}
-            />
+
+        {/* <div className="flex justify-between items-center w-full my-4">
+          <span className="text-2xl text-gray-900">
+            What's on your mind today?
+          </span>
+          <button
+            onClick={() => navigate("/create-post")}
+            className="flex items-center space-x-2 px-4 py-3 border border-gray-800 shadow-sm  cursor-pointer hover:bg-gradient-to-b from-gray-200 to-gray-300 transition-colors duration-200"
+          >
+            <PlusIcon size={20} className="text-gray-800" />
+            <span className="text-gray-900 font-medium">Create a Post</span>
+          </button>
+        </div> */}
+
+        {/* Masonry Layout using columns */}
+        {posts.length > 0 ? (
+          <div className="columns-1 sm:columns-2 lg:columns-3 gap-6">
+            {posts.map((post) => (
+              <div key={post.id} className="mb-6 break-inside-avoid">
+                <div className="bg-gray-800  overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300">
+                  <PostCard
+                    post={post}
+                    currentUser={user}
+                    onPostUpdate={handlePostUpdate}
+                    onPostDelete={handlePostDelete}
+                  />
+                </div>
+              </div>
+            ))}
           </div>
-        ))}
+        ) : (
+          <div className="text-center py-16">
+            <p className="text-gray-400 text-lg">
+              No posts yet. Be the first to create one!
+            </p>
+          </div>
+        )}
+
+        {/* Create Post Modal */}
+        {showCreatePostModal && (
+          <CreatePostModal
+            isOpen={showCreatePostModal}
+            onClose={() => setShowCreatePostModal(false)}
+            onPostCreated={(newPost) => setPosts([newPost, ...posts])}
+          />
+        )}
       </div>
-      {showCreatePostModal && (
-        <CreatePostModal
-          isOpen={showCreatePostModal}
-          onClose={() => setShowCreatePostModal(false)}
-          onPostCreated={(newPost) => setPosts([newPost, ...posts])}
-        />
-      )}
     </div>
   );
 };

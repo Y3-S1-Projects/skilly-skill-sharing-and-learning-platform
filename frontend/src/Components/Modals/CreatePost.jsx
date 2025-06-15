@@ -1,5 +1,4 @@
 "use client";
-
 import { useState } from "react";
 import axios from "axios";
 import {
@@ -23,34 +22,6 @@ import {
 } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { X, Camera, Lightbulb, Calendar, FileText, Video } from "lucide-react";
-
-// Custom scrollbar styles
-const scrollbarStyles = `
-  .custom-scrollbar {
-    max-height: 60vh;
-    overflow-y: auto;
-    scrollbar-width: thin;
-    scrollbar-color: rgba(99, 102, 241, 0.5) rgba(17, 24, 39, 0.1);
-  }
-
-  .custom-scrollbar::-webkit-scrollbar {
-    width: 8px;
-  }
-
-  .custom-scrollbar::-webkit-scrollbar-track {
-    background: rgba(17, 24, 39, 0.1);
-    border-radius: 10px;
-  }
-
-  .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: rgba(99, 102, 241, 0.5);
-    border-radius: 10px;
-  }
-
-  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: rgba(99, 102, 241, 0.7);
-  }
-`;
 
 const CreatePostModal = ({ isOpen, onClose, onPostCreated }) => {
   const [postType, setPostType] = useState("skill"); // skill, progress, plan

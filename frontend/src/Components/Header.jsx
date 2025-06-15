@@ -1,17 +1,31 @@
 import React, { useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import NotificationSystem from "./NotificationSystem";
 import UserSidebar from "./Headers/UserSidebar";
-import { ArrowRight } from "lucide-react";
 
 const Header = ({ onLogout }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("home");
   const notificationsRef = useRef(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const navigate = useNavigate();
+  const location = useLocation();
+
+  // Update active tab based on current route
+  useEffect(() => {
+    const path = location.pathname;
+    if (path === "/socialfeed" || path === "/") {
+      setActiveTab("home");
+    } else if (path.includes("/explore")) {
+      setActiveTab("explore");
+    } else if (path.includes("/learn")) {
+      setActiveTab("learn");
+    } else if (path.includes("/community")) {
+      setActiveTab("community");
+    }
+  }, [location.pathname]);
 
   useEffect(() => {
     const fetchCurrentUser = async () => {
@@ -135,13 +149,21 @@ const Header = ({ onLogout }) => {
     setIsSidebarOpen(false);
   };
 
+  // Navigation items with their corresponding tab keys
+  const navItems = [
+    { href: "/socialfeed", name: "Home", tabKey: "home" },
+    { href: "/explore", name: "Explore", tabKey: "explore" },
+    { href: "/learning-plans", name: "Learn", tabKey: "learn" },
+    { href: "/community", name: "Community", tabKey: "community" },
+  ];
+
   return (
     <>
       <header className="bg-gray-600 text-white sticky top-0 z-50 transition-all duration-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16 items-center">
             {/* Logo and navigation */}
-            <div className="flex items-center">
+            <div className="flex items-center ">
               <div className="flex-shrink-0 flex items-center">
                 <img
                   src="/skilly-new.png"
@@ -151,25 +173,30 @@ const Header = ({ onLogout }) => {
                 />
               </div>
               <nav className="hidden sm:ml-6 sm:flex sm:space-x-8">
-                {[
-                  { href: "/socialfeed", name: "Home", current: true },
-                  { href: "#", name: "Explore", current: false },
-                  { href: "#", name: "Learn", current: false },
-                  { href: "#", name: "Community", current: false },
-                ].map((item, index) => (
-                  <a
-                    key={index}
-                    href={`${item.href}`}
-                    className="relative overflow-hidden inline-block group"
-                  >
-                    <span className="block text-gray-200 text-2xl transition-transform duration-300 ease-in-out group-hover:-translate-y-full">
-                      {item.name}
-                    </span>
-                    <span className="absolute top-full left-0 w-full text-black text-2xl font-medium transition-transform duration-300 ease-in-out group-hover:-translate-y-full">
-                      {item.name}
-                    </span>
-                  </a>
-                ))}
+                {navItems.map((item, index) => {
+                  const isActive = activeTab === item.tabKey;
+                  return (
+                    <a
+                      key={index}
+                      href={item.href}
+                      className="relative overflow-hidden inline-block group"
+                    >
+                      <span
+                        className={`block text-2xl transition-transform duration-300 ease-in-out group-hover:-translate-y-full ${
+                          isActive ? "text-black font-medium" : "text-gray-200"
+                        }`}
+                      >
+                        {item.name}
+                      </span>
+                      <span className="absolute top-full left-0 w-full text-black text-2xl font-medium transition-transform duration-300 ease-in-out group-hover:-translate-y-full">
+                        {item.name}
+                      </span>
+                      {isActive && (
+                        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-black transform transition-transform duration-300"></div>
+                      )}
+                    </a>
+                  );
+                })}
               </nav>
             </div>
 
@@ -261,11 +288,6 @@ const Header = ({ onLogout }) => {
                     {getInitials(currentUser?.name)}
                   </div>
                 )}
-                {/* {currentUser?.name && (
-                  <span className="ml-2 text-sm font-medium text-white hidden md:block">
-                    {currentUser.name}
-                  </span>
-                )} */}
                 <svg
                   className={`ml-1 h-5 w-5 text-gray-400 transition-transform duration-200 ${
                     isSidebarOpen ? "rotate-90" : "-rotate-90"
