@@ -3,22 +3,7 @@ import axios from "axios";
 import CustomVideoPlayer from "./CustomeVideoPlayer";
 import CommentsModal from "./Modals/CommentModal";
 import { Link } from "react-router-dom";
-import {
-  Award,
-  Bookmark,
-  ClipboardIcon,
-  Edit,
-  HandHelping,
-  Heart,
-  HelpCircle,
-  HelpingHand,
-  Link2,
-  MessageCircle,
-  Share2,
-  ThumbsDown,
-  ThumbsUp,
-  Users,
-} from "lucide-react";
+import { Award, Bookmark, MessageCircle, ThumbsUp, Users } from "lucide-react";
 
 const PostCard = ({
   post,
