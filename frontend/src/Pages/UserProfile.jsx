@@ -201,7 +201,7 @@ const UserProfile = () => {
     setUser(updatedUser);
   };
   return (
-    <div className="min-h-screen bg-black">
+    <div className="min-h-screen bg-white">
       <Header user={user} />
       {/* Cover Photo & Profile Summary */}
       <div className="relative">
@@ -279,7 +279,7 @@ const UserProfile = () => {
 
         {/* Stats Section */}
         <div className="bg-white border-b">
-          <div className="max-w-5xl mx-auto px-6">
+          <div className="max-w-screen mx-auto px-6">
             <div className="flex justify-center lg:justify-start">
               <div className="grid grid-cols-3 divide-x divide-gray-200">
                 {/* Posts */}
@@ -352,7 +352,8 @@ const UserProfile = () => {
       </div>
 
       {/* Main Content Area */}
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 bg-gray-300">
+        {" "}
         {/* Navigation Tabs */}
         <div className="bg-gray-300 border-b mb-8">
           <nav className="flex space-x-8 " aria-label="Tabs">
@@ -388,77 +389,26 @@ const UserProfile = () => {
             </button>
           </nav>
         </div>
-
         {/* Content based on active tab */}
         {activeTab === "posts" && (
-          <div className="space-y-6">
-            {/* {[...posts].reverse().map((post) => (
-              <div
-                key={post.id}
-                className="bg-white rounded-lg shadow-sm border p-6"
-              >
-                <div className="flex items-start space-x-3">
-                  <div className="flex-shrink-0">
-                    {user?.avatar &&
-                    !user.avatar.includes("/api/placeholder/") ? (
-                      <img
-                        className="h-10 w-10 rounded-full"
-                        src={user.avatar}
-                        alt={user?.name || "User"}
-                      />
-                    ) : (
-                      <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-medium">
-                        {getInitials(user?.name)}
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center space-x-2">
-                      <p className="text-sm font-medium text-gray-900">
-                        {user.name}
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        Posted {post.timeAgo || post.createdAt}
-                      </p>
-                    </div>
-                    <div className="mt-3">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                        {post.title}
-                      </h3>
-                      <p className="text-gray-600 text-sm leading-relaxed">
-                        {post.content}
-                      </p>
-                      {post.tags && post.tags.length > 0 && (
-                        <div className="mt-4 flex flex-wrap gap-2">
-                          {post.tags.map((tag, index) => (
-                            <span
-                              key={index}
-                              className="inline-flex items-center px-3 py-1 rounded-md text-xs font-medium bg-indigo-50 text-indigo-700 border border-indigo-200"
-                            >
-                              {tag}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))} */}
+          <div className="columns-1 sm:columns-2 lg:columns-3 gap-4">
             {[...posts].reverse().map((post) => (
-              <PostCard
-                key={post.id}
-                post={post}
-                currentUser={user}
-                onPostUpdate={handlePostUpdate}
-                onPostDelete={handlePostDelete}
-                onSharePost={handlePostShared}
-              />
+              <div className="mb-4 break-inside-avoid">
+                <PostCard
+                  key={post.id}
+                  post={post}
+                  currentUser={user}
+                  onPostUpdate={handlePostUpdate}
+                  onPostDelete={handlePostDelete}
+                  onSharePost={handlePostShared}
+                />
+              </div>
             ))}
-            <UserJoinDate user={user} />
+            <div className="break-inside-avoid columns-1">
+              <UserJoinDate user={user} />
+            </div>
           </div>
         )}
-
         {activeTab === "skills" && (
           <div className="flex flex-col md:flex-row gap-6">
             {/* Skills Section */}
@@ -565,7 +515,6 @@ const UserProfile = () => {
             </div>
           </div>
         )}
-
         {activeTab === "about" && (
           <div className="bg-white rounded-lg shadow-sm border p-6">
             <h3 className="text-lg font-medium text-gray-900 mb-4">About</h3>
