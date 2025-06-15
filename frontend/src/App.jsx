@@ -25,6 +25,7 @@ import LoginSuccess from "./Components/LoginSuccess";
 import PostView from "./Components/PostView";
 import { Toaster } from "sonner";
 import LandingPage from "./Pages/landing";
+import CreatePostPage from "./Pages/CreatePostPage";
 
 function App() {
   return (
@@ -52,6 +53,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route path="/create-post" element={<CreatePostPage />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/profile/:userId" element={<PublicProfile />} />
           <Route path="/notification" element={<NotificationSystem />} />
