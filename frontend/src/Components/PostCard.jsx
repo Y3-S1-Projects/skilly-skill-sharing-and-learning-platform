@@ -3,6 +3,22 @@ import axios from "axios";
 import CustomVideoPlayer from "./CustomeVideoPlayer";
 import CommentsModal from "./Modals/CommentModal";
 import { Link } from "react-router-dom";
+import {
+  Award,
+  Bookmark,
+  ClipboardIcon,
+  Edit,
+  HandHelping,
+  Heart,
+  HelpCircle,
+  HelpingHand,
+  Link2,
+  MessageCircle,
+  Share2,
+  ThumbsDown,
+  ThumbsUp,
+  Users,
+} from "lucide-react";
 
 const PostCard = ({
   post,
@@ -197,6 +213,10 @@ const PostCard = ({
     }
   };
 
+  const handleDislike = () => {
+    console.log("Dislike clicked");
+  };
+
   const handleDeletePost = async () => {
     try {
       const token = localStorage.getItem("authToken");
@@ -339,10 +359,10 @@ const PostCard = ({
   };
   const isPostOwner = post.userId === loggedInUser?.id;
   return (
-    <div className="bg-gray-800 rounded-xl shadow-sm overflow-hidden border border-gray-800 hover:shadow-md transition-shadow">
+    <div className="bg-gray-100  shadow-sm overflow-hidden border border-gray-800 hover:shadow-md transition-shadow">
       {/* Shared post header */}
       {post.originalPostId && (
-        <div className="px-4 pt-4 flex items-center text-sm text-gray-500">
+        <div className="px-4 pt-4 flex items-center text-sm text-gray-800">
           <svg
             className="h-4 w-4 mr-1"
             fill="none"
@@ -386,7 +406,7 @@ const PostCard = ({
 
           {/* Name and timestamp */}
           <div>
-            <h3 className="font-medium text-gray-100">
+            <h3 className="font-medium text-gray-800">
               {isViewingProfile && post.userId === currentUser.id ? (
                 // Display as plain text if viewing own profile
                 postOwner?.username
@@ -401,7 +421,7 @@ const PostCard = ({
               )}
 
               {post.originalUserId && post.originalUserId !== post.userId && (
-                <span className="text-sm text-gray-200 ml-1">
+                <span className="text-sm text-gray-600 ml-1">
                   (original post by{" "}
                   {post.originalUserId === currentUser.id ? (
                     "you"
@@ -417,11 +437,11 @@ const PostCard = ({
                 </span>
               )}
             </h3>
-            <p className="text-xs text-gray-400">
+            <p className="text-xs text-gray-600">
               {formatDate(post.createdAt)}
               {post.postType && (
                 <span
-                  className={`ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                  className={`ml-2 inline-flex items-center px-2 py-0.5  text-xs font-medium ${
                     post.postType === "skill"
                       ? "bg-orange-100 text-orange-800"
                       : post.postType === "progress"
@@ -442,7 +462,7 @@ const PostCard = ({
             <div className="ml-auto relative">
               <button
                 onClick={() => setActionsDropdownOpen(!actionsDropdownOpen)}
-                className="text-gray-500 hover:text-gray-700"
+                className="text-gray-800 hover:text-gray-700"
               >
                 <svg
                   className="h-5 w-5"
@@ -462,14 +482,14 @@ const PostCard = ({
               {actionsDropdownOpen && (
                 <div
                   ref={dropdownRef}
-                  className="absolute right-0 mt-2 w-48 bg-gray-700 rounded-md shadow-lg z-10 py-1 border border-gray-700"
+                  className="absolute right-0  w-48 bg-gray-300  shadow-lg z-10 py-1 border border-gray-700"
                 >
                   <button
                     onClick={() => {
                       setIsEditing(true);
                       setActionsDropdownOpen(false);
                     }}
-                    className="flex items-center w-full px-4 py-2 text-sm text-gray-300 hover:bg-gray-600"
+                    className="flex items-center w-full px-4 py-2 text-sm text-gray-800 hover:bg-gray-400"
                   >
                     <svg
                       className="h-4 w-4 mr-2"
@@ -488,10 +508,32 @@ const PostCard = ({
                   </button>
                   <button
                     onClick={() => {
+                      setIsEditing(true);
+                      setActionsDropdownOpen(false);
+                    }}
+                    className="flex items-center w-full px-4 py-2 text-sm text-gray-800 hover:bg-gray-400"
+                  >
+                    <svg
+                      className="h-4 w-4 mr-2"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={1.5}
+                        d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
+                      />
+                    </svg>
+                    Copy Link
+                  </button>
+                  <button
+                    onClick={() => {
                       handleDeletePost();
                       setActionsDropdownOpen(false);
                     }}
-                    className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-600"
+                    className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-200"
                   >
                     <svg
                       className="h-4 w-4 mr-2"
@@ -515,7 +557,7 @@ const PostCard = ({
         </div>
 
         {/* Post Content */}
-        <h2 className="text-xl font-semibold text-gray-300 mb-2">
+        <h2 className="text-xl font-semibold text-black mb-2">
           {isEditing ? (
             <input
               type="text"
@@ -526,17 +568,17 @@ const PostCard = ({
                   title: e.target.value,
                 })
               }
-              className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 placeholder-gray-400"
+              className="w-full  border border-gray-600 rounded-lg px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 placeholder-gray-400"
               placeholder="Post title"
             />
           ) : (
-            <span className="hover:text-white transition-colors duration-200">
+            <span className="hover:text-gray-800 transition-colors duration-200">
               {post.title}
             </span>
           )}
         </h2>
 
-        <p className="text-gray-300 mb-3">
+        <p className="text-gray-600 mb-3">
           {isEditing ? (
             <textarea
               value={editData.content}
@@ -546,12 +588,12 @@ const PostCard = ({
                   content: e.target.value,
                 })
               }
-              className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 resize-none placeholder-gray-400"
+              className="w-full  border border-gray-600 rounded-lg px-3 py-2 text-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 resize-none placeholder-gray-400"
               rows="3"
               placeholder="Share your thoughts..."
             />
           ) : (
-            <span className="hover:text-gray-100 transition-colors duration-200">
+            <span className=" transition-colors duration-200">
               {post.content}
             </span>
           )}
@@ -682,7 +724,7 @@ const PostCard = ({
                       />
                     </label>
 
-                    <label className="flex flex-col items-center justify-center cursor-pointer bg-gray-50 rounded-lg p-4 hover:bg-gray-100 transition-colors">
+                    <label className="flex flex-col items-center justify-center cursor-pointer bg-gray-50  p-4 hover:bg-gray-100 transition-colors">
                       <svg
                         className="h-8 w-8 text-gray-400 mb-2"
                         fill="none"
@@ -824,13 +866,13 @@ const PostCard = ({
           <div className="mt-4 flex justify-end space-x-2">
             <button
               onClick={handleUpdatePost}
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 text-sm"
+              className="px-4 py-2 bg-green-600 text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 text-sm"
             >
               Save Changes
             </button>
             <button
               onClick={() => setIsEditing(false)}
-              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 text-sm"
+              className="px-4 py-2 bg-gray-200 text-gray-700  hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 text-sm"
             >
               Cancel
             </button>
@@ -838,55 +880,7 @@ const PostCard = ({
         )}
 
         {/* Post footer with actions */}
-        <div className="mt-4 flex items-center justify-between border-t pt-3">
-          <button
-            onClick={handleLike}
-            className={`flex items-center ${
-              post.likes.includes(loggedInUser?.id)
-                ? "text-indigo-500"
-                : "text-gray-300 hover:text-indigo-600"
-            } transition-colors`}
-          >
-            <svg
-              className="h-5 w-5 mr-1"
-              fill={
-                post.likes.includes(loggedInUser?.id) ? "currentColor" : "none"
-              }
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1.5}
-                d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"
-              />
-            </svg>
-            <span>
-              {post.likes?.length || 0}{" "}
-              {post.likes.includes(loggedInUser?.id) ? "Liked" : "Likes"}
-            </span>
-          </button>
-          <button
-            onClick={openModal}
-            className="flex items-center text-gray-300 hover:text-indigo-500 transition-colors"
-          >
-            <svg
-              className="h-5 w-5 mr-1"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1.5}
-                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-              />
-            </svg>
-            <span>{post.comments?.length || 0} Comments</span>
-          </button>
-
+        <div className="mt-4 flex items-center justify-between pt-3">
           <CommentsModal
             ref={modalRef}
             isOpen={isModalOpen}
@@ -901,7 +895,7 @@ const PostCard = ({
             getInitials={getInitials}
             formatDate={formatDate}
           />
-          <button
+          {/* <button
             onClick={handleShare}
             className={`flex items-center ${
               post.sharedBy?.includes(loggedInUser?.id)
@@ -923,12 +917,74 @@ const PostCard = ({
               />
             </svg>
             <span>Share ({post.sharedBy?.length || 0})</span>
-          </button>
+          </button> */}
+        </div>
+        <div className="px-4 py-4  border-t border-gray-600">
+          <div className="flex items-center justify-between text-sm">
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-1 text-gray-700">
+                <Users className="w-4 h-4" />
+                <span>1.2k learners</span>
+              </div>
+              <div className="flex items-center space-x-1 text-gray-700">
+                <Award className="w-4 h-4" />
+                <span>89% success rate</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="px-2 py-4 border-gray-600 border-t">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-1">
+              <button
+                className={`flex items-center space-x-2 px-4 py-2  transition-all cursor-pointer ${
+                  post.likes.includes(loggedInUser?.id)
+                    ? ""
+                    : "text-gray-800 hover:text-black"
+                } transition-colors`}
+                onClick={handleLike}
+              >
+                <ThumbsUp
+                  className="w-5 h-5"
+                  fill={post.likes.includes(loggedInUser?.id) ? "gray" : "none"}
+                />{" "}
+                {/* Added size for consistency */}
+                <span className="text-sm font-medium">
+                  {post.likes?.length || 0}{" "}
+                  {/* <span className="hidden sm:inline">
+                    {post.likes.length === 1
+                      ? "found this helpful"
+                      : "found this helpful"}
+                  </span> */}
+                  {/* <span className="inline sm:hidden">helpful</span> */}
+                </span>
+              </button>
+            </div>
+
+            <div className="flex items-center space-x-1">
+              <button
+                onClick={openModal}
+                className="flex items-center space-x-2 px-4 py-2  text-gray-800 transition-colors cursor-pointer"
+              >
+                <MessageCircle className={`w-4 h-4 `} />
+                <span className="font-medium">
+                  {post.comments?.length || 0}
+                </span>
+              </button>
+
+              <button
+                className={`flex items-center space-x-2 px-4 py-2 transition-all text-gray-800`}
+              >
+                <Bookmark className={`w-4 h-4 `} />
+                <span className="font-medium">24</span>
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* Comments section */}
-        <div className="mt-4 border-t pt-4">
-          {/* Comment input */}
+        {/* <div className="mt-4 pt-4">
           <div className="flex items-start space-x-3 mb-4">
             <div className="flex-shrink-0">
               {loggedInUser?.profilePicUrl ? (
@@ -954,18 +1010,18 @@ const PostCard = ({
                   value={commentInput}
                   onChange={(e) => setCommentInput(e.target.value)}
                   placeholder="Write a comment..."
-                  className="flex-1 border text-white border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+                  className="flex-1 border text-white border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
                 />
                 <button
                   onClick={handleAddComment}
-                  className="ml-2 px-3 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 text-sm"
+                  className="ml-2 px-3 py-2 bg-indigo-600 text-white  hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 text-sm"
                 >
                   Post
                 </button>
               </div>
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
     </div>
   );
