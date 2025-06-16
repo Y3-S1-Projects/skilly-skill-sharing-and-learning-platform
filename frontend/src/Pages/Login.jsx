@@ -8,6 +8,49 @@ import FloatingLabelInput from "@/components/custom/FloatingLabelInput";
 import { toast } from "sonner";
 import { ScrollToTop } from "../util/dom-utils";
 
+const customGoogleButtonStyles = `
+    .google-login-custom [role="button"] {
+    width: 100% !important;
+    height: 72px !important;
+    padding: 24px 32px !important;
+    font-size: 20px !important;
+    font-weight: 600 !important;
+    border-radius: 0 !important;
+    background: white !important;
+    color: black !important;
+    border: none !important;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+    transition: all 0.3s ease !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 16px !important;
+  }
+  
+  .google-login-custom [role="button"]:hover {
+    background: #f3f4f6 !important;
+  }
+  
+  /* Ensure Google logo is visible */
+  .google-login-custom [role="button"] svg,
+  .google-login-custom [role="button"] img {
+    width: 24px !important;
+    height: 24px !important;
+    margin: 0 !important;
+    flex-shrink: 0 !important;
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+  
+  /* Target the text specifically */
+  .google-login-custom [role="button"] span {
+    color: black !important;
+    font-size: 20px !important;
+    font-weight: 600 !important;
+  }
+`;
+
 const Login = () => {
   const [formData, setFormData] = useState({
     email: "",
@@ -25,6 +68,16 @@ const Login = () => {
       navigate("/socialfeed");
     }
   }, [navigate]);
+
+  useEffect(() => {
+    const styleElement = document.createElement("style");
+    styleElement.innerHTML = customGoogleButtonStyles;
+    document.head.appendChild(styleElement);
+
+    return () => {
+      document.head.removeChild(styleElement);
+    };
+  }, []);
 
   useEffect(() => {
     // Check if redirected from registration
@@ -267,7 +320,6 @@ const Login = () => {
                   </div>
 
                   <motion.button
-                    whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     type="submit"
                     disabled={isLoading}
@@ -298,7 +350,7 @@ const Login = () => {
                     </div>
                   </div>
 
-                  <motion.button
+                  {/* <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     type="button"
@@ -324,7 +376,24 @@ const Login = () => {
                       />
                     </svg>
                     Continue with Google
-                  </motion.button>
+                  </motion.button> */}
+                  <motion.div whileTap={{ scale: 0.98 }} className="w-full">
+                    <div className="google-login-custom">
+                      <GoogleLogin
+                        onSuccess={handleGoogleSuccess}
+                        onError={() => {
+                          toast.error("Google login failed");
+                          setErrors({
+                            general: "Google login failed. Please try again.",
+                          });
+                        }}
+                        text="continue_with"
+                        shape="rectangular"
+                        size="large"
+                        width="100%"
+                      />
+                    </div>
+                  </motion.div>
 
                   <p className="text-center text-lg text-gray-400 mt-8">
                     New to Skilly?{" "}
