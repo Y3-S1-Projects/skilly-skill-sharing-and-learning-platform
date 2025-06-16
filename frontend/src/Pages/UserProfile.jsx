@@ -283,8 +283,10 @@ const UserProfile = () => {
             <div className=" ">
               <div className="grid grid-cols-3 divide-x divide-gray-200">
                 {/* Posts */}
-                <div className="px-8 py-6 text-center cursor-pointer hover:bg-gray-50 transition-colors">
-                  <div className="text-2xl font-bold text-gray-900">42</div>
+                <div className="px-8 py-6 text-center  transition-colors">
+                  <div className="text-2xl font-bold text-gray-900">
+                    {posts.length}
+                  </div>
                   <div className="text-sm text-gray-600">Posts</div>
                 </div>
 
