@@ -4,6 +4,7 @@ import CustomVideoPlayer from "./CustomeVideoPlayer";
 import CommentsModal from "./Modals/CommentModal";
 import { Link } from "react-router-dom";
 import { Award, Bookmark, MessageCircle, ThumbsUp, Users } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const PostCard = ({
   post,
@@ -16,6 +17,7 @@ const PostCard = ({
   const [editingCommentId, setEditingCommentId] = useState(null);
   const [postOwner, setPostOwner] = useState(null);
   const modalRef = useRef();
+  const navigate = useNavigate();
   const [commentOwners, setCommentOwners] = useState({});
   const [actionsDropdownOpen, setActionsDropdownOpen] = useState(false);
   const [commentDropdowns, setCommentDropdowns] = useState({});
@@ -578,9 +580,17 @@ const PostCard = ({
               placeholder="Share your thoughts..."
             />
           ) : (
-            <span className=" transition-colors duration-200">
-              {post.content}
-            </span>
+            <>
+              <span className=" transition-colors duration-200">
+                {post.content}
+              </span>
+              <span
+                className="text-blue-400 cursor-pointer"
+                onClick={() => navigate(`/posts/${post.id}`)}
+              >
+                ...See more
+              </span>
+            </>
           )}
         </p>
 
@@ -599,7 +609,7 @@ const PostCard = ({
                   }
                 />
 
-                {/* Video info - optional */}
+                {/* Video info */}
                 {post.videoDuration && (
                   <div className="mt-1 text-xs text-gray-500 flex items-center">
                     <svg
@@ -874,11 +884,10 @@ const PostCard = ({
             commentOwners={commentOwners}
             currentUser={currentUser}
             loggedInUser={loggedInUser}
-            handleUpdateComment={handleUpdateComment}
-            handleDeleteComment={handleDeleteComment}
             getColorClass={getColorClass}
             getInitials={getInitials}
             formatDate={formatDate}
+            onPostUpdate={onPostUpdate}
           />
           {/* <button
             onClick={handleShare}

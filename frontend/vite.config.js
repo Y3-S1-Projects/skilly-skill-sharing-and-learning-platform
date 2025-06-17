@@ -16,4 +16,7 @@ export default defineConfig({
       "@hooks": path.resolve(__dirname, "./hooks"),
     },
   },
+  server: {
+    host: true,
+  },
 });
