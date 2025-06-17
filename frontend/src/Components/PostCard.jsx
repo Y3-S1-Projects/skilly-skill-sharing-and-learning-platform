@@ -559,7 +559,10 @@ const PostCard = ({
               placeholder="Post title"
             />
           ) : (
-            <span className="hover:text-gray-800 transition-colors duration-200">
+            <span
+              className="hover:text-gray-800 transition-colors duration-200 cursor-pointer"
+              onClick={() => navigate(`/posts/${post.id}`)}
+            >
               {post.title}
             </span>
           )}
@@ -581,14 +584,11 @@ const PostCard = ({
             />
           ) : (
             <>
-              <span className=" transition-colors duration-200">
-                {post.content}
-              </span>
               <span
-                className="text-blue-400 cursor-pointer"
+                className=" transition-colors duration-200 cursor-pointer"
                 onClick={() => navigate(`/posts/${post.id}`)}
               >
-                ...See more
+                {post.content}
               </span>
             </>
           )}
@@ -644,7 +644,7 @@ const PostCard = ({
                     <img
                       src={url}
                       alt={`Post media ${index}`}
-                      className="rounded-lg object-cover w-full h-auto"
+                      className="object-cover w-full h-auto"
                     />
                     {isEditing && (
                       <button
