@@ -1,4 +1,5 @@
-import { useState, useImperativeHandle, forwardRef } from "react";
+import { useState, useImperativeHandle, forwardRef, useRef } from "react";
+import axios from "axios";
 
 const CommentsModal = forwardRef(
   (
@@ -9,17 +10,21 @@ const CommentsModal = forwardRef(
       commentOwners,
       currentUser,
       loggedInUser,
-      handleUpdateComment,
-      handleDeleteComment,
       getColorClass,
       getInitials,
       formatDate,
+      onPostUpdate,
     },
     ref
   ) => {
     const [editingCommentId, setEditingCommentId] = useState(null);
     const [editCommentContent, setEditCommentContent] = useState("");
     const [dropdownOpenId, setDropdownOpenId] = useState(null);
+    const [commentInput, setCommentInput] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
+    const [isDeleteLoading, setIsDeleteLoading] = useState(false);
+    const [isUpdateLoading, setIsUpdateLoading] = useState(false);
+    const modalRef = useRef();
 
     // Expose method to parent
     useImperativeHandle(ref, () => ({
@@ -54,15 +59,78 @@ const CommentsModal = forwardRef(
       post.comments?.filter((comment) => comment.userId !== loggedInUser?.id) ||
       [];
 
+    const handleAddComment = async () => {
+      try {
+        const token = localStorage.getItem("authToken");
+
+        if (!commentInput.trim()) return;
+
+        setIsLoading(true);
+
+        const response = await axios.post(
+          `http://localhost:8080/api/posts/${post.id}/comments`,
+          { content: commentInput },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+
+        onPostUpdate(response.data);
+        setCommentInput("");
+      } catch (err) {
+        console.error("Error adding comment:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    const handleUpdateComment = async (commentId, commentContent) => {
+      try {
+        const token = localStorage.getItem("authToken");
+        setIsUpdateLoading(true);
+        const response = await axios.put(
+          `http://localhost:8080/api/posts/${post.id}/comments/${commentId}`,
+          { content: commentContent },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+
+        onPostUpdate(response.data);
+        setEditingCommentId(null);
+        setEditCommentContent("");
+      } catch (err) {
+        console.error("Error updating comment:", err);
+      } finally {
+        setIsUpdateLoading(false);
+      }
+    };
+
+    const handleDeleteComment = async (commentId) => {
+      try {
+        const token = localStorage.getItem("authToken");
+        setIsDeleteLoading(true);
+        const response = await axios.delete(
+          `http://localhost:8080/api/posts/${post.id}/comments/${commentId}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+
+        onPostUpdate(response.data);
+      } catch (err) {
+        console.error("Error deleting comment:", err);
+      } finally {
+        setIsDeleteLoading(false);
+      }
+    };
+
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-        <div className="bg-gray-800 rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+        <div className="bg-gray-200 border border-black shadow-xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
           {/* Header */}
           <div className="flex justify-between items-center px-6 py-4 border-b border-gray-700">
-            <h3 className="text-xl font-semibold text-white">Comments</h3>
+            <div>
+              <h3 className="text-xl font-semibold text-gray-700">Comments</h3>
+              <p className="text-sm text-gray-500 mt-1">{post.title}</p>
+            </div>
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-white transition-colors p-1 rounded-full hover:bg-gray-700"
+              className="text-gray-400 cursor-pointer transition-colors p-1 hover:text-red-700"
             >
               <svg
                 className="h-6 w-6"
@@ -104,6 +172,8 @@ const CommentsModal = forwardRef(
                     getColorClass={getColorClass}
                     getInitials={getInitials}
                     formatDate={formatDate}
+                    isUpdateLoading={isUpdateLoading}
+                    isDeleteLoading={isDeleteLoading}
                   />
                 ))}
               </div>
@@ -142,6 +212,56 @@ const CommentsModal = forwardRef(
                 </p>
               </div>
             ) : null}
+            {/* Comments section */}
+            <div className="mt-4 pt-4">
+              <div className="flex items-start space-x-3 mb-4">
+                <div className="flex-shrink-0">
+                  {loggedInUser?.profilePicUrl ? (
+                    <img
+                      className="h-8 w-8 rounded-full"
+                      src={loggedInUser?.profilePicUrl}
+                      alt={loggedInUser?.username || "User"}
+                    />
+                  ) : (
+                    <div
+                      className={`h-8 w-8 rounded-full flex items-center justify-center ${getColorClass(
+                        loggedInUser?.id
+                      )} font-medium`}
+                    >
+                      {getInitials(loggedInUser?.username)}
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <div className="flex">
+                    <input
+                      type="text"
+                      value={commentInput}
+                      onChange={(e) => setCommentInput(e.target.value)}
+                      placeholder="Write a comment..."
+                      className="flex-1 border text-gray-700 border-black px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                      disabled={isLoading}
+                    />
+                    <button
+                      onClick={handleAddComment}
+                      className={`ml-2 px-4 py-2 text-sm border border-black focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors ${
+                        !commentInput || isLoading
+                          ? "text-gray-400 bg-gray-100 cursor-not-allowed"
+                          : "text-gray-700 hover:bg-gray-300 bg-white"
+                      }`}
+                      disabled={!commentInput || isLoading}
+                      aria-busy={isLoading}
+                    >
+                      {isLoading ? (
+                        <span className="flex items-center">Posting...</span>
+                      ) : (
+                        "Post"
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -167,6 +287,8 @@ const CommentItem = ({
   getColorClass,
   getInitials,
   formatDate,
+  isUpdateLoading,
+  isDeleteLoading,
 }) => {
   return (
     <div className="flex gap-4 items-start">
@@ -191,11 +313,11 @@ const CommentItem = ({
 
       {/* Comment Content */}
       <div className="flex-1 min-w-0">
-        <div className="bg-gray-700 rounded-lg p-4">
+        <div className="border border-black p-4">
           {/* Comment Header */}
           <div className="flex justify-between items-baseline mb-2">
             <div className="flex items-center space-x-2">
-              <p className="font-medium text-white">
+              <p className="font-medium text-gray-700">
                 {commentOwners[comment.userId]?.username ||
                   (comment.userId === currentUser.id
                     ? currentUser.name
@@ -211,7 +333,7 @@ const CommentItem = ({
               <div className="relative">
                 <button
                   onClick={() => toggleDropdown(comment.id || comment._id)}
-                  className="text-gray-400 hover:text-white p-1 rounded-full hover:bg-gray-600 transition-colors"
+                  className="text-black hover:text-gray-600 p-1 rounded-full  transition-colors"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -225,23 +347,26 @@ const CommentItem = ({
 
                 {/* Dropdown menu */}
                 {dropdownOpenId === (comment.id || comment._id) && (
-                  <div className="absolute right-0 mt-2 w-32 bg-gray-800 rounded-md shadow-lg z-10 border border-gray-700">
+                  <div className="absolute right-0 mt-2 w-32 bg-gray-400 shadow-lg z-10 border border-black">
                     <div className="py-1">
                       <button
                         onClick={() => {
                           startEditingComment(comment);
                           setDropdownOpenId(null);
                         }}
-                        className="block w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
+                        className="block w-full text-left px-4 py-2 text-sm text-black hover:bg-gray-700 hover:text-white transition-colors"
                       >
                         Edit
                       </button>
                       <button
                         onClick={() => {
-                          handleDeleteComment(comment.id || comment._id);
-                          setDropdownOpenId(null);
+                          if (!isDeleteLoading) {
+                            handleDeleteComment(comment.id || comment._id);
+                            setDropdownOpenId(null);
+                          }
                         }}
-                        className="block w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-gray-700 hover:text-red-300 transition-colors"
+                        className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-500 hover:text-white transition-colors"
+                        disabled={isDeleteLoading}
                       >
                         Delete
                       </button>
@@ -251,6 +376,9 @@ const CommentItem = ({
               </div>
             )}
           </div>
+          {isDeleteLoading && (
+            <div className="text-sm text-gray-500 mt-1">Deleting...</div>
+          )}
 
           {/* Comment Body */}
           {editingCommentId === comment.id ||
@@ -259,14 +387,15 @@ const CommentItem = ({
               <textarea
                 value={editCommentContent}
                 onChange={(e) => setEditCommentContent(e.target.value)}
-                className="w-full bg-gray-600 border border-gray-500 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-white text-sm"
+                className="w-full bg-gray-300 focus:outline-black border border-black px-4 py-2  text-black text-sm"
                 rows="3"
                 autoFocus
               />
               <div className="flex justify-end space-x-3">
                 <button
                   onClick={cancelEditingComment}
-                  className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors text-sm"
+                  className="px-4 py-2 text-red-500 cursor-pointer hover:bg-red-500 hover:text-white border border-black transition-colors text-sm"
+                  disabled={isUpdateLoading} // Disable during loading
                 >
                   Cancel
                 </button>
@@ -277,14 +406,23 @@ const CommentItem = ({
                       editCommentContent
                     )
                   }
-                  className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm"
+                  className={`px-4 py-2 text-black hover:bg-gray-700 hover:text-white cursor-pointer border border-black transition-colors text-sm ${
+                    isUpdateLoading ? "opacity-50 cursor-not-allowed" : ""
+                  }`}
+                  disabled={isUpdateLoading}
                 >
-                  Save Changes
+                  {isUpdateLoading ? (
+                    <span className="flex items-center justify-center">
+                      Saving...
+                    </span>
+                  ) : (
+                    "Save Changes"
+                  )}
                 </button>
               </div>
             </div>
           ) : (
-            <p className="text-gray-300 text-sm leading-relaxed">
+            <p className="text-black text-sm leading-relaxed">
               {comment.content}
             </p>
           )}
