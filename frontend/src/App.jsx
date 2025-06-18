@@ -26,6 +26,7 @@ import PostView from "./Components/PostView";
 import { Toaster } from "sonner";
 import LandingPage from "./Pages/landing";
 import CreatePostPage from "./Pages/CreatePostPage";
+import Settings from "./Components/Settings";
 
 function App() {
   return (
@@ -53,6 +54,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route path="/settings" element={<Settings />} />
           <Route path="/create-post" element={<CreatePostPage />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/profile/:userId" element={<PublicProfile />} />

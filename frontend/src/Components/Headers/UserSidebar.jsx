@@ -50,8 +50,13 @@ const UserSidebar = ({
       )}
 
       {/* Sidebar */}
-      <div
+      {/* <div
         className={`fixed top-0 right-0 h-full w-80 bg-gradient-to-br from-gray-900 via-black to-gray-800 shadow-2xl transform transition-transform duration-300 ease-in-out z-50 ${
+          isOpen ? "translate-x-0" : "translate-x-full"
+        }`}
+      > */}
+      <div
+        className={`fixed top-0 right-0 h-full w-80 bg-white border-l border-black shadow-2xl transform transition-transform duration-300 ease-in-out z-50 ${
           isOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
@@ -60,7 +65,7 @@ const UserSidebar = ({
           <div className="flex items-center justify-start">
             <button
               onClick={onClose}
-              className="p-2 rounded-lg transition-all duration-200 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500"
+              className="p-2 transition-all duration-200 hover:bg-gray-300 focus:outline-none"
               aria-label="Close sidebar"
             >
               <svg
@@ -85,13 +90,13 @@ const UserSidebar = ({
             {currentUser?.avatar &&
             !currentUser.avatar.includes("/api/placeholder/") ? (
               <img
-                className="w-16 h-16 rounded-full ring-4 ring-indigo-500/30"
+                className="w-16 h-16 rounded-full ring-2 ring-gray-500"
                 src={currentUser.avatar}
                 alt={currentUser?.name || "User"}
               />
             ) : (
               <div
-                className={`w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold ring-4 ring-indigo-500/30 ${getColorClass(
+                className={`w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold ring-2 ring-gray-500 ${getColorClass(
                   currentUser?.id
                 )}`}
               >
@@ -99,11 +104,11 @@ const UserSidebar = ({
               </div>
             )}
             <div className="flex-1">
-              <h3 className="text-xl font-semibold text-white truncate">
+              <h3 className="text-xl font-semibold text-black truncate">
                 {currentUser?.name || "Guest"}
               </h3>
-              <p className="text-sm text-indigo-300 font-medium">
-                {currentUser?.title || "Beginner"}
+              <p className="text-sm text-gray-600 font-medium">
+                {currentUser?.bio}
               </p>
               <div className="flex items-center mt-2 text-xs text-gray-400">
                 <svg
@@ -153,10 +158,10 @@ const UserSidebar = ({
             <a
               key={index}
               href={item.href}
-              className={`text-gray-300 hover:bg-gray-700/50 cursor-pointer transition-all duration-200 group  ${
+              className={`text-black  cursor-pointer transition-all duration-200 group  ${
                 item.label === "Logout"
-                  ? "hover:text-red-300"
-                  : "hover:text-white"
+                  ? "hover:text-red-500"
+                  : "hover:text-gray-500"
               }`}
             >
               <div className="">

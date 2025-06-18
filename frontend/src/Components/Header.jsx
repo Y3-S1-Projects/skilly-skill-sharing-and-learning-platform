@@ -159,7 +159,7 @@ const Header = ({ onLogout }) => {
 
   return (
     <>
-      <header className="bg-gray-600 text-white sticky top-0 z-50 transition-all duration-300">
+      <header className=" bg-white text-black border-b border-black sticky top-0 z-50 transition-all duration-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16 items-center">
             {/* Logo and navigation */}
@@ -182,13 +182,19 @@ const Header = ({ onLogout }) => {
                       className="relative overflow-hidden inline-block group"
                     >
                       <span
-                        className={`block text-2xl transition-transform duration-300 ease-in-out group-hover:-translate-y-full ${
-                          isActive ? "text-black font-medium" : "text-gray-200"
+                        className={`block text-2xl transition-transform duration-300 ease-in-out ${
+                          isActive
+                            ? "text-black font-medium"
+                            : "text-gray-600 group-hover:-translate-y-full"
                         }`}
                       >
                         {item.name}
                       </span>
-                      <span className="absolute top-full left-0 w-full text-black text-2xl font-medium transition-transform duration-300 ease-in-out group-hover:-translate-y-full">
+                      <span
+                        className={`absolute top-full left-0 w-full text-black text-2xl font-medium transition-transform duration-300 ease-in-out ${
+                          isActive ? "" : "group-hover:-translate-y-full"
+                        }`}
+                      >
                         {item.name}
                       </span>
                       {isActive && (
@@ -225,7 +231,7 @@ const Header = ({ onLogout }) => {
                   <input
                     id="search"
                     name="search"
-                    className="block w-full pl-10 pr-3 py-2 border border-gray-700 rounded-md leading-5 bg-gray-800 placeholder-gray-400 focus:outline-none focus:placeholder-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-transparent sm:text-sm transition-all duration-200"
+                    className="block w-full pl-10 pr-3 py-2 border border-gray-800 rounded-md leading-5 bg-gray-300 placeholder-gray-600 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-gray-500 focus:border-transparent sm:text-sm transition-all duration-200"
                     placeholder="Search skills, people..."
                     type="search"
                     value={searchQuery}
@@ -249,9 +255,9 @@ const Header = ({ onLogout }) => {
               </div>
 
               {/* Messages button */}
-              <button className="p-1 text-gray-400 hover:text-white focus:outline-none transition-colors duration-200 transform hover:scale-110">
+              <button className="p-1 text-gray-400 hover:text-black focus:outline-none transition-colors duration-200 transform ">
                 <svg
-                  className="h-6 w-6"
+                  className="h-8 w-8"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -268,14 +274,14 @@ const Header = ({ onLogout }) => {
               {/* Profile menu button */}
               <button
                 type="button"
-                className="bg-gray-900 rounded-full flex items-center focus:outline-none transition-all duration-200 hover:ring-2 hover:ring-gray-400 cursor-pointer"
+                className=" rounded-full flex items-center focus:outline-none transition-all duration-200 hover:ring-2 hover:ring-gray-400 cursor-pointer"
                 onClick={toggleSidebar}
               >
                 <span className="sr-only">Open user menu</span>
                 {currentUser?.avatar &&
                 !currentUser.avatar.includes("/api/placeholder/") ? (
                   <img
-                    className="h-8 w-8 rounded-full transition-transform duration-200 "
+                    className="h-10 w-10 rounded-full transition-transform duration-200 "
                     src={currentUser.avatar}
                     alt={currentUser?.name || "User"}
                   />
@@ -288,7 +294,7 @@ const Header = ({ onLogout }) => {
                     {getInitials(currentUser?.name)}
                   </div>
                 )}
-                <svg
+                {/* <svg
                   className={`ml-1 h-5 w-5 text-gray-400 transition-transform duration-200 ${
                     isSidebarOpen ? "rotate-90" : "-rotate-90"
                   }`}
@@ -302,7 +308,7 @@ const Header = ({ onLogout }) => {
                     d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
                     clipRule="evenodd"
                   />
-                </svg>
+                </svg> */}
               </button>
             </div>
           </div>
