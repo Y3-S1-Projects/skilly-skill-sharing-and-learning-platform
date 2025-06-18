@@ -117,8 +117,6 @@ const SocialFeed = () => {
     return String(post.content);
   };
 
-  if (isLoading) return <CustomLoader />;
-
   return (
     <div className="min-h-screen bg-gray-200">
       <Header />
@@ -144,11 +142,36 @@ const SocialFeed = () => {
         </div> */}
 
         {/* Masonry Layout using columns */}
-        {posts.length > 0 ? (
+
+        {isLoading ? (
+          <div className="columns-1 sm:columns-2 lg:columns-3 gap-6">
+            {/* Skeleton items with different heights for masonry effect */}
+            {[...Array(6)].map((_, index) => (
+              <div key={index} className="mb-6 break-inside-avoid">
+                <div className="bg-gray-300 dark:bg-gray-700 rounded-lg overflow-hidden shadow animate-pulse">
+                  {/* Image placeholder */}
+                  <div className="h-48 bg-gray-400 dark:bg-gray-600"></div>
+                  {/* Content placeholder */}
+                  <div className="p-4">
+                    <div className="h-6 bg-gray-400 dark:bg-gray-600 rounded w-3/4 mb-2"></div>
+                    <div className="h-4 bg-gray-400 dark:bg-gray-600 rounded w-full mb-2"></div>
+                    <div className="h-4 bg-gray-400 dark:bg-gray-600 rounded w-5/6 mb-2"></div>
+                    <div className="h-4 bg-gray-400 dark:bg-gray-600 rounded w-2/3 mb-4"></div>
+                    {/* Action buttons placeholder */}
+                    <div className="flex justify-between">
+                      <div className="h-8 bg-gray-400 dark:bg-gray-600 rounded w-20"></div>
+                      <div className="h-8 bg-gray-400 dark:bg-gray-600 rounded w-20"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : posts.length > 0 ? (
           <div className="columns-1 sm:columns-2 lg:columns-3 gap-6">
             {posts.map((post) => (
               <div key={post.id} className="mb-6 break-inside-avoid">
-                <div className="bg-gray-800  overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300">
+                <div className="bg-gray-800 overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300">
                   <PostCard
                     post={post}
                     currentUser={user}
