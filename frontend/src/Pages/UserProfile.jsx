@@ -257,7 +257,7 @@ const UserProfile = () => {
 
                   {/* Loading and Error States */}
                   <div className="mt-4">
-                    {loading && <CustomLoader />}
+                    {/* {loading && <CustomLoader />} */}
                     {error && <p className="text-red-300">{error}</p>}
                   </div>
                 </div>
@@ -381,18 +381,54 @@ const UserProfile = () => {
         {/* Content based on active tab */}
         {activeTab === "posts" && (
           <div className="columns-1 sm:columns-2 lg:columns-3 gap-4">
-            {[...posts].reverse().map((post) => (
-              <div className="mb-4 break-inside-avoid">
-                <PostCard
-                  key={post.id}
-                  post={post}
-                  currentUser={user}
-                  onPostUpdate={handlePostUpdate}
-                  onPostDelete={handlePostDelete}
-                  onSharePost={handlePostShared}
-                />
+            {loading ? (
+              // Loading skeleton
+              [...Array(6)].map((_, index) => (
+                <div
+                  key={`skeleton-${index}`}
+                  className="mb-4 break-inside-avoid"
+                >
+                  <div className="bg-gray-300 dark:bg-gray-700 rounded-lg overflow-hidden shadow animate-pulse">
+                    {/* Image placeholder */}
+                    <div className="h-48 bg-gray-400 dark:bg-gray-600"></div>
+                    {/* Content placeholder */}
+                    <div className="p-4 space-y-3">
+                      <div className="flex items-center space-x-3">
+                        <div className="h-10 w-10 rounded-full bg-gray-400 dark:bg-gray-600"></div>
+                        <div className="h-4 bg-gray-400 dark:bg-gray-600 rounded w-24"></div>
+                      </div>
+                      <div className="h-5 bg-gray-400 dark:bg-gray-600 rounded w-3/4"></div>
+                      <div className="h-4 bg-gray-400 dark:bg-gray-600 rounded w-full"></div>
+                      <div className="h-4 bg-gray-400 dark:bg-gray-600 rounded w-5/6"></div>
+                      <div className="flex justify-between pt-2">
+                        <div className="h-8 w-20 bg-gray-400 dark:bg-gray-600 rounded"></div>
+                        <div className="h-8 w-20 bg-gray-400 dark:bg-gray-600 rounded"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : posts.length > 0 ? (
+              // Actual posts
+              [...posts].reverse().map((post) => (
+                <div key={post.id} className="mb-4 break-inside-avoid">
+                  <PostCard
+                    post={post}
+                    currentUser={user}
+                    onPostUpdate={handlePostUpdate}
+                    onPostDelete={handlePostDelete}
+                    onSharePost={handlePostShared}
+                  />
+                </div>
+              ))
+            ) : (
+              // Empty state
+              <div className="col-span-full text-center py-16">
+                <p className="text-gray-400 text-lg">
+                  No posts yet. Be the first to create one!
+                </p>
               </div>
-            ))}
+            )}
           </div>
         )}
         {activeTab === "skills" && (
