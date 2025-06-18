@@ -317,12 +317,12 @@ function NotificationSystem({ currentUser }) {
   return (
     <div className="notification-system relative">
       <button
-        className="relative p-1 text-gray-400 hover:text-white focus:outline-none transition-colors duration-200"
+        className="relative p-1 text-gray-400 hover:text-black focus:text-black focus:outline-none transition-colors duration-200"
         onClick={toggleDropdown}
         aria-label="Notifications"
       >
         <svg
-          className="h-6 w-6"
+          className="h-8 w-8"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
