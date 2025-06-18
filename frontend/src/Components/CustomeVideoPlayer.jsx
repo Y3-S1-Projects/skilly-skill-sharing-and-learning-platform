@@ -364,7 +364,7 @@ const CustomVideoPlayer = ({ videoUrl, thumbnail, autoPlay = false }) => {
   return (
     <div
       ref={playerRef}
-      className="relative w-full overflow-hidden rounded-xl bg-black shadow-lg"
+      className="relative w-full overflow-hidden  bg-gray-300 shadow-lg"
       style={{ aspectRatio: "16/9" }}
       onMouseMove={handlePlayerMouseMove}
       onMouseLeave={handlePlayerMouseLeave}
@@ -390,7 +390,7 @@ const CustomVideoPlayer = ({ videoUrl, thumbnail, autoPlay = false }) => {
       {/* Loading spinner */}
       {isLoading && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/30">
-          <div className="rounded-full h-16 w-16 border-4 border-t-transparent border-indigo-500 animate-spin"></div>
+          <div className="rounded-full h-16 w-16 border-4 border-t-transparent border-gray-500 animate-spin"></div>
         </div>
       )}
 
@@ -399,7 +399,7 @@ const CustomVideoPlayer = ({ videoUrl, thumbnail, autoPlay = false }) => {
         <div className="absolute inset-0 flex items-center justify-center">
           <button
             onClick={togglePlay}
-            className="bg-indigo-600/80 hover:bg-indigo-700 text-white rounded-full p-5 transform transition-all duration-200 hover:scale-110 hover:shadow-lg"
+            className="bg-gray-600/80 hover:bg-gray-700 text-white rounded-full p-5 transform transition-all duration-200  hover:shadow-lg"
             aria-label="Play video"
           >
             <svg className="h-12 w-12" fill="currentColor" viewBox="0 0 24 24">
@@ -444,7 +444,7 @@ const CustomVideoPlayer = ({ videoUrl, thumbnail, autoPlay = false }) => {
           />
           {/* Playback progress */}
           <div
-            className="absolute top-0 left-0 h-full bg-indigo-600 rounded-full"
+            className="absolute top-0 left-0 h-full bg-black rounded-full"
             style={{ width: `${(currentTime / duration) * 100}%` }}
           />
           {/* Preview on hover */}
@@ -456,7 +456,7 @@ const CustomVideoPlayer = ({ videoUrl, thumbnail, autoPlay = false }) => {
           )}
           {/* Playhead */}
           <div
-            className="absolute top-1/2 h-4 w-4 bg-indigo-600 rounded-full transform -translate-y-1/2 shadow-md border-2 border-white"
+            className="absolute top-1/2 h-4 w-4 bg-black rounded-full transform -translate-y-1/2 shadow-md border-2 border-white"
             style={{ left: `calc(${(currentTime / duration) * 100}% - 6px)` }}
           />
         </div>
@@ -467,7 +467,7 @@ const CustomVideoPlayer = ({ videoUrl, thumbnail, autoPlay = false }) => {
             {/* Play/Pause button */}
             <button
               onClick={togglePlay}
-              className="text-white hover:text-indigo-400 transition-colors"
+              className="text-white hover:text-gray-400 transition-colors"
               aria-label={isPlaying ? "Pause" : "Play"}
               title={isPlaying ? "Pause (k)" : "Play (k)"}
             >
@@ -493,7 +493,7 @@ const CustomVideoPlayer = ({ videoUrl, thumbnail, autoPlay = false }) => {
             {/* Skip back 10s */}
             <button
               onClick={skipBackward}
-              className="text-white hover:text-indigo-400 transition-colors"
+              className="text-white hover:text-gray-400 transition-colors"
               aria-label="Skip back 10 seconds"
               title="Skip back 10 seconds (←)"
             >
@@ -514,7 +514,7 @@ const CustomVideoPlayer = ({ videoUrl, thumbnail, autoPlay = false }) => {
             {/* Skip forward 10s */}
             <button
               onClick={skipForward}
-              className="text-white hover:text-indigo-400 transition-colors"
+              className="text-white hover:text-gray-400 transition-colors"
               aria-label="Skip forward 10 seconds"
               title="Skip forward 10 seconds (→)"
             >
@@ -551,7 +551,7 @@ const CustomVideoPlayer = ({ videoUrl, thumbnail, autoPlay = false }) => {
             >
               <button
                 onClick={toggleMute}
-                className="text-white hover:text-indigo-400 transition-colors"
+                className="text-white hover:text-gray-400 transition-colors"
                 aria-label={isMuted ? "Unmute" : "Mute"}
                 title={isMuted ? "Unmute (m)" : "Mute (m)"}
               >
@@ -607,7 +607,7 @@ const CustomVideoPlayer = ({ videoUrl, thumbnail, autoPlay = false }) => {
                       onChange={(e) =>
                         handleVolumeChange(parseFloat(e.target.value))
                       }
-                      className="w-full accent-indigo-600"
+                      className="w-full accent-black"
                       aria-label="Volume"
                     />
                     <span className="text-white text-xs">
@@ -629,7 +629,7 @@ const CustomVideoPlayer = ({ videoUrl, thumbnail, autoPlay = false }) => {
             <div className="relative">
               <button
                 onClick={() => setShowQualityOptions(!showQualityOptions)}
-                className="text-white text-sm hover:text-indigo-400 transition-colors flex items-center gap-1"
+                className="text-white text-sm hover:text-gray-400 transition-colors flex items-center gap-1"
                 aria-label="Quality settings"
                 title="Quality settings"
               >
@@ -655,7 +655,7 @@ const CustomVideoPlayer = ({ videoUrl, thumbnail, autoPlay = false }) => {
                       }}
                       className={`block px-4 py-2 text-sm w-full text-left transition-colors ${
                         quality === option
-                          ? "bg-indigo-600 text-white"
+                          ? "bg-gray-600 text-white"
                           : "text-white hover:bg-gray-800"
                       }`}
                     >

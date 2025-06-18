@@ -231,7 +231,7 @@ const Header = ({ onLogout }) => {
                   <input
                     id="search"
                     name="search"
-                    className="block w-full pl-10 pr-3 py-2 border border-gray-800 rounded-md leading-5 bg-gray-300 placeholder-gray-600 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-gray-500 focus:border-transparent sm:text-sm transition-all duration-200"
+                    className="block w-full pl-10 pr-3 py-2 border border-gray-800 leading-5 bg-gray-300 placeholder-gray-600 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-gray-500 focus:border-transparent sm:text-sm transition-all duration-200"
                     placeholder="Search skills, people..."
                     type="search"
                     value={searchQuery}
