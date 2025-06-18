@@ -345,14 +345,14 @@ function NotificationSystem({ currentUser }) {
       {showDropdown && (
         <div
           ref={dropdownRef}
-          className="origin-top-right absolute right-0 mt-2 w-80 rounded-md shadow-lg bg-gray-800 border border-gray-700 focus:outline-none z-10 overflow-hidden"
+          className="origin-top-right absolute right-0 mt-2 w-80  shadow-lg bg-white border border-black focus:outline-none z-10 overflow-hidden"
         >
-          <div className="flex justify-between items-center px-4 py-2 bg-gray-900 border-b border-gray-700">
-            <h3 className="text-sm font-medium text-white">Notifications</h3>
+          <div className="flex justify-between items-center px-4 py-2 bg-gray-400 border-b border-gray-700">
+            <h3 className="text-sm font-medium text-black">Notifications</h3>
             {unreadCount > 0 && (
               <button
                 onClick={markAllAsRead}
-                className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors"
+                className="text-xs text-black hover:text-gray-600 transition-colors"
               >
                 Mark all as read
               </button>
@@ -362,13 +362,13 @@ function NotificationSystem({ currentUser }) {
           <div className="max-h-96 overflow-y-auto">
             {isLoading ? (
               <div className="py-8 px-4 text-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-400 mx-auto"></div>
-                <p className="text-gray-400 text-sm mt-2">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black mx-auto"></div>
+                <p className="text-black text-sm mt-2">
                   Loading notifications...
                 </p>
               </div>
             ) : notifications.length === 0 ? (
-              <div className="py-4 px-4 text-center text-gray-400 text-sm">
+              <div className="py-4 px-4 text-center text-black text-sm">
                 No notifications yet
               </div>
             ) : (
@@ -376,7 +376,7 @@ function NotificationSystem({ currentUser }) {
                 <div
                   key={notification.id}
                   onClick={() => handleNotificationClick(notification)}
-                  className={`px-4 py-3 border-b border-gray-700 cursor-pointer hover:bg-gray-700 transition-colors ${
+                  className={`px-4 py-3 border-b border-black cursor-pointer  hover:bg-gray-300 transition-colors ${
                     !notification.read ? "bg-indigo-900/30" : ""
                   }`}
                 >
@@ -388,17 +388,17 @@ function NotificationSystem({ currentUser }) {
                         className="h-8 w-8 rounded-full mr-3 border border-gray-600"
                       />
                     ) : (
-                      <div className="h-8 w-8 rounded-full bg-indigo-900/50 flex items-center justify-center mr-3 border border-gray-600">
-                        <span className="text-xs font-medium text-indigo-300">
+                      <div className="h-8 w-8 rounded-full bg-gray-900/50 flex items-center justify-center mr-3 border border-gray-600">
+                        <span className="text-xs font-medium text-black">
                           {notification.senderName?.charAt(0) || "?"}
                         </span>
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm text-gray-100">
+                      <p className="text-sm text-black">
                         {notification.message}
                       </p>
-                      <p className="text-xs text-gray-400 mt-1">
+                      <p className="text-xs text-gray-700 mt-1">
                         {formatTimeAgo(notification.createdAt)}
                       </p>
                     </div>
@@ -412,10 +412,10 @@ function NotificationSystem({ currentUser }) {
           </div>
 
           {notifications.length > 10 && (
-            <div className="px-4 py-2 text-center border-t border-gray-700">
+            <div className="px-4 py-2 text-center border-t bg-gray-400 border-gray-700">
               <Link
                 to="/notifications"
-                className="text-sm text-indigo-400 hover:text-indigo-300 transition-colors"
+                className="text-sm text-black hover:text-gray-700 transition-colors"
               >
                 View all notifications
               </Link>
