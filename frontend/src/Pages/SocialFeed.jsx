@@ -123,12 +123,12 @@ const SocialFeed = () => {
 
       <div className="mr-10 ml-10 mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Sticky Create Post Card */}
-        <CreatePostCard
+        {/* <CreatePostCard
           user={user}
           setShowCreatePostModal={setShowCreatePostModal}
-        />
+        /> */}
 
-        {/* <div className="flex justify-between items-center w-full my-4">
+        <div className="flex justify-between items-center w-full my-4">
           <span className="text-2xl text-gray-900">
             What's on your mind today?
           </span>
@@ -139,7 +139,7 @@ const SocialFeed = () => {
             <PlusIcon size={20} className="text-gray-800" />
             <span className="text-gray-900 font-medium">Create a Post</span>
           </button>
-        </div> */}
+        </div>
 
         {/* Masonry Layout using columns */}
 

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import axios from "axios";
 import {
   X,
   Camera,
@@ -9,6 +10,7 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import Header from "../Components/Header";
+import { ScrollToTop } from "../util/dom-utils";
 
 const CreatePostPage = () => {
   const [postType, setPostType] = useState("skill");
@@ -33,6 +35,9 @@ const CreatePostPage = () => {
       return;
     }
 
+    // Clear any previous errors
+    setError("");
+
     setImages([...images, ...files]);
 
     const newPreviewImages = files.map((file) => URL.createObjectURL(file));
@@ -53,6 +58,9 @@ const CreatePostPage = () => {
       setError("Video file is too large (maximum 50MB)");
       return;
     }
+
+    // Clear any previous errors
+    setError("");
 
     if (videoPreview) {
       URL.revokeObjectURL(videoPreview);
@@ -91,6 +99,7 @@ const CreatePostPage = () => {
       return;
     }
 
+    // Check if there's any content
     if (images.length === 0 && !video && !description.trim()) {
       setError("Please add a description, images, or a video to your post");
       return;
@@ -98,14 +107,57 @@ const CreatePostPage = () => {
 
     try {
       setLoading(true);
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      const formData = new FormData();
+      formData.append("postType", postType);
+      formData.append("title", title);
+      formData.append("description", description);
+
+      // Add additional fields based on post type
+      if (postType === "progress") {
+        formData.append("progressTemplate", progressTemplate);
+      }
+
+      if (postType === "plan") {
+        formData.append("estimatedTime", estimatedTime);
+        formData.append("timeUnit", timeUnit);
+      }
+
+      // Add images if any
+      images.forEach((image) => {
+        formData.append("images", image);
+      });
+
+      // Add video if any
+      if (video) {
+        formData.append("video", video);
+      }
+
+      // Get token from localStorage
+      const token = localStorage.getItem("authToken");
+
+      const response = await axios.post(
+        "http://localhost:8080/api/posts",
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
 
       // Reset form on success
       resetForm();
+
+      // You can add navigation here or show a success message
       alert("Post created successfully!");
+      console.log("Post created:", response.data);
     } catch (err) {
-      setError("Failed to create post");
+      setError(
+        "Failed to create post: " + (err.response?.data?.message || err.message)
+      );
+      console.error("Error creating post:", err);
     } finally {
       setLoading(false);
     }
@@ -124,6 +176,7 @@ const CreatePostPage = () => {
     setEstimatedTime("");
     setProgressTemplate("course");
     setTimeUnit("days");
+    setError("");
   };
 
   const getPostTypeIcon = () => {
@@ -140,297 +193,276 @@ const CreatePostPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-300 text-black">
-      <Header />
-      <div className="max-w-4xl mx-auto px-4 py-8  mt-10 bg-gray-200 border border-black">
-        {/* Header */}
-        <div className="flex items-center gap-4 mb-8">
-          <button className="p-2  text-black hover:bg-gray-300 border border-black">
-            <ArrowLeft className="h-5 w-5" />
-          </button>
-          <div className="flex items-center gap-3">
-            {getPostTypeIcon()}
-            <h1 className="text-3xl font-bold">Create New Post</h1>
-          </div>
-        </div>
-
-        {error && (
-          <div className="mb-6 p-4 bg-red-100 border border-black text-red-800 ">
-            <p>{error}</p>
-          </div>
-        )}
-
-        <div className="space-y-8  p-10 ">
-          {/* Post Type Selection */}
-          <div className="space-y-3">
-            <label className="text-lg font-semibold block">Post Type</label>
-            <div className="relative">
-              <select
-                value={postType}
-                onChange={(e) => setPostType(e.target.value)}
-                className="w-full p-2 bg-white border border-black text-black  focus:outline-none focus:ring-1 focus:ring-black"
-              >
-                <option value="skill">
-                  <div className="flex items-center gap-2">
-                    <Lightbulb className="h-4 w-4" />
-                    Skill Sharing
-                  </div>
-                </option>
-                <option value="progress">
-                  <div className="flex items-center gap-2">
-                    <FileText className="h-4 w-4" />
-                    Learning Progress
-                  </div>
-                </option>
-                <option value="plan">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4" />
-                    Learning Plan
-                  </div>
-                </option>
-              </select>
+    <>
+      <ScrollToTop />
+      <div className="min-h-screen bg-gray-300 text-black">
+        <Header />
+        <div className="max-w-4xl mx-auto px-4 py-8 mt-10 bg-gray-200 border border-black">
+          {/* Header */}
+          <div className="flex items-center gap-4 mb-8">
+            <button className="p-2 text-black hover:bg-gray-300 border border-black">
+              <ArrowLeft className="h-5 w-5" />
+            </button>
+            <div className="flex items-center gap-3">
+              {getPostTypeIcon()}
+              <h1 className="text-3xl font-bold">Create New Post</h1>
             </div>
           </div>
 
-          {/* Title */}
-          <div className="space-y-3">
-            <label htmlFor="title" className="text-lg font-semibold block">
-              Title
-            </label>
-            <input
-              id="title"
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Enter a title for your post"
-              className="w-full p-2 bg-white border border-black text-black placeholder:text-gray-500  focus:outline-none focus:ring-1 focus:ring-black"
-            />
-          </div>
-
-          {/* Description */}
-          <div className="space-y-3">
-            <label
-              htmlFor="description"
-              className="text-lg font-semibold block"
-            >
-              Description
-            </label>
-            <textarea
-              id="description"
-              rows={5}
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Share details about your skill, progress, or learning plan"
-              className="w-full p-2 bg-white border border-black text-black placeholder:text-gray-500  focus:outline-none focus:ring-1 focus:ring-black resize-none"
-            />
-          </div>
-
-          {/* Media Type Selection */}
-          <div className="space-y-3">
-            <label className="text-lg font-semibold block">Media Type</label>
-            <div className="relative">
-              <select
-                value={mediaType}
-                onChange={(e) => setMediaType(e.target.value)}
-                className="w-full p-2 bg-white border border-black text-black  focus:outline-none focus:ring-1 focus:ring-black"
-              >
-                <option value="images">
-                  <div className="flex items-center gap-2">
-                    <Camera className="h-4 w-4" />
-                    Images (max 3)
-                  </div>
-                </option>
-                <option value="video">
-                  <div className="flex items-center gap-2">
-                    <Video className="h-4 w-4" />
-                    Video (max 50MB)
-                  </div>
-                </option>
-              </select>
-            </div>
-          </div>
-
-          {/* Media Upload */}
-          {mediaType === "images" && (
-            <div className="space-y-4">
-              <div className="flex items-center justify-center w-full">
-                <label
-                  className={`flex flex-col items-center justify-center w-full h-40 border-2 border-dashed cursor-pointer bg-white hover:bg-gray-100 border-black transition-colors  ${
-                    images.length >= 3 ? "opacity-50 cursor-not-allowed" : ""
-                  }`}
-                >
-                  <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                    <Camera className="w-10 h-10 mb-3 text-gray-600" />
-                    <p className="mb-2 text-sm text-black">
-                      <span className="font-semibold">Click to upload</span> or
-                      drag and drop
-                    </p>
-                    <p className="text-xs text-gray-600">
-                      PNG, JPG, GIF up to 10MB ({images.length}/3)
-                    </p>
-                  </div>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    onChange={handleImageChange}
-                    className="hidden"
-                    disabled={images.length >= 3}
-                  />
-                </label>
-              </div>
-
-              {previewImages.length > 0 && (
-                <div className="space-y-3">
-                  <label className="text-sm font-medium block">Preview</label>
-                  <div className="grid grid-cols-3 gap-4">
-                    {previewImages.map((url, index) => (
-                      <div
-                        key={index}
-                        className="relative aspect-square overflow-hidden border border-black "
-                      >
-                        <img
-                          src={url}
-                          alt={`Preview ${index + 1}`}
-                          className="h-full w-full object-cover"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => removeImage(index)}
-                          className="absolute top-2 right-2 h-6 w-6 bg-red-600 hover:bg-red-700 border border-black rounded-full flex items-center justify-center"
-                        >
-                          <X className="h-3 w-3 text-white" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+          {error && (
+            <div className="mb-6 p-4 bg-red-100 border border-black text-red-800">
+              <p>{error}</p>
             </div>
           )}
 
-          {mediaType === "video" && (
-            <div className="space-y-4">
-              <div className="flex items-center justify-center w-full">
-                <label
-                  className={`flex flex-col items-center justify-center w-full h-40 border-2 border-dashed cursor-pointer bg-white hover:bg-gray-100 border-black transition-colors  ${
-                    video ? "opacity-50 cursor-not-allowed" : ""
-                  }`}
-                >
-                  <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                    <Video className="w-10 h-10 mb-3 text-gray-400" />
-                    <p className="mb-2 text-sm text-gray-600">
-                      <span className="font-semibold">Upload a video</span>
-                    </p>
-                    <p className="text-xs text-gray-500">MP4, WebM, max 50MB</p>
-                  </div>
-                  <input
-                    type="file"
-                    accept="video/*"
-                    onChange={handleVideoChange}
-                    className="hidden"
-                    disabled={video !== null}
-                  />
-                </label>
-              </div>
-
-              {videoPreview && (
-                <div className="space-y-3">
-                  <label className="text-sm font-medium block">
-                    Video Preview
-                  </label>
-                  <div className="relative overflow-hidden border border-black ">
-                    <video
-                      src={videoPreview}
-                      controls
-                      className="w-full aspect-video"
-                    />
-                    <button
-                      type="button"
-                      onClick={removeVideo}
-                      className="absolute top-2 right-2 h-6 w-6 bg-red-600 hover:bg-red-700 border border-black rounded-full flex items-center justify-center"
-                    >
-                      <X className="h-3 w-3 text-white" />
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Progress Template */}
-          {postType === "progress" && (
+          <form onSubmit={handleSubmit} className="space-y-8 p-10">
+            {/* Post Type Selection */}
             <div className="space-y-3">
-              <label className="text-lg font-semibold block">
-                Progress Template
-              </label>
+              <label className="text-lg font-semibold block">Post Type</label>
               <div className="relative">
                 <select
-                  value={progressTemplate}
-                  onChange={(e) => setProgressTemplate(e.target.value)}
-                  className="w-full p-2 bg-gray-900 border border-gray-700 text-white  focus:outline-none focus:ring-1 focus:ring-gray-700"
+                  value={postType}
+                  onChange={(e) => setPostType(e.target.value)}
+                  className="w-full p-2 bg-white border border-black text-black focus:outline-none focus:ring-1 focus:ring-black"
                 >
-                  <option value="course">Completed Course</option>
-                  <option value="milestone">Reached Milestone</option>
-                  <option value="skill">New Skill Learned</option>
-                  <option value="challenge">Completed Challenge</option>
+                  <option value="skill">Skill Sharing</option>
+                  <option value="progress">Learning Progress</option>
+                  <option value="plan">Learning Plan</option>
                 </select>
               </div>
             </div>
-          )}
 
-          {/* Learning Plan Duration */}
-          {postType === "plan" && (
+            {/* Title */}
             <div className="space-y-3">
-              <label className="text-lg font-semibold block">
-                Estimated Completion Time
+              <label htmlFor="title" className="text-lg font-semibold block">
+                Title
               </label>
-              <div className="flex gap-3">
-                <input
-                  type="number"
-                  min="1"
-                  value={estimatedTime}
-                  onChange={(e) => setEstimatedTime(e.target.value)}
-                  className="w-24 p-2 bg-gray-900 border border-gray-700 text-white placeholder:text-gray-400  focus:outline-none focus:ring-1 focus:ring-gray-700"
-                  placeholder="1"
-                />
+              <input
+                id="title"
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Enter a title for your post"
+                className="w-full p-2 bg-white border border-black text-black placeholder:text-gray-500 focus:outline-none focus:ring-1 focus:ring-black"
+              />
+            </div>
+
+            {/* Description */}
+            <div className="space-y-3">
+              <label
+                htmlFor="description"
+                className="text-lg font-semibold block"
+              >
+                Description
+              </label>
+              <textarea
+                id="description"
+                rows={5}
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Share details about your skill, progress, or learning plan"
+                className="w-full p-2 bg-white border border-black text-black placeholder:text-gray-500 focus:outline-none focus:ring-1 focus:ring-black resize-none"
+              />
+            </div>
+
+            {/* Media Type Selection */}
+            <div className="space-y-3">
+              <label className="text-lg font-semibold block">Media Type</label>
+              <div className="relative">
+                <select
+                  value={mediaType}
+                  onChange={(e) => setMediaType(e.target.value)}
+                  className="w-full p-2 bg-white border border-black text-black focus:outline-none focus:ring-1 focus:ring-black"
+                >
+                  <option value="images">Images (max 3)</option>
+                  <option value="video">Video (max 50MB)</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Media Upload */}
+            {mediaType === "images" && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-center w-full">
+                  <label
+                    className={`flex flex-col items-center justify-center w-full h-40 border-2 border-dashed cursor-pointer bg-white hover:bg-gray-100 border-black transition-colors ${
+                      images.length >= 3 ? "opacity-50 cursor-not-allowed" : ""
+                    }`}
+                  >
+                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                      <Camera className="w-10 h-10 mb-3 text-gray-600" />
+                      <p className="mb-2 text-sm text-black">
+                        <span className="font-semibold">Click to upload</span>{" "}
+                        or drag and drop
+                      </p>
+                      <p className="text-xs text-gray-600">
+                        PNG, JPG, GIF up to 10MB ({images.length}/3)
+                      </p>
+                    </div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={handleImageChange}
+                      className="hidden"
+                      disabled={images.length >= 3}
+                    />
+                  </label>
+                </div>
+
+                {previewImages.length > 0 && (
+                  <div className="space-y-3">
+                    <label className="text-sm font-medium block">Preview</label>
+                    <div className="grid grid-cols-3 gap-4">
+                      {previewImages.map((url, index) => (
+                        <div
+                          key={index}
+                          className="relative aspect-square overflow-hidden border border-black"
+                        >
+                          <img
+                            src={url}
+                            alt={`Preview ${index + 1}`}
+                            className="h-full w-full object-cover"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeImage(index)}
+                            className="absolute top-2 right-2 h-6 w-6 bg-red-600 hover:bg-red-700 border border-black rounded-full flex items-center justify-center"
+                          >
+                            <X className="h-3 w-3 text-white" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {mediaType === "video" && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-center w-full">
+                  <label
+                    className={`flex flex-col items-center justify-center w-full h-40 border-2 border-dashed cursor-pointer bg-white hover:bg-gray-100 border-black transition-colors ${
+                      video ? "opacity-50 cursor-not-allowed" : ""
+                    }`}
+                  >
+                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                      <Video className="w-10 h-10 mb-3 text-gray-400" />
+                      <p className="mb-2 text-sm text-gray-600">
+                        <span className="font-semibold">Upload a video</span>
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        MP4, WebM, max 50MB
+                      </p>
+                    </div>
+                    <input
+                      type="file"
+                      accept="video/*"
+                      onChange={handleVideoChange}
+                      className="hidden"
+                      disabled={video !== null}
+                    />
+                  </label>
+                </div>
+
+                {videoPreview && (
+                  <div className="space-y-3">
+                    <label className="text-sm font-medium block">
+                      Video Preview
+                    </label>
+                    <div className="relative overflow-hidden border border-black">
+                      <video
+                        src={videoPreview}
+                        controls
+                        className="w-full aspect-video"
+                      />
+                      <button
+                        type="button"
+                        onClick={removeVideo}
+                        className="absolute top-2 right-2 h-6 w-6 bg-red-600 hover:bg-red-700 border border-black rounded-full flex items-center justify-center"
+                      >
+                        <X className="h-3 w-3 text-white" />
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Progress Template */}
+            {postType === "progress" && (
+              <div className="space-y-3">
+                <label className="text-lg font-semibold block">
+                  Progress Template
+                </label>
                 <div className="relative">
                   <select
-                    value={timeUnit}
-                    onChange={(e) => setTimeUnit(e.target.value)}
-                    className="w-32 p-2 bg-gray-900 border border-gray-700 text-white  focus:outline-none focus:ring-1 focus:ring-gray-700"
+                    value={progressTemplate}
+                    onChange={(e) => setProgressTemplate(e.target.value)}
+                    className="w-full p-2 bg-white border border-black text-black focus:outline-none focus:ring-1 focus:ring-black"
                   >
-                    <option value="days">Days</option>
-                    <option value="weeks">Weeks</option>
-                    <option value="months">Months</option>
+                    <option value="course">Completed Course</option>
+                    <option value="milestone">Reached Milestone</option>
+                    <option value="skill">New Skill Learned</option>
+                    <option value="challenge">Completed Challenge</option>
                   </select>
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* Action Buttons */}
-          <div className="flex justify-end gap-4 pt-6">
-            <button
-              type="button"
-              onClick={resetForm}
-              disabled={loading}
-              className="px-4 py-2 border border-gray-600 text-gray-700 hover:bg-gray-300  disabled:opacity-50"
-            >
-              Reset
-            </button>
-            <button
-              type="button"
-              onClick={handleSubmit}
-              disabled={loading}
-              className="px-8 py-2 bg-white text-black hover:bg-gray-200 font-semibold border border-black  disabled:opacity-50"
-            >
-              {loading ? "Creating..." : "Create Post"}
-            </button>
-          </div>
+            {/* Learning Plan Duration */}
+            {postType === "plan" && (
+              <div className="space-y-3">
+                <label className="text-lg font-semibold block">
+                  Estimated Completion Time
+                </label>
+                <div className="flex gap-3">
+                  <input
+                    type="number"
+                    min="1"
+                    value={estimatedTime}
+                    onChange={(e) => setEstimatedTime(e.target.value)}
+                    className="w-24 p-2 bg-white border border-black text-black placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-black"
+                    placeholder="1"
+                  />
+                  <div className="relative">
+                    <select
+                      value={timeUnit}
+                      onChange={(e) => setTimeUnit(e.target.value)}
+                      className="w-32 p-2 bg-white border border-black text-black focus:outline-none focus:ring-1 focus:ring-black"
+                    >
+                      <option value="days">Days</option>
+                      <option value="weeks">Weeks</option>
+                      <option value="months">Months</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Action Buttons */}
+            <div className="flex justify-end gap-4 pt-6">
+              <button
+                type="button"
+                onClick={resetForm}
+                disabled={loading}
+                className="px-4 py-2 border border-gray-600 text-gray-700 hover:bg-gray-300 disabled:opacity-50"
+              >
+                Reset
+              </button>
+              <button
+                type="submit"
+                disabled={loading}
+                className="px-8 py-2 bg-white text-black hover:bg-gray-200 font-semibold border border-black disabled:opacity-50"
+              >
+                {loading ? "Creating..." : "Create Post"}
+              </button>
+            </div>
+          </form>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 
