@@ -10,6 +10,7 @@ import PostCard from "../Components/PostCard";
 import UserConnectionsModal from "../Components/Modals/UserConnections";
 import { Helmet } from "react-helmet";
 import { PlusIcon } from "lucide-react";
+import CustomLoader from "../Components/CustomLoader";
 const UserProfile = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -199,6 +200,10 @@ const UserProfile = () => {
   const handleUserUpdate = (updatedUser) => {
     setUser(updatedUser);
   };
+
+  if (loading) {
+    return <CustomLoader />;
+  }
   return (
     <>
       {user?.name && (

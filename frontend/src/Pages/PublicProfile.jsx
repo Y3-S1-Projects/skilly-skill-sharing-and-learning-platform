@@ -12,7 +12,8 @@ import CustomLoader from "../Components/CustomLoader";
 import EditIcon from "@/public/icons/EditIcon";
 import CreatePostModal from "../Components/Modals/CreatePost";
 import { Helmet } from "react-helmet";
-
+import { getInitials } from "../util/avatar";
+import { Spinner } from "@heroui/react";
 const PublicProfile = () => {
   const { userId } = useParams(); // Get userId from URL parameter
   const [loading, setLoading] = useState(true);
@@ -25,6 +26,7 @@ const PublicProfile = () => {
   const [isFollowing, setIsFollowing] = useState(false);
   const [activeTab, setActiveTab] = useState("posts");
   const [followLoading, setFollowLoading] = useState(false);
+  const [showUnfollowModal, setShowUnfollowModal] = useState(false);
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
   const [user, setUser] = useState({
     id: "",
@@ -97,12 +99,7 @@ const PublicProfile = () => {
             skillsInProgress: 0,
             achievements: 0,
           },
-          skills:
-            data.skills?.map((skill) => ({
-              name: skill,
-              level: "Beginner",
-              endorsements: Math.floor(Math.random() * 40),
-            })) || [],
+          skills: data.skills?.map((skill) => skill) || [],
           learningGoals: [],
           certifications: [],
         });
@@ -157,23 +154,6 @@ const PublicProfile = () => {
   const handlePostShared = (sharedPost) => {
     // Add the shared post to the beginning of the posts array
     setPosts([sharedPost, ...posts]);
-  };
-
-  const getColorClass = (userId) => {
-    const colors = [
-      "bg-blue-200 text-blue-600",
-      "bg-green-200 text-green-600",
-      "bg-purple-200 text-purple-600",
-      "bg-pink-200 text-pink-600",
-      "bg-yellow-200 text-yellow-600",
-      "bg-indigo-200 text-indigo-600",
-    ];
-
-    // Use the user ID to select a consistent color
-    const index = userId
-      ? parseInt(userId.toString().charAt(0), 10) % colors.length
-      : 0;
-    return colors[index];
   };
 
   const handleFollowToggle = async () => {
@@ -234,106 +214,6 @@ const PublicProfile = () => {
   const handlePostDelete = (postId) => {
     setPosts(posts.filter((post) => post.id !== postId));
   };
-
-  const handleLike = async (postId) => {
-    try {
-      if (!currentUser) return;
-
-      const token = localStorage.getItem("authToken");
-      const userId = currentUser.id;
-
-      // Find the post in the current state
-      const postToUpdate = posts.find((p) => p.id === postId);
-
-      if (!postToUpdate) {
-        console.error("Post not found in current state");
-        return;
-      }
-
-      // Check if user already liked the post
-      const isLiked = postToUpdate.likes.includes(userId);
-
-      // Make API request
-      const endpoint = isLiked ? "unlike" : "like";
-      const response = await axios.put(
-        `${API_BASE_URL}/api/posts/${postId}/${endpoint}/${userId}`,
-        {},
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      // Update the posts state
-      setPosts(
-        posts.map((post) => (post.id === postId ? response.data : post))
-      );
-
-      // Send WebSocket notification if the post owner is not the current user
-      if (postToUpdate.userId !== userId) {
-        const action = isLiked ? "UNLIKE" : "LIKE";
-        const notification = {
-          postId: postId,
-          senderId: userId,
-          action: action,
-        };
-
-        // Get the socket instance and emit the notification
-        const socket = getSocket();
-        if (socket) {
-          socket.emit("like_notification", notification);
-        } else {
-          console.warn("Socket connection not available");
-        }
-      }
-    } catch (err) {
-      console.error("Error liking post:", err);
-    }
-  };
-
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffInSeconds = Math.floor((now - date) / 1000);
-
-    if (diffInSeconds < 60) return "just now";
-    if (diffInSeconds < 3600)
-      return `${Math.floor(diffInSeconds / 60)} minutes ago`;
-    if (diffInSeconds < 86400)
-      return `${Math.floor(diffInSeconds / 3600)} hours ago`;
-    if (diffInSeconds < 604800)
-      return `${Math.floor(diffInSeconds / 86400)} days ago`;
-    return date.toLocaleDateString();
-  };
-
-  // Handle skill endorsement
-  const handleEndorse = async (skillName) => {
-    try {
-      if (!currentUser) return;
-
-      const token = localStorage.getItem("authToken");
-
-      await axios.put(
-        `${API_BASE_URL}/api/users/endorse/${userId}/${skillName}`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      // Update UI
-      setUser((prev) => ({
-        ...prev,
-        skills: prev.skills.map((skill) =>
-          skill.name === skillName
-            ? { ...skill, endorsements: skill.endorsements + 1 }
-            : skill
-        ),
-      }));
-    } catch (err) {
-      console.error("Error endorsing skill:", err);
-    }
-  };
-
   if (loading) {
     return <CustomLoader />;
   }
@@ -348,7 +228,7 @@ const PublicProfile = () => {
   return (
     <>
       <Helmet>
-        <title>{user?.name} | Skilly</title>
+        <title>{user?.name} on Skilly</title>
       </Helmet>
       <div className="min-h-screen bg-white">
         <Header user={currentUser} />
@@ -388,18 +268,14 @@ const PublicProfile = () => {
 
                   {/* Skills Tags */}
                   <div className="flex flex-wrap gap-2">
-                    <span className="px-3 py-1 bg-white/20 text-white text-sm ">
-                      UI/UX Design
-                    </span>
-                    <span className="px-3 py-1 bg-white/20 text-white text-sm ">
-                      React
-                    </span>
-                    <span className="px-3 py-1 bg-white/20 text-white text-sm ">
-                      Figma
-                    </span>
-                    <span className="px-3 py-1 bg-white/20 text-white text-sm ">
-                      Accessibility
-                    </span>
+                    {user.skills.map((skill, index) => (
+                      <span
+                        key={index}
+                        className="px-3 py-1 bg-white/20 text-white text-sm"
+                      >
+                        {skill}
+                      </span>
+                    ))}
                   </div>
 
                   {/* Loading and Error States */}
@@ -409,6 +285,85 @@ const PublicProfile = () => {
                   </div>
                 </div>
               </div>
+
+              {/* Right Section - Follow Button */}
+              <div className="flex-shrink-0">
+                <button
+                  onClick={
+                    isFollowing
+                      ? () => setShowUnfollowModal(true)
+                      : handleFollowToggle
+                  }
+                  disabled={followLoading}
+                  className={`px-6 py-3  font-medium text-sm transition-all duration-200 ${
+                    isFollowing
+                      ? "bg-white/20 text-white border-2 border-white/30 hover:bg-white/30"
+                      : "bg-white text-black border-2 border-black hover:bg-white/90"
+                  } ${
+                    followLoading
+                      ? "opacity-50 cursor-not-allowed"
+                      : " active:scale-95"
+                  }`}
+                >
+                  {followLoading ? (
+                    <span className="flex items-center gap-2">
+                      <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                          fill="none"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        />
+                      </svg>
+                      Following...
+                    </span>
+                  ) : isFollowing ? (
+                    "Following"
+                  ) : (
+                    "Follow"
+                  )}
+                </button>
+              </div>
+
+              {/* Unfollow Confirmation Modal */}
+              {showUnfollowModal && (
+                <div className="fixed inset-0 backdrop-blur bg-opacity-50 flex items-center justify-center z-50">
+                  <div className="bg-white  p-6 max-w-md mx-4 border-2 border-black">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                      Unfollow {user.name}?
+                    </h3>
+                    <p className="text-gray-600 mb-6">
+                      You will no longer see their posts in your feed.
+                    </p>
+                    <div className="flex gap-3 justify-end">
+                      <button
+                        onClick={() => setShowUnfollowModal(false)}
+                        className="px-4 py-2 text-gray-600 border border-gray-300  hover:bg-gray-50 transition-colors"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={() => {
+                          setShowUnfollowModal(false);
+                          handleFollowToggle();
+                        }}
+                        disabled={followLoading}
+                        className="px-4 py-2 bg-red-600 text-white  hover:bg-red-700 transition-colors disabled:opacity-50"
+                      >
+                        Unfollow
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -494,7 +449,7 @@ const PublicProfile = () => {
           {activeTab === "posts" && (
             <div className="columns-1 sm:columns-2 lg:columns-3 gap-4">
               {[...posts].reverse().map((post) => (
-                <div className="mb-4 break-inside-avoid">
+                <div key={post.id} className="mb-4 break-inside-avoid">
                   <PostCard
                     key={post.id}
                     post={post}
@@ -617,17 +572,6 @@ const PublicProfile = () => {
           )}
           {activeTab === "about" && (
             <div className="bg-white  border border-gray-100 p-6 shadow-sm">
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-xl font-semibold text-gray-900">About</h3>
-                <Link
-                  to="/profile/edit"
-                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-black hover:text-gray-500 transition-colors  hover:bg-gray-50"
-                >
-                  <EditIcon className="w-4 h-4" />
-                  Edit Profile
-                </Link>
-              </div>
-
               <div className="space-y-6">
                 <div>
                   <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">

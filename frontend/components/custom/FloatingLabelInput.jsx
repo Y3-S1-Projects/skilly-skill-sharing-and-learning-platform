@@ -39,7 +39,7 @@ const FloatingLabelInput = ({
         value={value}
         onChange={onChange}
         onFocus={() => setIsFocused(true)}
-        className={`peer block w-full px-3 py-3 sm:px-4 sm:py-4 md:px-6 md:py-4 bg-gray-800 border text-xl sm:text-xl md:text-2xl lg:text-2xl xl:text-2xl ${
+        className={`peer block w-full px-3 py-3 sm:px-4 sm:py-4 md:px-6 md:py-4 bg-gray-950 border text-xl sm:text-xl md:text-2xl lg:text-2xl xl:text-2xl ${
           error
             ? "border-red-500 focus:ring-red-500"
             : "border-gray-700 focus:ring-2 focus:ring-blue-500"
