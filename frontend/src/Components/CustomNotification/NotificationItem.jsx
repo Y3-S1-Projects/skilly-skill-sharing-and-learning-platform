@@ -53,7 +53,7 @@ const NotificationItem = ({
       case "error":
         return "bg-red-400";
       default:
-        return "bg-gray-400";
+        return "bg-white";
     }
   };
 
@@ -86,7 +86,7 @@ const NotificationItem = ({
     >
       <div
         className={`
-          ${getBackgroundColor()} text-black p-4 rounded-none shadow-lg border-2 border-black
+          ${getBackgroundColor()} text-black p-4 rounded-none shadow-lg border border-black
           ${isLarge ? "min-w-80 max-w-96" : "min-w-64 max-w-80"}
         `}
       >
