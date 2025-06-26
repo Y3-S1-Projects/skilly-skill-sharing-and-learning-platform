@@ -98,7 +98,7 @@ const PostCard = ({
   }, [post.userID]);
 
   const fetchUserDetails = async (userId) => {
-    if (!userId || commentOwners[userId]) return; // Skip if already fetched
+    if (!userId || commentOwners[userId]) return;
 
     try {
       const token = localStorage.getItem("authToken");
@@ -110,8 +110,11 @@ const PostCard = ({
         ...prev,
         [userId]: response.data,
       }));
-    } catch (err) {
-      console.error(`Error fetching user details for ${userId}:`, err);
+    } catch {
+      setCommentOwners((prev) => ({
+        ...prev,
+        [userId]: { username: "Deleted User" },
+      }));
     }
   };
 
@@ -160,7 +163,6 @@ const PostCard = ({
     if (!name) return "?";
     return name.charAt(0).toUpperCase();
   };
-
   const getColorClass = (userId) => {
     const colors = [
       "bg-blue-200 text-blue-600",
@@ -417,7 +419,7 @@ const PostCard = ({
                       to={`/profile/${post.originalUserId}`}
                       className="hover:underline"
                     >
-                      {commentOwners[post.originalUserId]?.username || "user"}
+                      {commentOwners[post.originalUserId]?.username}
                     </Link>
                   )}
                   )

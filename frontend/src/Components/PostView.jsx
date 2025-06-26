@@ -14,6 +14,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { Helmet } from "react-helmet";
+import { comment } from "postcss";
 
 const PostView = () => {
   const { id } = useParams();
@@ -48,7 +49,6 @@ const PostView = () => {
   const [loggedInUser, setLoggedInUser] = useState(null);
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
   const [postOwner, setPostOwner] = useState(null);
-
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -102,12 +102,18 @@ const PostView = () => {
 
     try {
       setIsCommenting(true);
+      const token = localStorage.getItem("authToken");
       const userId = await getUserId();
       const response = await axios.post(
         `http://localhost:8080/api/posts/${id}/comments`,
         {
           content: newComment,
           authorId: userId,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
 
@@ -269,7 +275,6 @@ const PostView = () => {
       </>
     );
   }
-
   return (
     <>
       <Helmet>
@@ -299,10 +304,10 @@ const PostView = () => {
               {/* Comment form */}
               <div className="mb-6">
                 <div className="flex items-start space-x-3">
-                  {postOwner?.profilePicUrl ? (
+                  {user.profilePicUrl ? (
                     <img
-                      src={postOwner.profilePicUrl}
-                      alt={postOwner?.username || "User"}
+                      src={user.profilePicUrl}
+                      alt={user?.username || "User"}
                       className="h-10 w-10 rounded-full mr-3"
                     />
                   ) : (
@@ -311,7 +316,7 @@ const PostView = () => {
                         post.userId
                       )} font-medium`}
                     >
-                      {getInitials(postOwner?.username || "User")}
+                      {getInitials(user?.username || "User")}
                     </div>
                   )}
                   <div className="flex-1">
@@ -389,6 +394,7 @@ const PostView = () => {
                                   ? user.name
                                   : "User")}
                             </p>
+
                             <span className="text-gray-400 text-xs">
                               {formatDate(comment.createdAt)}
                             </span>
