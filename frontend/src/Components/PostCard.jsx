@@ -176,7 +176,7 @@ const PostCard = ({
       setIsSaved(userHasSaved);
       setSavedCount(updatedPost.savedBy.length);
       addNotification({
-        title: userHasSaved ? "Post Saved" : "Post Unsaved",
+        title: userHasSaved ? "Post Saved to profile" : "Post Unsaved",
       });
     } catch (error) {
       console.error("Save toggle error:", error);
