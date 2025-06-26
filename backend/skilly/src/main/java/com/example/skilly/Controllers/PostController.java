@@ -8,6 +8,7 @@ import java.util.Optional;
 
 import com.example.skilly.DTOs.CommentNotification;
 import com.example.skilly.DTOs.LikeNotification;
+import com.example.skilly.Models.PostType;
 import com.example.skilly.Services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -68,7 +69,7 @@ public class PostController {
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> createPost(
-            @RequestParam("postType") String postType,
+            @RequestParam("postType") PostType postType,
             @RequestParam("title") String title,
             @RequestParam("description") String description,
             @RequestParam(value = "images", required = false) MultipartFile[] images,
@@ -107,7 +108,7 @@ public class PostController {
             @PathVariable String id,
             @RequestParam(value = "title", required = false) String title,
             @RequestParam(value = "description", required = false) String description,
-            @RequestParam(value = "postType", required = false) String postType,
+            @RequestParam(value = "postType", required = false) PostType postType,
             @RequestParam(value = "images", required = false) MultipartFile[] images,
             @RequestParam(value = "video", required = false) MultipartFile video,
             @RequestHeader("Authorization") String token) {
@@ -190,6 +191,15 @@ public class PostController {
                     .body("Error deleting post: " + e.getMessage());
         }
     }
+
+    @PutMapping("/{id}/save/{userId}")
+    public ResponseEntity<?> toggleSavePost(@PathVariable String id, @PathVariable String userId) {
+        Optional<Post> updatedPost = postService.toggleSavePost(id, userId);
+        return updatedPost
+                .map(post -> ResponseEntity.ok().body(post))
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
 
     @PutMapping("/{id}/like/{userId}")
     public ResponseEntity<Post> likePost(@PathVariable String id, @PathVariable String userId) {

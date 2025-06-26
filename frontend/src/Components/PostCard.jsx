@@ -5,6 +5,8 @@ import CommentsModal from "./Modals/CommentModal";
 import { Link } from "react-router-dom";
 import { Award, Bookmark, MessageCircle, ThumbsUp, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import Tooltip from "@/components/custom/ToolTip";
+import { useNotifications } from "../hooks/useNotifications";
 
 const PostCard = ({
   post,
@@ -13,8 +15,6 @@ const PostCard = ({
   onPostDelete,
   isViewingProfile = true,
 }) => {
-  const [commentInput, setCommentInput] = useState("");
-  const [editingCommentId, setEditingCommentId] = useState(null);
   const [postOwner, setPostOwner] = useState(null);
   const modalRef = useRef();
   const navigate = useNavigate();
@@ -22,10 +22,13 @@ const PostCard = ({
   const [actionsDropdownOpen, setActionsDropdownOpen] = useState(false);
   const [commentDropdowns, setCommentDropdowns] = useState({});
   const [loggedInUser, setLoggedInUser] = useState(null);
-  const [editCommentContent, setEditCommentContent] = useState("");
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
+  const [savedCount, setSavedCount] = useState(0);
+  const { addNotification } = useNotifications();
+
   const [editData, setEditData] = useState({
     title: post.title,
     content: post.content,
@@ -97,6 +100,14 @@ const PostCard = ({
     fetchAllCommentOwners();
   }, [post.userID]);
 
+  useEffect(() => {
+    // Set isSaved and savedCount when post is loaded
+    if (post) {
+      setIsSaved(post.savedBy.includes(currentUser.id));
+      setSavedCount(post.savedBy.length);
+    }
+  }, [post, currentUser.id]);
+
   const fetchUserDetails = async (userId) => {
     if (!userId || commentOwners[userId]) return;
 
@@ -143,6 +154,38 @@ const PostCard = ({
 
     fetchAllNeededUsers();
   }, [post]);
+
+  const handleToggleSave = async () => {
+    try {
+      const res = await fetch(
+        `http://localhost:8080/api/posts/${post.id}/save/${currentUser.id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
+        }
+      );
+
+      if (!res.ok) throw new Error("Failed to toggle save");
+
+      const updatedPost = await res.json();
+
+      const userHasSaved = updatedPost.savedBy.includes(currentUser.id);
+      setIsSaved(userHasSaved);
+      setSavedCount(updatedPost.savedBy.length);
+      addNotification({
+        title: userHasSaved ? "Post Saved" : "Post Unsaved",
+      });
+    } catch (error) {
+      console.error("Save toggle error:", error);
+      addNotification({
+        title: "Error saving post ",
+        type: "error",
+      });
+    }
+  };
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -202,10 +245,6 @@ const PostCard = ({
     }
   };
 
-  const handleDislike = () => {
-    console.log("Dislike clicked");
-  };
-
   const handleDeletePost = async () => {
     try {
       const token = localStorage.getItem("authToken");
@@ -250,100 +289,6 @@ const PostCard = ({
       setIsEditing(false);
     } catch (err) {
       console.error("Error updating post:", err);
-    }
-  };
-
-  const handleShare = async () => {
-    try {
-      const token = localStorage.getItem("authToken");
-
-      const response = await axios.put(
-        `http://localhost:8080/api/posts/${post.id}/share`,
-        {},
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      alert("Post shared successfully!");
-
-      // Separate try for onSharePost
-      try {
-        if (onSharePost) {
-          onSharePost(response.data);
-        }
-      } catch (err) {
-        console.error("Error in onSharePost callback:", err);
-      }
-    } catch (err) {
-      console.error("Error sharing post:", err);
-      if (err.response && err.response.data) {
-        alert(err.response.data); // Show server error
-      } else {
-        alert("Failed to share post. Please try again.");
-      }
-    }
-  };
-
-  const handleAddComment = async () => {
-    try {
-      const token = localStorage.getItem("authToken");
-
-      if (!commentInput.trim()) return;
-
-      const response = await axios.post(
-        `http://localhost:8080/api/posts/${post.id}/comments`,
-        { content: commentInput },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      onPostUpdate(response.data);
-      setCommentInput("");
-    } catch (err) {
-      console.error("Error adding comment:", err);
-    }
-  };
-
-  const startEditingComment = (comment) => {
-    setEditingCommentId(comment.id);
-    setEditCommentContent(comment.content);
-  };
-
-  const cancelEditingComment = () => {
-    setEditingCommentId(null);
-    setEditCommentContent("");
-  };
-
-  const handleUpdateComment = async (commentId, commentContent) => {
-    try {
-      const token = localStorage.getItem("authToken");
-
-      const response = await axios.put(
-        `http://localhost:8080/api/posts/${post.id}/comments/${commentId}`,
-        { content: commentContent },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      onPostUpdate(response.data);
-
-      if (modalRef.current) {
-        modalRef.current.resetEditingState();
-      }
-    } catch (err) {
-      console.error("Error updating comment:", err);
-    }
-  };
-
-  const handleDeleteComment = async (commentId) => {
-    try {
-      const token = localStorage.getItem("authToken");
-
-      const response = await axios.delete(
-        `http://localhost:8080/api/posts/${post.id}/comments/${commentId}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      onPostUpdate(response.data);
-    } catch (err) {
-      console.error("Error deleting comment:", err);
     }
   };
   const isPostOwner = post.userId === loggedInUser?.id;
@@ -891,29 +836,6 @@ const PostCard = ({
             formatDate={formatDate}
             onPostUpdate={onPostUpdate}
           />
-          {/* <button
-            onClick={handleShare}
-            className={`flex items-center ${
-              post.sharedBy?.includes(loggedInUser?.id)
-                ? "text-indigo-600"
-                : "text-gray-300 hover:text-indigo-500"
-            } transition-colors`}
-          >
-            <svg
-              className="h-5 w-5 mr-1"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1.5}
-                d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
-              />
-            </svg>
-            <span>Share ({post.sharedBy?.length || 0})</span>
-          </button> */}
         </div>
         <div className="px-4 py-4  border-t border-gray-600">
           <div className="flex items-center justify-between text-sm">
@@ -969,55 +891,24 @@ const PostCard = ({
                 </span>
               </button>
 
-              <button
-                className={`flex items-center space-x-2 px-4 py-2 transition-all text-gray-800`}
-              >
-                <Bookmark className={`w-4 h-4 `} />
-                <span className="font-medium">24</span>
-              </button>
+              <Tooltip title="Save this item to your collection" position="top">
+                <button
+                  onClick={handleToggleSave}
+                  className={`flex items-center space-x-2 px-4 py-2 transition-all ${
+                    isSaved ? "text-blue-600" : "text-gray-800"
+                  }`}
+                >
+                  <Bookmark
+                    className={`w-4 h-4 ${
+                      isSaved ? "fill-blue-600" : "fill-none"
+                    }`}
+                  />
+                  <span className="font-medium">{savedCount}</span>
+                </button>
+              </Tooltip>
             </div>
           </div>
         </div>
-
-        {/* Comments section */}
-        {/* <div className="mt-4 pt-4">
-          <div className="flex items-start space-x-3 mb-4">
-            <div className="flex-shrink-0">
-              {loggedInUser?.profilePicUrl ? (
-                <img
-                  className="h-8 w-8 rounded-full"
-                  src={loggedInUser?.profilePicUrl}
-                  alt={loggedInUser?.username || "User"}
-                />
-              ) : (
-                <div
-                  className={`h-8 w-8 rounded-full flex items-center justify-center ${getColorClass(
-                    loggedInUser?.id
-                  )} font-medium`}
-                >
-                  {getInitials(loggedInUser?.username)}
-                </div>
-              )}
-            </div>
-            <div className="flex-1">
-              <div className="flex">
-                <input
-                  type="text"
-                  value={commentInput}
-                  onChange={(e) => setCommentInput(e.target.value)}
-                  placeholder="Write a comment..."
-                  className="flex-1 border text-white border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
-                />
-                <button
-                  onClick={handleAddComment}
-                  className="ml-2 px-3 py-2 bg-indigo-600 text-white  hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 text-sm"
-                >
-                  Post
-                </button>
-              </div>
-            </div>
-          </div>
-        </div> */}
       </div>
     </div>
   );

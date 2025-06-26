@@ -8,9 +8,19 @@ import CreatePostModal from "../Components/Modals/CreatePost";
 import EditIcon from "@/public/icons/EditIcon";
 import PostCard from "../Components/PostCard";
 import UserConnectionsModal from "../Components/Modals/UserConnections";
+import {
+  Zap as LightningBolt,
+  GraduationCap as AcademicCap,
+  MessageSquare as ChatBubble,
+  Users,
+  Calendar,
+  ThumbsUp,
+  PlusCircle,
+} from "lucide-react";
 import { Helmet } from "react-helmet";
-import { PlusIcon } from "lucide-react";
+import { Bookmark, PlusIcon } from "lucide-react";
 import CustomLoader from "../Components/CustomLoader";
+import Tooltip from "@/components/custom/ToolTip";
 const UserProfile = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -119,68 +129,6 @@ const UserProfile = () => {
   const getInitials = (name) => {
     if (!name) return "?";
     return name.charAt(0).toUpperCase();
-  };
-
-  const getColorClass = (userId) => {
-    const colors = [
-      "bg-blue-200 text-blue-600",
-      "bg-green-200 text-green-600",
-      "bg-purple-200 text-purple-600",
-      "bg-pink-200 text-pink-600",
-      "bg-yellow-200 text-yellow-600",
-      "bg-indigo-200 text-indigo-600",
-    ];
-
-    const index = userId
-      ? parseInt(userId.toString().charAt(0), 10) % colors.length
-      : 0;
-    return colors[index];
-  };
-
-  const fetchPosts = async () => {
-    try {
-      const token = localStorage.getItem("authToken");
-      const response = await axios.get(
-        `http://localhost:8080/api/posts/user/${user.id}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      // Filter out shared versions of your own posts
-      const filteredPosts = response.data.filter(
-        (post) => !(post.originalUserId && post.originalUserId === user.id)
-      );
-
-      setPosts(filteredPosts);
-    } catch (err) {
-      console.error("Error fetching posts:", err);
-    }
-  };
-
-  const handleDeletePost = async (postId) => {
-    try {
-      const token = localStorage.getItem("authToken");
-
-      await axios.delete(`http://localhost:8080/api/posts/${postId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      // Remove the deleted post from state
-      setPosts(posts.filter((post) => post.id !== postId));
-    } catch (err) {
-      console.error("Error deleting post:", err);
-    }
-  };
-  const handleEndorse = (skillName) => {
-    setUser((prev) => ({
-      ...prev,
-      skills: prev.skills.map((skill) =>
-        skill.name === skillName
-          ? { ...skill, endorsements: skill.endorsements + 1 }
-          : skill
-      ),
-    }));
   };
 
   const handlePostUpdate = (updatedPost) => {
@@ -359,26 +307,6 @@ const UserProfile = () => {
             </div>
           </div>
 
-          {/* Join Date */}
-          {/* <div className="max-w-5xl mx-auto px-6 py-4">
-          <div className="flex items-center text-sm text-gray-500">
-            <svg
-              className="h-4 w-4 mr-1"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-              />
-            </svg>
-            Joined {user.joinDate}
-          </div>
-        </div> */}
-
           {/* Connections Modal */}
           <UserConnectionsModal
             userId={user.id}
@@ -413,6 +341,7 @@ const UserProfile = () => {
                 { id: "posts", label: "Posts" },
                 { id: "skills", label: "Skills & Expertise" },
                 { id: "about", label: "About" },
+                { id: "activities", label: "Activities" },
               ].map((tab) => (
                 <button
                   key={tab.id}
@@ -633,6 +562,99 @@ const UserProfile = () => {
                     />
                   </svg>
                   <span>Joined {user.joinDate}</span>
+                </div>
+              </div>
+            </div>
+          )}
+          {activeTab === "activities" && (
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {/* Saved Posts */}
+                <Tooltip title="View your saved posts">
+                  <div className="bg-white border border-gray-200 p-4 rounded-lg hover:bg-gray-50 hover:shadow-md cursor-pointer transition-all duration-200 flex items-center gap-3">
+                    <Bookmark className="w-5 h-5 text-blue-500" />
+                    <span className="font-medium">Saved Posts</span>
+                  </div>
+                </Tooltip>
+
+                {/* Your Skills */}
+                <Tooltip title="Manage your listed skills">
+                  <div className="bg-white border border-gray-200 p-4 rounded-lg hover:bg-gray-50 hover:shadow-md cursor-pointer transition-all duration-200 flex items-center gap-3">
+                    <LightningBolt className="w-5 h-5 text-yellow-500" />
+                    <span className="font-medium">Your Skills</span>
+                  </div>
+                </Tooltip>
+
+                {/* Learning Path */}
+                <Tooltip title="View your learning progress">
+                  <div className="bg-white border border-gray-200 p-4 rounded-lg hover:bg-gray-50 hover:shadow-md cursor-pointer transition-all duration-200 flex items-center gap-3">
+                    <AcademicCap className="w-5 h-5 text-green-500" />
+                    <span className="font-medium">Learning Path</span>
+                  </div>
+                </Tooltip>
+
+                {/* Messages */}
+                <Tooltip title="View your messages">
+                  <div className="bg-white border border-gray-200 p-4 rounded-lg hover:bg-gray-50 hover:shadow-md cursor-pointer transition-all duration-200 flex items-center gap-3">
+                    <ChatBubble className="w-5 h-5 text-purple-500" />
+                    <span className="font-medium">Messages</span>
+                  </div>
+                </Tooltip>
+
+                {/* Connections */}
+                <Tooltip title="Manage your connections">
+                  <div className="bg-white border border-gray-200 p-4 rounded-lg hover:bg-gray-50 hover:shadow-md cursor-pointer transition-all duration-200 flex items-center gap-3">
+                    <Users className="w-5 h-5 text-red-500" />
+                    <span className="font-medium">Connections</span>
+                  </div>
+                </Tooltip>
+
+                {/* Upcoming Sessions */}
+                <Tooltip title="View scheduled sessions">
+                  <div className="bg-white border border-gray-200 p-4 rounded-lg hover:bg-gray-50 hover:shadow-md cursor-pointer transition-all duration-200 flex items-center gap-3">
+                    <Calendar className="w-5 h-5 text-indigo-500" />
+                    <span className="font-medium">Upcoming Sessions</span>
+                  </div>
+                </Tooltip>
+              </div>
+
+              <div className="bg-white p-6 rounded-lg border border-gray-200">
+                <h3 className="text-lg font-semibold mb-3">Recent Activity</h3>
+                <p className="text-gray-700 mb-4">
+                  This section showcases your recent activities, achievements,
+                  and contributions on the platform.
+                </p>
+                <div className="space-y-4">
+                  <div className="flex items-start gap-3">
+                    <div className="bg-blue-100 p-2 rounded-full">
+                      <ThumbsUp className="w-4 h-4 text-blue-600" />
+                    </div>
+                    <p className="text-sm">
+                      <span className="font-medium">You</span> liked a post
+                      about{" "}
+                      <span className="text-blue-600">GraphQL basics</span>
+                    </p>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="bg-green-100 p-2 rounded-full">
+                      <PlusCircle className="w-4 h-4 text-green-600" />
+                    </div>
+                    <p className="text-sm">
+                      <span className="font-medium">You</span> added a new
+                      skill:{" "}
+                      <span className="text-green-600">UI/UX Design</span>
+                    </p>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="bg-purple-100 p-2 rounded-full">
+                      <ChatBubble className="w-4 h-4 text-purple-600" />
+                    </div>
+                    <p className="text-sm">
+                      <span className="font-medium">Alex</span> commented on
+                      your{" "}
+                      <span className="text-purple-600">React tutorial</span>
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>

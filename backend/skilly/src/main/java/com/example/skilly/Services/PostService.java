@@ -7,6 +7,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
+import com.example.skilly.Models.PostType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -52,6 +53,19 @@ public class PostService {
             postRepository.deleteById(id);
         });
     }
+
+    public Optional<Post> toggleSavePost(String id, String userId) {
+        return postRepository.findById(id).map(post -> {
+            List<String> savedBy = post.getSavedBy();
+            if (savedBy.contains(userId)) {
+                savedBy.remove(userId);
+            } else {
+                savedBy.add(userId);
+            }
+            return postRepository.save(post);
+        });
+    }
+
 
     public Optional<Post> likePost(String id, String userId) {
         return postRepository.findById(id).map(post -> {
@@ -159,7 +173,7 @@ public class PostService {
     }
 
     public Post createPost(String userId, String username, String title, String content,
-            String postType, MultipartFile[] images, MultipartFile video) throws IOException {
+                           PostType postType, MultipartFile[] images, MultipartFile video) throws IOException {
         Post post = new Post();
         post.setUserId(userId);
         post.setUsername(username);

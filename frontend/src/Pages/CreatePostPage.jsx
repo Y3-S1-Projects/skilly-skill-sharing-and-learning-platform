@@ -10,10 +10,12 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import Header from "../Components/Header";
+import { useNotifications } from "../hooks/useNotifications";
 import { ScrollToTop } from "../util/dom-utils";
+import { useNavigate } from "react-router-dom";
 
 const CreatePostPage = () => {
-  const [postType, setPostType] = useState("skill");
+  const [postType, setPostType] = useState("text");
   const [mediaType, setMediaType] = useState("images");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -21,11 +23,10 @@ const CreatePostPage = () => {
   const [previewImages, setPreviewImages] = useState([]);
   const [video, setVideo] = useState(null);
   const [videoPreview, setVideoPreview] = useState(null);
-  const [progressTemplate, setProgressTemplate] = useState("course");
-  const [estimatedTime, setEstimatedTime] = useState("");
-  const [timeUnit, setTimeUnit] = useState("days");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const { addNotification } = useNotifications();
+  const navigate = useNavigate();
 
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
@@ -43,7 +44,6 @@ const CreatePostPage = () => {
     const newPreviewImages = files.map((file) => URL.createObjectURL(file));
     setPreviewImages([...previewImages, ...newPreviewImages]);
   };
-
   const handleVideoChange = (e) => {
     const file = e.target.files[0];
 
@@ -113,16 +113,6 @@ const CreatePostPage = () => {
       formData.append("title", title);
       formData.append("description", description);
 
-      // Add additional fields based on post type
-      if (postType === "progress") {
-        formData.append("progressTemplate", progressTemplate);
-      }
-
-      if (postType === "plan") {
-        formData.append("estimatedTime", estimatedTime);
-        formData.append("timeUnit", timeUnit);
-      }
-
       // Add images if any
       images.forEach((image) => {
         formData.append("images", image);
@@ -150,9 +140,12 @@ const CreatePostPage = () => {
       // Reset form on success
       resetForm();
 
-      // You can add navigation here or show a success message
-      alert("Post created successfully!");
-      console.log("Post created:", response.data);
+      addNotification({
+        title: "Post Created",
+        description: "Your post has been created successfully.",
+        type: "success",
+      });
+      navigate("/userprofile");
     } catch (err) {
       setError(
         "Failed to create post: " + (err.response?.data?.message || err.message)
@@ -173,19 +166,16 @@ const CreatePostPage = () => {
     }
     setVideo(null);
     setVideoPreview(null);
-    setEstimatedTime("");
-    setProgressTemplate("course");
-    setTimeUnit("days");
     setError("");
   };
 
   const getPostTypeIcon = () => {
     switch (postType) {
-      case "skill":
+      case "text":
         return <Lightbulb className="h-5 w-5" />;
-      case "progress":
+      case "image":
         return <FileText className="h-5 w-5" />;
-      case "plan":
+      case "video":
         return <Calendar className="h-5 w-5" />;
       default:
         return <Lightbulb className="h-5 w-5" />;
@@ -225,9 +215,9 @@ const CreatePostPage = () => {
                   onChange={(e) => setPostType(e.target.value)}
                   className="w-full p-2 bg-white border border-black text-black focus:outline-none focus:ring-1 focus:ring-black"
                 >
-                  <option value="skill">Skill Sharing</option>
-                  <option value="progress">Learning Progress</option>
-                  <option value="plan">Learning Plan</option>
+                  <option value="text">Text</option>
+                  <option value="image">IMAGES</option>
+                  <option value="video">VIDEOS</option>
                 </select>
               </div>
             </div>
@@ -387,57 +377,6 @@ const CreatePostPage = () => {
                     </div>
                   </div>
                 )}
-              </div>
-            )}
-
-            {/* Progress Template */}
-            {postType === "progress" && (
-              <div className="space-y-3">
-                <label className="text-lg font-semibold block">
-                  Progress Template
-                </label>
-                <div className="relative">
-                  <select
-                    value={progressTemplate}
-                    onChange={(e) => setProgressTemplate(e.target.value)}
-                    className="w-full p-2 bg-white border border-black text-black focus:outline-none focus:ring-1 focus:ring-black"
-                  >
-                    <option value="course">Completed Course</option>
-                    <option value="milestone">Reached Milestone</option>
-                    <option value="skill">New Skill Learned</option>
-                    <option value="challenge">Completed Challenge</option>
-                  </select>
-                </div>
-              </div>
-            )}
-
-            {/* Learning Plan Duration */}
-            {postType === "plan" && (
-              <div className="space-y-3">
-                <label className="text-lg font-semibold block">
-                  Estimated Completion Time
-                </label>
-                <div className="flex gap-3">
-                  <input
-                    type="number"
-                    min="1"
-                    value={estimatedTime}
-                    onChange={(e) => setEstimatedTime(e.target.value)}
-                    className="w-24 p-2 bg-white border border-black text-black placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-black"
-                    placeholder="1"
-                  />
-                  <div className="relative">
-                    <select
-                      value={timeUnit}
-                      onChange={(e) => setTimeUnit(e.target.value)}
-                      className="w-32 p-2 bg-white border border-black text-black focus:outline-none focus:ring-1 focus:ring-black"
-                    >
-                      <option value="days">Days</option>
-                      <option value="weeks">Weeks</option>
-                      <option value="months">Months</option>
-                    </select>
-                  </div>
-                </div>
               </div>
             )}
 
