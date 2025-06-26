@@ -27,6 +27,7 @@ import { Toaster } from "sonner";
 import LandingPage from "./Pages/landing";
 import CreatePostPage from "./Pages/CreatePostPage";
 import Settings from "./Components/Settings";
+import Explore from "./Pages/Explore";
 
 function App() {
   return (
@@ -45,6 +46,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route path="/explore" element={<Explore />} />
           <Route path="/login-success" element={<LoginSuccess />} />
           <Route
             path="/userprofile"

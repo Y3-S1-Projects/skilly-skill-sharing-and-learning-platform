@@ -22,8 +22,6 @@ const Header = ({ onLogout }) => {
       setActiveTab("explore");
     } else if (path.includes("/learn")) {
       setActiveTab("learn");
-    } else if (path.includes("/community")) {
-      setActiveTab("community");
     }
   }, [location.pathname]);
 
@@ -154,7 +152,6 @@ const Header = ({ onLogout }) => {
     { href: "/socialfeed", name: "Home", tabKey: "home" },
     { href: "/explore", name: "Explore", tabKey: "explore" },
     { href: "/learning-plans", name: "Learn", tabKey: "learn" },
-    { href: "/community", name: "Community", tabKey: "community" },
   ];
 
   return (
