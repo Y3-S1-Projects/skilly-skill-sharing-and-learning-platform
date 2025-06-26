@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { Helmet } from "react-helmet";
 import { comment } from "postcss";
+import Tooltip from "@/components/custom/ToolTip";
 
 const PostView = () => {
   const { id } = useParams();
@@ -388,12 +389,19 @@ const PostView = () => {
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center space-x-2 mb-1">
-                            <p className="font-medium text-gray-700">
-                              {commentOwners[comment.userId]?.username ||
-                                (comment.userId === user.id
-                                  ? user.name
-                                  : "User")}
-                            </p>
+                            <Tooltip title="View Profile">
+                              <p
+                                className="font-medium text-gray-700 hover:underline cursor-pointer"
+                                onClick={() =>
+                                  navigate(`/profile/${comment.userId}`)
+                                }
+                              >
+                                {commentOwners[comment.userId]?.username ||
+                                  (comment.userId === user.id
+                                    ? user.name
+                                    : "User")}
+                              </p>
+                            </Tooltip>
 
                             <span className="text-gray-400 text-xs">
                               {formatDate(comment.createdAt)}
