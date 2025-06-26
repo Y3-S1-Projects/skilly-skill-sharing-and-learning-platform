@@ -10,6 +10,7 @@ import com.example.skilly.DTOs.CommentNotification;
 import com.example.skilly.DTOs.LikeNotification;
 import com.example.skilly.Models.PostType;
 import com.example.skilly.Services.UserService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -31,6 +32,7 @@ import com.example.skilly.DTOs.CommentRequest;
 import com.example.skilly.Models.Post;
 import com.example.skilly.Services.PostService;
 import com.example.skilly.Utils.JwtUtil;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/api/posts")
@@ -66,6 +68,17 @@ public class PostController {
     public ResponseEntity<List<Post>> getPostsByUserId(@PathVariable String userId) {
         return ResponseEntity.ok(postService.findByUserId(userId));
     }
+
+    @GetMapping("/saved")
+    public List<Post> getSavedPostsByUser(@RequestHeader("Authorization")String token) {
+        String userId = jwtUtil.getUserIdFromToken(token.replace("Bearer",""));
+        if (userId == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid or missing token");
+        }
+        return postService.getSavedPostsByUser(userId);
+    }
+
+
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> createPost(

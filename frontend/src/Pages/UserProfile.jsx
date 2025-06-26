@@ -20,13 +20,18 @@ import {
 import { Helmet } from "react-helmet";
 import { Bookmark, PlusIcon } from "lucide-react";
 import CustomLoader from "../Components/CustomLoader";
+
 import Tooltip from "@/components/custom/ToolTip";
+import { formatDateTime } from "../util/date-and-time";
 const UserProfile = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showCreatePostModal, setShowCreatePostModal] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [activeConnectionTab, setActiveConnectionTab] = useState("followers");
+  const [savedPosts, setSavedposts] = useState([]);
+  const [loadingSavedPosts, setLoadingSavedPosts] = useState(false);
+  const [showSavedPosts, setShowSavedPosts] = useState(false);
   const [posts, setPosts] = useState([]);
   const [user, setUser] = useState({
     id: "",
@@ -125,6 +130,31 @@ const UserProfile = () => {
 
     fetchUserDetailsAndPosts();
   }, []);
+
+  const fetchSavedPosterByUser = async () => {
+    try {
+      const token = localStorage.getItem("authToken");
+      if (!token) {
+        setError("No token found");
+        return;
+      }
+      setLoadingSavedPosts(true);
+      const response = await axios.get(
+        "http://localhost:8080/api/posts/saved",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setSavedposts(response.data);
+    } catch (err) {
+      setError("Failed to fetch saved posts: " + err.message);
+      console.error("Error fetching saved posts:", err);
+    } finally {
+      setLoadingSavedPosts(false);
+    }
+  };
 
   const getInitials = (name) => {
     if (!name) return "?";
@@ -571,7 +601,17 @@ const UserProfile = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {/* Saved Posts */}
                 <Tooltip title="View your saved posts">
-                  <div className="bg-white border border-gray-200 p-4 rounded-lg hover:bg-gray-50 hover:shadow-md cursor-pointer transition-all duration-200 flex items-center gap-3">
+                  <div
+                    onClick={() => {
+                      fetchSavedPosterByUser();
+                      setShowSavedPosts((prev) => !prev);
+                    }}
+                    className={`${
+                      showSavedPosts
+                        ? "bg-black text-white hover:bg-gray-800"
+                        : "bg-white hover:bg-gray-400 border-white"
+                    }  p-4 rounded-lg hover:shadow-md cursor-pointer transition-all duration-200 flex items-center gap-3`}
+                  >
                     <Bookmark className="w-5 h-5 text-blue-500" />
                     <span className="font-medium">Saved Posts</span>
                   </div>
@@ -579,7 +619,10 @@ const UserProfile = () => {
 
                 {/* Your Skills */}
                 <Tooltip title="Manage your listed skills">
-                  <div className="bg-white border border-gray-200 p-4 rounded-lg hover:bg-gray-50 hover:shadow-md cursor-pointer transition-all duration-200 flex items-center gap-3">
+                  <div
+                    onClick={() => setShowSavedPosts(false)}
+                    className="bg-white border border-gray-200 p-4 rounded-lg hover:bg-gray-50 hover:shadow-md cursor-pointer transition-all duration-200 flex items-center gap-3"
+                  >
                     <LightningBolt className="w-5 h-5 text-yellow-500" />
                     <span className="font-medium">Your Skills</span>
                   </div>
@@ -587,7 +630,10 @@ const UserProfile = () => {
 
                 {/* Learning Path */}
                 <Tooltip title="View your learning progress">
-                  <div className="bg-white border border-gray-200 p-4 rounded-lg hover:bg-gray-50 hover:shadow-md cursor-pointer transition-all duration-200 flex items-center gap-3">
+                  <div
+                    onClick={() => setShowSavedPosts(false)}
+                    className="bg-white border border-gray-200 p-4 rounded-lg hover:bg-gray-50 hover:shadow-md cursor-pointer transition-all duration-200 flex items-center gap-3"
+                  >
                     <AcademicCap className="w-5 h-5 text-green-500" />
                     <span className="font-medium">Learning Path</span>
                   </div>
@@ -595,7 +641,10 @@ const UserProfile = () => {
 
                 {/* Messages */}
                 <Tooltip title="View your messages">
-                  <div className="bg-white border border-gray-200 p-4 rounded-lg hover:bg-gray-50 hover:shadow-md cursor-pointer transition-all duration-200 flex items-center gap-3">
+                  <div
+                    onClick={() => setShowSavedPosts(false)}
+                    className="bg-white border border-gray-200 p-4 rounded-lg hover:bg-gray-50 hover:shadow-md cursor-pointer transition-all duration-200 flex items-center gap-3"
+                  >
                     <ChatBubble className="w-5 h-5 text-purple-500" />
                     <span className="font-medium">Messages</span>
                   </div>
@@ -603,7 +652,10 @@ const UserProfile = () => {
 
                 {/* Connections */}
                 <Tooltip title="Manage your connections">
-                  <div className="bg-white border border-gray-200 p-4 rounded-lg hover:bg-gray-50 hover:shadow-md cursor-pointer transition-all duration-200 flex items-center gap-3">
+                  <div
+                    onClick={() => setShowSavedPosts(false)}
+                    className="bg-white border border-gray-200 p-4 rounded-lg hover:bg-gray-50 hover:shadow-md cursor-pointer transition-all duration-200 flex items-center gap-3"
+                  >
                     <Users className="w-5 h-5 text-red-500" />
                     <span className="font-medium">Connections</span>
                   </div>
@@ -611,7 +663,10 @@ const UserProfile = () => {
 
                 {/* Upcoming Sessions */}
                 <Tooltip title="View scheduled sessions">
-                  <div className="bg-white border border-gray-200 p-4 rounded-lg hover:bg-gray-50 hover:shadow-md cursor-pointer transition-all duration-200 flex items-center gap-3">
+                  <div
+                    onClick={() => setShowSavedPosts(false)}
+                    className="bg-white border border-gray-200 p-4 rounded-lg hover:bg-gray-50 hover:shadow-md cursor-pointer transition-all duration-200 flex items-center gap-3"
+                  >
                     <Calendar className="w-5 h-5 text-indigo-500" />
                     <span className="font-medium">Upcoming Sessions</span>
                   </div>
@@ -619,43 +674,129 @@ const UserProfile = () => {
               </div>
 
               <div className="bg-white p-6 rounded-lg border border-gray-200">
-                <h3 className="text-lg font-semibold mb-3">Recent Activity</h3>
-                <p className="text-gray-700 mb-4">
-                  This section showcases your recent activities, achievements,
-                  and contributions on the platform.
-                </p>
-                <div className="space-y-4">
-                  <div className="flex items-start gap-3">
-                    <div className="bg-blue-100 p-2 rounded-full">
-                      <ThumbsUp className="w-4 h-4 text-blue-600" />
+                {showSavedPosts ? (
+                  <>
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-lg font-semibold">Saved Posts</h3>
+                      <button
+                        onClick={() => setShowSavedPosts(false)}
+                        className="text-gray-500 hover:text-gray-700 text-sm"
+                      >
+                        ← Back to Recent Activity
+                      </button>
                     </div>
-                    <p className="text-sm">
-                      <span className="font-medium">You</span> liked a post
-                      about{" "}
-                      <span className="text-blue-600">GraphQL basics</span>
-                    </p>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <div className="bg-green-100 p-2 rounded-full">
-                      <PlusCircle className="w-4 h-4 text-green-600" />
+                    <div className="space-y-4">
+                      {savedPosts && savedPosts.length > 0 ? (
+                        savedPosts.map((post, index) => (
+                          <div
+                            key={post.id || index}
+                            className="border-b border-gray-100 pb-4 last:border-b-0"
+                          >
+                            <div className="flex items-start gap-3">
+                              <div className="bg-blue-100 p-2 rounded-full">
+                                <Bookmark className="w-4 h-4 text-blue-600" />
+                              </div>
+                              <div className="flex-1 max-h-64 overflow-hidden relative">
+                                <h4 className="font-medium text-gray-900 mb-1">
+                                  {post.title || "Untitled Post"}
+                                </h4>
+                                <p className="text-sm text-gray-600 mb-2 line-clamp-3">
+                                  {post.content || "No content available"}
+                                </p>
+                                {post.content && post.content.length > 150 && (
+                                  <button
+                                    onClick={() =>
+                                      navigate("/posts/" + post.id)
+                                    }
+                                    className="text-blue-500 text-xs mb-2"
+                                  >
+                                    See more
+                                  </button>
+                                )}
+
+                                <p className="text-sm text-gray-600 mb-2">
+                                  {post.mediaUrls
+                                    ? `${post.mediaUrls.length} media file${
+                                        post.mediaUrls.length !== 1 ? "s" : ""
+                                      }`
+                                    : ""}
+                                </p>
+                                {post.mediaUrls &&
+                                  post.mediaUrls.length > 3 && (
+                                    <button className="text-blue-500 text-xs mb-2">
+                                      Show all media
+                                    </button>
+                                  )}
+
+                                <div className="flex items-center gap-2 text-xs text-gray-500">
+                                  <span>By {post.username || "Unknown"}</span>
+                                  <span>•</span>
+                                  <span>
+                                    {post.savedAt ||
+                                      formatDateTime(post.createdAt, "date") ||
+                                      "Recently"}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="text-center py-8">
+                          <Bookmark className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                          <p className="text-gray-500">No saved posts yet</p>
+                          <p className="text-sm text-gray-400">
+                            Posts you save will appear here
+                          </p>
+                        </div>
+                      )}
                     </div>
-                    <p className="text-sm">
-                      <span className="font-medium">You</span> added a new
-                      skill:{" "}
-                      <span className="text-green-600">UI/UX Design</span>
+                  </>
+                ) : (
+                  <>
+                    <h3 className="text-lg font-semibold mb-3">
+                      Recent Activity
+                    </h3>
+                    <p className="text-gray-700 mb-4">
+                      This section showcases your recent activities,
+                      achievements, and contributions on the platform.
                     </p>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <div className="bg-purple-100 p-2 rounded-full">
-                      <ChatBubble className="w-4 h-4 text-purple-600" />
+                    <div className="space-y-4">
+                      <div className="flex items-start gap-3">
+                        <div className="bg-blue-100 p-2 rounded-full">
+                          <ThumbsUp className="w-4 h-4 text-blue-600" />
+                        </div>
+                        <p className="text-sm">
+                          <span className="font-medium">You</span> liked a post
+                          about{" "}
+                          <span className="text-blue-600">GraphQL basics</span>
+                        </p>
+                      </div>
+                      <div className="flex items-start gap-3">
+                        <div className="bg-green-100 p-2 rounded-full">
+                          <PlusCircle className="w-4 h-4 text-green-600" />
+                        </div>
+                        <p className="text-sm">
+                          <span className="font-medium">You</span> added a new
+                          skill:{" "}
+                          <span className="text-green-600">UI/UX Design</span>
+                        </p>
+                      </div>
+                      <div className="flex items-start gap-3">
+                        <div className="bg-purple-100 p-2 rounded-full">
+                          <ChatBubble className="w-4 h-4 text-purple-600" />
+                        </div>
+                        <p className="text-sm">
+                          <span className="font-medium">Alex</span> commented on
+                          your{" "}
+                          <span className="text-purple-600">
+                            React tutorial
+                          </span>
+                        </p>
+                      </div>
                     </div>
-                    <p className="text-sm">
-                      <span className="font-medium">Alex</span> commented on
-                      your{" "}
-                      <span className="text-purple-600">React tutorial</span>
-                    </p>
-                  </div>
-                </div>
+                  </>
+                )}
               </div>
             </div>
           )}

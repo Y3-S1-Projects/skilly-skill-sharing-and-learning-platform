@@ -66,6 +66,10 @@ public class PostService {
         });
     }
 
+    public List<Post> getSavedPostsByUser(String userId){
+        return postRepository.findBySavedByContaining(userId);
+    }
+
 
     public Optional<Post> likePost(String id, String userId) {
         return postRepository.findById(id).map(post -> {
