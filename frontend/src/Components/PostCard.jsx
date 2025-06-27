@@ -136,9 +136,6 @@ const PostCard = ({
       // Add post author
       if (post.userId) userIds.add(post.userId);
 
-      // Add original post author (for shared posts)
-      if (post.originalUserId) userIds.add(post.originalUserId);
-
       // Add comment authors
       if (post.comments) {
         post.comments.forEach((comment) => userIds.add(comment.userId));
@@ -294,30 +291,6 @@ const PostCard = ({
   const isPostOwner = post.userId === loggedInUser?.id;
   return (
     <div className="bg-gray-100  shadow-sm overflow-hidden border border-gray-800 hover:shadow-md transition-shadow">
-      {/* Shared post header */}
-      {post.originalPostId && (
-        <div className="px-4 pt-4 flex items-center text-sm text-gray-800">
-          <svg
-            className="h-4 w-4 mr-1"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
-            />
-          </svg>
-          <span>
-            {post.userId === currentUser.id
-              ? "Shared by you"
-              : `Shared by ${postOwner?.username || "user"}`}
-          </span>
-        </div>
-      )}
-
       <div className="p-4 sm:p-6">
         {/* Post Header */}
         <div className="flex items-center mb-4">
@@ -870,12 +843,6 @@ const PostCard = ({
                 {/* Added size for consistency */}
                 <span className="text-sm font-medium">
                   {post.likes?.length || 0}{" "}
-                  {/* <span className="hidden sm:inline">
-                    {post.likes.length === 1
-                      ? "found this helpful"
-                      : "found this helpful"}
-                  </span> */}
-                  {/* <span className="inline sm:hidden">helpful</span> */}
                 </span>
               </button>
             </div>

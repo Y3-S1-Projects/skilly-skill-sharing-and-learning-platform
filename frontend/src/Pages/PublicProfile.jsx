@@ -151,11 +151,6 @@ const PublicProfile = () => {
     return name.charAt(0).toUpperCase();
   };
 
-  const handlePostShared = (sharedPost) => {
-    // Add the shared post to the beginning of the posts array
-    setPosts([sharedPost, ...posts]);
-  };
-
   const handleFollowToggle = async () => {
     try {
       // If already processing a request, ignore additional clicks
@@ -456,7 +451,6 @@ const PublicProfile = () => {
                     currentUser={user}
                     onPostUpdate={handlePostUpdate}
                     onPostDelete={handlePostDelete}
-                    onSharePost={handlePostShared}
                   />
                 </div>
               ))}

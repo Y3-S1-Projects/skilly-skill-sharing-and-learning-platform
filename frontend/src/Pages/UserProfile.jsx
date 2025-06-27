@@ -167,11 +167,6 @@ const UserProfile = () => {
     );
   };
 
-  const handlePostShared = (sharedPost) => {
-    // Add the shared post to the beginning of the posts array
-    setPosts([sharedPost, ...posts]);
-  };
-
   const handlePostDelete = (postId) => {
     setPosts(posts.filter((post) => post.id !== postId));
   };
@@ -427,7 +422,6 @@ const UserProfile = () => {
                         currentUser={user}
                         onPostUpdate={handlePostUpdate}
                         onPostDelete={handlePostDelete}
-                        onSharePost={handlePostShared}
                       />
                     </div>
                   ))
