@@ -1,5 +1,4 @@
-import React from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import React, { useState } from "react";
 import NotificationItem from "./NotificationItem";
 
 const NotificationContainer = ({
@@ -7,6 +6,8 @@ const NotificationContainer = ({
   onRemove,
   position = "top-right",
 }) => {
+  const [isHovered, setIsHovered] = useState(false);
+
   const getContainerPosition = () => {
     const positions = {
       "top-right": "fixed top-4 right-4",
@@ -19,24 +20,35 @@ const NotificationContainer = ({
     return positions[position] || positions["top-right"];
   };
 
-  const getFlexDirection = () => {
-    return position.includes("bottom") ? "flex-col-reverse" : "flex-col";
+  const getExpandDirection = () => {
+    return position.includes("bottom") ? "up" : "down";
   };
 
   return (
     <div
-      className={`${getContainerPosition()} z-50 flex ${getFlexDirection()} space-y-2`}
+      className={`${getContainerPosition()} z-50`}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      style={{
+        height: isHovered
+          ? `${Math.max(notifications.length * 70, 80)}px`
+          : "80px",
+        width: "320px",
+      }}
     >
-      <AnimatePresence>
-        {notifications.map((notification) => (
+      <div className="relative">
+        {notifications.slice(0, 3).map((notification, index) => (
           <NotificationItem
             key={notification.id}
             notification={notification}
             onRemove={onRemove}
+            index={index}
+            isStackHovered={isHovered}
             position={position}
+            expandDirection={getExpandDirection()}
           />
         ))}
-      </AnimatePresence>
+      </div>
     </div>
   );
 };

@@ -290,7 +290,7 @@ const PostCard = ({
   };
   const isPostOwner = post.userId === loggedInUser?.id;
   return (
-    <div className="bg-gray-100  shadow-sm overflow-hidden border border-gray-800 hover:shadow-md transition-shadow">
+    <div className="border-2 border-black bg-white shadow-sm overflow-hidden hover:shadow-lg transition-all duration-300">
       <div className="p-4 sm:p-6">
         {/* Post Header */}
         <div className="flex items-center mb-4">
@@ -299,11 +299,11 @@ const PostCard = ({
             <img
               src={postOwner.profilePicUrl}
               alt={postOwner?.username || "User"}
-              className="h-10 w-10 rounded-full mr-3"
+              className="h-10 w-10 border border-black object-cover mr-3"
             />
           ) : (
             <div
-              className={`h-10 w-10 rounded-full flex items-center justify-center ${getColorClass(
+              className={`h-10 w-10 border border-black flex items-center justify-center ${getColorClass(
                 post.userId
               )} font-medium`}
             >
@@ -313,7 +313,7 @@ const PostCard = ({
 
           {/* Name and timestamp */}
           <div>
-            <h3 className="font-medium text-gray-800">
+            <h3 className="font-medium text-black">
               {isViewingProfile && post.userId === currentUser.id ? (
                 // Display as plain text if viewing own profile
                 postOwner?.username
@@ -348,14 +348,14 @@ const PostCard = ({
               {formatDate(post.createdAt)}
               {post.postType && (
                 <span
-                  className={`ml-2 inline-flex items-center px-2 py-0.5  text-xs font-medium ${
+                  className={`ml-2 inline-flex items-center px-2 py-0.5 text-xs font-medium border ${
                     post.postType === "skill"
-                      ? "bg-orange-100 text-orange-800"
+                      ? "border-black bg-white text-black"
                       : post.postType === "progress"
-                      ? "bg-blue-100 text-blue-800"
+                      ? "border-black bg-white text-black"
                       : post.postType === "plan"
-                      ? "bg-green-100 text-green-800"
-                      : "bg-indigo-100 text-indigo-800"
+                      ? "border-black bg-white text-black"
+                      : "border-black bg-white text-black"
                   }`}
                 >
                   {post.postType}
@@ -369,7 +369,7 @@ const PostCard = ({
             <div className="ml-auto relative">
               <button
                 onClick={() => setActionsDropdownOpen(!actionsDropdownOpen)}
-                className="text-gray-800 hover:text-gray-700"
+                className="text-black hover:text-gray-700"
               >
                 <svg
                   className="h-5 w-5"
@@ -389,14 +389,14 @@ const PostCard = ({
               {actionsDropdownOpen && (
                 <div
                   ref={dropdownRef}
-                  className="absolute right-0  w-48 bg-gray-300  shadow-lg z-10 py-1 border border-gray-700"
+                  className="absolute right-0 w-48 bg-white shadow-lg z-10 py-1 border-2 border-black"
                 >
                   <button
                     onClick={() => {
                       setIsEditing(true);
                       setActionsDropdownOpen(false);
                     }}
-                    className="flex items-center w-full px-4 py-2 text-sm text-gray-800 hover:bg-gray-400"
+                    className="flex items-center w-full px-4 py-2 text-sm text-black hover:bg-gray-100"
                   >
                     <svg
                       className="h-4 w-4 mr-2"
@@ -418,7 +418,7 @@ const PostCard = ({
                       setIsEditing(true);
                       setActionsDropdownOpen(false);
                     }}
-                    className="flex items-center w-full px-4 py-2 text-sm text-gray-800 hover:bg-gray-400"
+                    className="flex items-center w-full px-4 py-2 text-sm text-black hover:bg-gray-100"
                   >
                     <svg
                       className="h-4 w-4 mr-2"
@@ -440,7 +440,7 @@ const PostCard = ({
                       handleDeletePost();
                       setActionsDropdownOpen(false);
                     }}
-                    className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-200"
+                    className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50"
                   >
                     <svg
                       className="h-4 w-4 mr-2"
@@ -464,7 +464,7 @@ const PostCard = ({
         </div>
 
         {/* Post Content */}
-        <h2 className="text-xl font-semibold text-black mb-2">
+        <h2 className="text-xl font-bold text-black mb-2">
           {isEditing ? (
             <input
               type="text"
@@ -475,12 +475,12 @@ const PostCard = ({
                   title: e.target.value,
                 })
               }
-              className="w-full  border border-gray-600 rounded-lg px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 placeholder-gray-400"
+              className="w-full border-2 border-black bg-white px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-all duration-200 placeholder-gray-400"
               placeholder="Post title"
             />
           ) : (
             <span
-              className="hover:text-gray-800 transition-colors duration-200 cursor-pointer"
+              className="hover:underline transition-colors duration-200 cursor-pointer"
               onClick={() => navigate(`/posts/${post.id}`)}
             >
               {post.title}
@@ -488,7 +488,7 @@ const PostCard = ({
           )}
         </h2>
 
-        <p className="text-gray-600 mb-3">
+        <p className="text-gray-700 mb-3 leading-relaxed">
           {isEditing ? (
             <textarea
               value={editData.content}
@@ -498,14 +498,14 @@ const PostCard = ({
                   content: e.target.value,
                 })
               }
-              className="w-full  border border-gray-600 rounded-lg px-3 py-2 text-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 resize-none placeholder-gray-400"
+              className="w-full border-2 border-black bg-white px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-all duration-200 resize-none placeholder-gray-400"
               rows="3"
               placeholder="Share your thoughts..."
             />
           ) : (
             <>
               <span
-                className=" transition-colors duration-200 cursor-pointer"
+                className="transition-colors duration-200 cursor-pointer"
                 onClick={() => navigate(`/posts/${post.id}`)}
               >
                 {post.content}
@@ -564,7 +564,7 @@ const PostCard = ({
                     <img
                       src={url}
                       alt={`Post media ${index}`}
-                      className="object-cover w-full h-auto"
+                      className="object-cover w-full h-auto border border-black"
                     />
                     {isEditing && (
                       <button
@@ -576,7 +576,7 @@ const PostCard = ({
                             mediaUrls: updatedMediaUrls,
                           });
                         }}
-                        className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                        className="absolute top-2 right-2 bg-red-500 text-white p-1 hover:bg-red-600"
                       >
                         <svg
                           className="h-4 w-4"
@@ -600,10 +600,10 @@ const PostCard = ({
 
             {/* Edit mode media upload section */}
             {isEditing && (
-              <div className="mt-3 border-2 border-dashed border-gray-300 rounded-lg">
+              <div className="mt-3 border-2 border-dashed border-black bg-white">
                 <div className="flex items-center justify-center p-4">
                   <div className="grid grid-cols-2 gap-4 w-full max-w-md">
-                    <label className="flex flex-col items-center justify-center cursor-pointer bg-gray-50 rounded-lg p-4 hover:bg-gray-100 transition-colors">
+                    <label className="flex flex-col items-center justify-center cursor-pointer bg-gray-50 p-4 hover:bg-gray-100 transition-colors border border-black">
                       <svg
                         className="h-8 w-8 text-gray-400 mb-2"
                         fill="none"
@@ -639,7 +639,7 @@ const PostCard = ({
                       />
                     </label>
 
-                    <label className="flex flex-col items-center justify-center cursor-pointer bg-gray-50  p-4 hover:bg-gray-100 transition-colors">
+                    <label className="flex flex-col items-center justify-center cursor-pointer bg-gray-50 p-4 hover:bg-gray-100 transition-colors border border-black">
                       <svg
                         className="h-8 w-8 text-gray-400 mb-2"
                         fill="none"
@@ -689,7 +689,7 @@ const PostCard = ({
                             <img
                               src={URL.createObjectURL(file)}
                               alt={`New upload ${index}`}
-                              className="h-16 w-16 object-cover rounded"
+                              className="h-16 w-16 object-cover border border-black"
                             />
                             <button
                               onClick={() => {
@@ -700,7 +700,7 @@ const PostCard = ({
                                   newImages: newImages,
                                 });
                               }}
-                              className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5 hover:bg-red-600"
+                              className="absolute -top-1 -right-1 bg-red-500 text-white p-0.5 hover:bg-red-600"
                             >
                               <svg
                                 className="h-3 w-3"
@@ -729,7 +729,7 @@ const PostCard = ({
                       </p>
                       <div className="flex items-center mt-2">
                         <svg
-                          className="h-6 w-6 text-indigo-500 mr-2"
+                          className="h-6 w-6 text-black mr-2"
                           fill="none"
                           viewBox="0 0 24 24"
                           stroke="currentColor"
@@ -781,13 +781,13 @@ const PostCard = ({
           <div className="mt-4 flex justify-end space-x-2">
             <button
               onClick={handleUpdatePost}
-              className="px-4 py-2 bg-green-600 text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 text-sm"
+              className="px-4 py-2 bg-black text-white hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 text-sm transition-colors"
             >
               Save Changes
             </button>
             <button
               onClick={() => setIsEditing(false)}
-              className="px-4 py-2 bg-gray-200 text-gray-700  hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 text-sm"
+              className="px-4 py-2 bg-white text-black border border-black hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 text-sm transition-colors"
             >
               Cancel
             </button>
@@ -810,7 +810,7 @@ const PostCard = ({
             onPostUpdate={onPostUpdate}
           />
         </div>
-        <div className="px-4 py-4  border-t border-gray-600">
+        <div className="px-4 py-4 border-t border-black">
           <div className="flex items-center justify-between text-sm">
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-1 text-gray-700">
@@ -825,24 +825,25 @@ const PostCard = ({
           </div>
         </div>
 
-        <div className="px-2 py-4 border-gray-600 border-t">
+        <div className="px-2 py-4 border-black border-t">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-1">
               <button
-                className={`flex items-center space-x-2 px-4 py-2  transition-all cursor-pointer ${
+                className={`flex items-center space-x-2 px-4 py-2 transition-all cursor-pointer ${
                   post.likes.includes(loggedInUser?.id)
-                    ? ""
-                    : "text-gray-800 hover:text-black"
+                    ? "text-black"
+                    : "text-gray-600 hover:text-black"
                 } transition-colors`}
                 onClick={handleLike}
               >
                 <ThumbsUp
                   className="w-5 h-5"
-                  fill={post.likes.includes(loggedInUser?.id) ? "gray" : "none"}
-                />{" "}
-                {/* Added size for consistency */}
+                  fill={
+                    post.likes.includes(loggedInUser?.id) ? "black" : "none"
+                  }
+                />
                 <span className="text-sm font-medium">
-                  {post.likes?.length || 0}{" "}
+                  {post.likes?.length || 0}
                 </span>
               </button>
             </div>
@@ -850,9 +851,9 @@ const PostCard = ({
             <div className="flex items-center space-x-1">
               <button
                 onClick={openModal}
-                className="flex items-center space-x-2 px-4 py-2  text-gray-800 transition-colors cursor-pointer"
+                className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-black transition-colors cursor-pointer"
               >
-                <MessageCircle className={`w-4 h-4 `} />
+                <MessageCircle className="w-4 h-4" />
                 <span className="font-medium">
                   {post.comments?.length || 0}
                 </span>
@@ -862,12 +863,12 @@ const PostCard = ({
                 <button
                   onClick={handleToggleSave}
                   className={`flex items-center space-x-2 px-4 py-2 transition-all ${
-                    isSaved ? "text-blue-600" : "text-gray-800"
+                    isSaved ? "text-black" : "text-gray-600 hover:text-black"
                   }`}
                 >
                   <Bookmark
                     className={`w-4 h-4 ${
-                      isSaved ? "fill-blue-600" : "fill-none"
+                      isSaved ? "fill-black" : "fill-none"
                     }`}
                   />
                   <span className="font-medium">{savedCount}</span>
