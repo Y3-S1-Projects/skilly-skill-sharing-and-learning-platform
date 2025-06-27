@@ -8,7 +8,7 @@ import NotificationProvider from "./Components/CustomNotification/NotificationPr
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <HeroUIProvider>
-      <NotificationProvider position="bottom-right">
+      <NotificationProvider position="top-right">
         <App />
       </NotificationProvider>
     </HeroUIProvider>

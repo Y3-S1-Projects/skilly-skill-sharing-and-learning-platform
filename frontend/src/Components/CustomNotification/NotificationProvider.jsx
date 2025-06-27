@@ -15,28 +15,9 @@ const NotificationProvider = ({ children, position = "top-right" }) => {
     };
 
     setNotifications((prev) => {
-      // Check if similar notification exists (same title and type)
-      const existingIndex = prev.findIndex(
-        (n) => n.title === notification.title && n.type === notification.type
-      );
-
-      if (existingIndex !== -1) {
-        // Stack similar notifications (max 3)
-        const existing = prev[existingIndex];
-        const updatedNotification = {
-          ...existing,
-          count: Math.min((existing.count || 1) + 1, 3),
-          timestamp: Date.now(),
-          id: existing.id, // Keep original ID to maintain dismiss timer
-        };
-
-        const updated = [...prev];
-        updated[existingIndex] = updatedNotification;
-        return updated;
-      } else {
-        // Add new notification
-        return [newNotification, ...prev].slice(0, 5); // Keep max 5 notifications
-      }
+      // Add new notification at the beginning and keep max 3 (FIFO)
+      const updated = [newNotification, ...prev];
+      return updated.slice(0, 3);
     });
   };
 

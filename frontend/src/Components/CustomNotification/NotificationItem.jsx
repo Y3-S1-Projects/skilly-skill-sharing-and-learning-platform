@@ -1,27 +1,21 @@
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import { X, CheckCircle, XCircle, Info } from "lucide-react";
+import { X, CheckCircle, XCircle, Info, AlertTriangle } from "lucide-react";
 
 const NotificationItem = ({
   notification,
   onRemove,
+  index,
+  isStackHovered,
   position = "top-right",
+  expandDirection = "down",
 }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [dismissTimer, setDismissTimer] = useState(null);
-  const {
-    title,
-    description,
-    type = "message",
-    count = 1,
-    action,
-  } = notification;
-
-  const isLarge = Boolean(description);
+  const { title, description, type = "info", action } = notification;
 
   // Auto-dismiss logic with hover pause
   useEffect(() => {
-    if (!isHovered) {
+    if (!isHovered && !isStackHovered) {
       const timer = setTimeout(() => {
         onRemove(notification.id);
       }, 4000);
@@ -33,84 +27,92 @@ const NotificationItem = ({
         setDismissTimer(null);
       }
     }
-  }, [isHovered, notification.id, onRemove]);
+  }, [isHovered, isStackHovered, notification.id, onRemove]);
 
   const getIcon = () => {
+    const iconProps = "w-4 h-4";
     switch (type) {
       case "success":
-        return <CheckCircle className="w-5 h-5 text-black" />;
+        return <CheckCircle className={`${iconProps} text-emerald-500`} />;
       case "error":
-        return <XCircle className="w-5 h-5 text-black" />;
+        return <XCircle className={`${iconProps} text-red-500`} />;
+      case "warning":
+        return <AlertTriangle className={`${iconProps} text-amber-500`} />;
       default:
-        return <Info className="w-5 h-5 text-black" />;
+        return <Info className={`${iconProps} text-blue-500`} />;
     }
   };
 
-  const getBackgroundColor = () => {
+  const getAccentColor = () => {
     switch (type) {
       case "success":
-        return "bg-green-400";
+        return "border-l-emerald-500";
       case "error":
-        return "bg-red-400";
+        return "border-l-red-500";
+      case "warning":
+        return "border-l-amber-500";
       default:
-        return "bg-white";
+        return "border-l-blue-500";
     }
   };
 
-  const getPositionAnimations = () => {
-    const animations = {
-      "top-right": { x: [300, 0], exit: { x: 300 } },
-      "top-left": { x: [-300, 0], exit: { x: -300 } },
-      "bottom-right": { x: [300, 0], exit: { x: 300 } },
-      "bottom-left": { x: [-300, 0], exit: { x: -300 } },
-      "top-center": { y: [-100, 0], exit: { y: -100 } },
-      "bottom-center": { y: [100, 0], exit: { y: 100 } },
-    };
-    return animations[position] || animations["top-right"];
+  const getStackStyles = () => {
+    const stackOffset = index * 4;
+    const expandOffset = expandDirection === "up" ? -(index * 70) : index * 70;
+
+    if (isStackHovered) {
+      return {
+        transform: `translateY(${expandOffset}px) scale(1)`,
+        opacity: 1,
+        zIndex: isHovered ? 100 : 50 - index,
+      };
+    } else {
+      return {
+        transform: `translateY(${stackOffset}px) scale(${1 - index * 0.05})`,
+        opacity: index === 0 ? 1 : 0.7 - index * 0.1,
+        zIndex: 50 - index,
+      };
+    }
   };
 
-  const animations = getPositionAnimations();
+  const getPositionStyles = () => {
+    if (position.includes("left")) {
+      return "left-0";
+    }
+    return "right-0";
+  };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.95, ...animations }}
-      animate={{ opacity: 1, x: 0, y: 0, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.95, ...animations.exit }}
-      transition={{
-        type: "spring",
-        stiffness: 300,
-        damping: 30,
-      }}
+    <div
+      className={`absolute top-0 ${getPositionStyles()} transition-all duration-300 ease-out`}
+      style={getStackStyles()}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
       <div
         className={`
-          ${getBackgroundColor()} text-black p-4 rounded-none shadow-lg border border-black
-          ${isLarge ? "min-w-80 max-w-96" : "min-w-64 max-w-80"}
+          bg-white border-l-4 ${getAccentColor()} 
+          rounded-lg shadow-lg border border-gray-100
+          p-4 w-80 backdrop-blur-sm
+          hover:shadow-xl transition-shadow duration-200
         `}
       >
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-start gap-3 flex-1">
             {getIcon()}
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
-                <h4 className="font-semibold text-sm leading-tight">{title}</h4>
-                {count > 1 && (
-                  <span className="bg-white text-gray-800 text-s px-2 py-0.5 rounded-full font-medium">
-                    {count}
-                  </span>
-                )}
-              </div>
+              <h4 className="font-medium text-sm leading-5 text-gray-900">
+                {title}
+              </h4>
               {description && (
-                <p className="text-xs text-black mt-1 leading-relaxed">
+                <p className="text-sm text-gray-600 mt-1 leading-5">
                   {description}
                 </p>
               )}
               {action && (
                 <button
                   onClick={() => action.onClick()}
-                  className="mt-2 text-xs  text-black border-2 border-black px-3 py-1  hover:backdrop-brightness-150 cursor-pointer transition-colors font-medium"
+                  className="mt-3 text-xs font-medium text-blue-600 hover:text-blue-700 transition-colors"
                 >
                   {action.label}
                 </button>
@@ -120,13 +122,13 @@ const NotificationItem = ({
 
           <button
             onClick={() => onRemove(notification.id)}
-            className="text-black hover:text-white transition-colors p-1 -m-1"
+            className="text-gray-400 hover:text-gray-600 transition-colors p-0.5 -m-0.5 rounded"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 };
 
