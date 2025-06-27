@@ -70,7 +70,6 @@ const PostView = () => {
           ...postResponse.data,
           likes: postResponse.data.likes || [],
           comments: postResponse.data.comments || [],
-          sharedBy: postResponse.data.sharedBy || [],
         };
         setPost(postData);
 

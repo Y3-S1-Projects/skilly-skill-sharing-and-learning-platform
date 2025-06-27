@@ -66,10 +66,9 @@ public class PostService {
         });
     }
 
-    public List<Post> getSavedPostsByUser(String userId){
+    public List<Post> getSavedPostsByUser(String userId) {
         return postRepository.findBySavedByContaining(userId);
     }
-
 
     public Optional<Post> likePost(String id, String userId) {
         return postRepository.findById(id).map(post -> {
@@ -85,44 +84,6 @@ public class PostService {
         return postRepository.findById(id).map(post -> {
             post.getLikes().remove(userId);
             return postRepository.save(post);
-        });
-    }
-
-    public Optional<Post> sharePost(String id, String userId) {
-        return postRepository.findById(id).map(originalPost -> {
-            // Prevent sharing own posts
-            if (originalPost.getUserId().equals(userId)) {
-                throw new IllegalArgumentException("You cannot share your own post");
-            }
-
-            // Check if the user has already shared this post
-            if (originalPost.getSharedBy().contains(userId)) {
-                throw new IllegalArgumentException("You have already shared this post");
-            }
-
-            // Create a new post that's a share of the original
-            Post sharedPost = new Post();
-            sharedPost.setUserId(userId);
-            sharedPost.setOriginalPostId(originalPost.getId());
-            sharedPost.setOriginalUserId(originalPost.getUserId());
-            sharedPost.setOriginalUsername(originalPost.getUsername());
-            sharedPost.setTitle(originalPost.getTitle());
-            sharedPost.setContent(originalPost.getContent());
-            sharedPost.setMediaUrls(originalPost.getMediaUrls());
-            sharedPost.setPostType(originalPost.getPostType());
-            sharedPost.setCreatedAt(new Date());
-            sharedPost.setLikes(new ArrayList<>());
-            sharedPost.setSharedBy(new ArrayList<>());
-            sharedPost.setComments(new ArrayList<>());
-
-            // Save the shared post
-            Post savedSharedPost = postRepository.save(sharedPost);
-
-            // Update the original post's sharedBy list
-            originalPost.getSharedBy().add(userId);
-            postRepository.save(originalPost);
-
-            return savedSharedPost;
         });
     }
 
@@ -177,7 +138,7 @@ public class PostService {
     }
 
     public Post createPost(String userId, String username, String title, String content,
-                           PostType postType, MultipartFile[] images, MultipartFile video) throws IOException {
+            PostType postType, MultipartFile[] images, MultipartFile video) throws IOException {
         Post post = new Post();
         post.setUserId(userId);
         post.setUsername(username);
@@ -186,7 +147,6 @@ public class PostService {
         post.setPostType(postType);
         post.setCreatedAt(new Date());
         post.setLikes(new ArrayList<>());
-        post.setSharedBy(new ArrayList<>());
         post.setComments(new ArrayList<>());
 
         // Handle image uploads

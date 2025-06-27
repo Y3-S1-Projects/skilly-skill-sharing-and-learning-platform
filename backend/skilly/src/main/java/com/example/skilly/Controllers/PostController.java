@@ -51,7 +51,6 @@ public class PostController {
     @Autowired
     private UserService userService;
 
-
     @GetMapping
     public ResponseEntity<List<Post>> getAllPosts() {
         return ResponseEntity.ok(postService.findAll());
@@ -70,15 +69,13 @@ public class PostController {
     }
 
     @GetMapping("/saved")
-    public List<Post> getSavedPostsByUser(@RequestHeader("Authorization")String token) {
-        String userId = jwtUtil.getUserIdFromToken(token.replace("Bearer",""));
+    public List<Post> getSavedPostsByUser(@RequestHeader("Authorization") String token) {
+        String userId = jwtUtil.getUserIdFromToken(token.replace("Bearer", ""));
         if (userId == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid or missing token");
         }
         return postService.getSavedPostsByUser(userId);
     }
-
-
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> createPost(
@@ -113,8 +110,6 @@ public class PostController {
                     .body("Error creating post: " + e.getMessage());
         }
     }
-
-
 
     @PutMapping(path = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> updatePost(
@@ -213,7 +208,6 @@ public class PostController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-
     @PutMapping("/{id}/like/{userId}")
     public ResponseEntity<Post> likePost(@PathVariable String id, @PathVariable String userId) {
         return postService.likePost(id, userId)
@@ -264,24 +258,7 @@ public class PostController {
                 })
                 .orElse(ResponseEntity.notFound().build());
     }
-    @PutMapping("/{id}/share")
-    public ResponseEntity<?> sharePost(
-            @PathVariable String id,
-            @RequestHeader("Authorization") String token) {
 
-        String userId = jwtUtil.getUserIdFromToken(token.replace("Bearer ", ""));
-
-        try {
-            return postService.sharePost(id, userId)
-                    .map(ResponseEntity::ok)
-                    .orElse(ResponseEntity.notFound().build());
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error sharing post");
-        }
-    }
     // Comment endpoints
     @PostMapping("/{id}/comments")
     public ResponseEntity<Post> addComment(
@@ -296,7 +273,8 @@ public class PostController {
                     // Only send notification if the post owner is not the same person who commented
                     if (!post.getUserId().equals(userId)) {
                         try {
-                            System.out.println("Sending COMMENT notification from " + userId + " to " + post.getUserId());
+                            System.out
+                                    .println("Sending COMMENT notification from " + userId + " to " + post.getUserId());
 
                             CommentNotification notification = new CommentNotification();
                             notification.setPostId(id);

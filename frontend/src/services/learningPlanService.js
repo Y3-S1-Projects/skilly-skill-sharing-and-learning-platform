@@ -7,8 +7,8 @@ const getAuthHeader = () => {
   const token = localStorage.getItem("authToken");
   return {
     headers: {
-      Authorization: `Bearer ${token}`
-    }
+      Authorization: `Bearer ${token}`,
+    },
   };
 };
 
@@ -26,7 +26,10 @@ export const getAllLearningPlans = async () => {
 // Get learning plans by user ID
 export const getLearningPlansByUserId = async (userId) => {
   try {
-    const response = await axios.get(`${API_URL}/user/${userId}`, getAuthHeader());
+    const response = await axios.get(
+      `${API_URL}/user/${userId}`,
+      getAuthHeader()
+    );
     return response.data;
   } catch (error) {
     console.error(`Error fetching learning plans for user ${userId}:`, error);
@@ -48,10 +51,16 @@ export const getPublicLearningPlans = async () => {
 // Get shared learning plans
 export const getSharedLearningPlans = async (userId) => {
   try {
-    const response = await axios.get(`${API_URL}/shared/${userId}`, getAuthHeader());
+    const response = await axios.get(
+      `${API_URL}/shared/${userId}`,
+      getAuthHeader()
+    );
     return response.data;
   } catch (error) {
-    console.error(`Error fetching shared learning plans for user ${userId}:`, error);
+    console.error(
+      `Error fetching shared learning plans for user ${userId}:`,
+      error
+    );
     throw error;
   }
 };
@@ -81,7 +90,11 @@ export const createLearningPlan = async (learningPlan) => {
 // Update a learning plan
 export const updateLearningPlan = async (id, learningPlan) => {
   try {
-    const response = await axios.put(`${API_URL}/${id}`, learningPlan, getAuthHeader());
+    const response = await axios.put(
+      `${API_URL}/${id}`,
+      learningPlan,
+      getAuthHeader()
+    );
     return response.data;
   } catch (error) {
     console.error(`Error updating learning plan ${id}:`, error);
@@ -103,7 +116,11 @@ export const deleteLearningPlan = async (id) => {
 // Share a learning plan with other users
 export const shareLearningPlan = async (id, userIds) => {
   try {
-    const response = await axios.post(`${API_URL}/${id}/share`, userIds, getAuthHeader());
+    const response = await axios.post(
+      `${API_URL}/${id}/share`,
+      userIds,
+      getAuthHeader()
+    );
     return response.data;
   } catch (error) {
     console.error(`Error sharing learning plan ${id}:`, error);
