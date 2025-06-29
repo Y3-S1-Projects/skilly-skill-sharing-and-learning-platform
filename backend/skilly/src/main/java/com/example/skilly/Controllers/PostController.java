@@ -77,6 +77,22 @@ public class PostController {
         return postService.getSavedPostsByUser(userId);
     }
 
+    @GetMapping("/trending")
+    public List<Post> getTrendingPosts() {
+        return postService.getTrendingPosts();
+    }
+
+    @GetMapping("/recent")
+    public List<Post> getRecentPosts() {
+        return postService.getRecentPosts();
+    }
+
+    @GetMapping("/popular")
+    public List<Post> getPopularPosts() {
+        return postService.getPopularPosts();
+    }
+
+
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> createPost(
             @RequestParam("postType") PostType postType,
