@@ -15,6 +15,8 @@ import {
 import axios from "axios";
 import { getUserId } from "../util/auth";
 import Header from "../Components/Header";
+import { useNavigate } from "react-router-dom";
+import PostCard from "../Components/PostCard";
 
 const Explore = () => {
   const [selectedFilter, setSelectedFilter] = useState("trending");
@@ -23,6 +25,7 @@ const Explore = () => {
   const [user, setUser] = useState(null);
   const [loggedInUserId, setLoggedInUserId] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUserId = async () => {
@@ -45,7 +48,7 @@ const Explore = () => {
 
   // Helper function to estimate read time
   const estimateReadTime = (content) => {
-    const wordsPerMinute = 200;
+    const wordsPerMinute = 150;
     const wordCount = content.split(" ").length;
     const readTime = Math.ceil(wordCount / wordsPerMinute);
     return `${readTime} min read`;
@@ -79,7 +82,7 @@ const Explore = () => {
           // Fetch posts data
           const fetchPosts = async () => {
             const postsResponse = await axios.get(
-              `http://localhost:8080/api/posts`
+              `http://localhost:8080/api/posts/${selectedFilter}`
             );
             const postsData = postsResponse.data;
 
@@ -125,14 +128,12 @@ const Explore = () => {
 
       fetchData();
     }
-  }, [loggedInUserId]);
+  }, [loggedInUserId, selectedFilter]);
 
   const menuItems = [
     { id: "trending", label: "Trending", icon: TrendingUp },
     { id: "recent", label: "Recent", icon: BookOpen },
     { id: "popular", label: "Popular", icon: Heart },
-    { id: "people", label: "Discover People", icon: Users },
-    { id: "topics", label: "Topics", icon: Hash },
   ];
 
   // Extract unique tags from posts for popular tags
@@ -160,7 +161,15 @@ const Explore = () => {
         post.content.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
-  console.log(posts);
+  const handlePostUpdate = (updatedPost) => {
+    setPosts(
+      posts.map((post) => (post.id === updatedPost.id ? updatedPost : post))
+    );
+  };
+
+  const handlePostDelete = (postId) => {
+    setPosts(posts.filter((post) => post.id !== postId));
+  };
 
   return (
     <>
@@ -250,7 +259,7 @@ const Explore = () => {
                     <span className="text-lg font-semibold text-black">
                       {selectedFilter.charAt(0).toUpperCase() +
                         selectedFilter.slice(1)}{" "}
-                      Posts
+                      {"(Last 30 days)"}
                     </span>
                   </div>
                   <div className="text-sm text-gray-600">
@@ -276,119 +285,16 @@ const Explore = () => {
                     {/* Posts Grid */}
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                       {filteredPosts.map((post) => (
-                        <div
-                          key={post.id}
-                          className="border-2 border-black bg-white p-6 hover:shadow-lg transition-all duration-300 cursor-pointer group"
-                        >
-                          {/* Post Header */}
-                          <div className="mb-4">
-                            <h3 className="text-xl font-bold text-black mb-2 group-hover:underline">
-                              {post.title || "Untitled Post"}
-                            </h3>
-                            <p className="text-gray-700 text-sm leading-relaxed line-clamp-3">
-                              {post.content || "No content available"}
-                            </p>
-                          </div>
-
-                          {/* Tags */}
-                          {post.tags && post.tags.length > 0 && (
-                            <div className="mb-4">
-                              <div className="flex flex-wrap gap-2">
-                                {post.tags.slice(0, 3).map((tag, index) => (
-                                  <span
-                                    key={index}
-                                    className="px-2 py-1 text-xs border border-black bg-white text-black"
-                                  >
-                                    #{tag}
-                                  </span>
-                                ))}
-                                {post.tags.length > 3 && (
-                                  <span className="px-2 py-1 text-xs text-gray-500">
-                                    +{post.tags.length - 3} more
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Author Info */}
-                          <div className="mb-4 flex items-center justify-between">
-                            <div className="flex items-center space-x-3">
-                              {post.userDetails?.profilePicUrl && (
-                                <img
-                                  src={post.userDetails.profilePicUrl}
-                                  alt={post.userDetails.username}
-                                  className="w-8 h-8 border border-black object-cover"
-                                />
-                              )}
-                              <div>
-                                <p className="font-semibold text-black">
-                                  {post.userDetails?.username || "Unknown User"}
-                                </p>
-                                <p className="text-sm text-gray-600">
-                                  @
-                                  {post.userDetails?.username?.toLowerCase() ||
-                                    "unknown"}
-                                </p>
-                              </div>
-                            </div>
-                            <div className="text-right">
-                              <p className="text-sm text-gray-600">
-                                {post.createdAt
-                                  ? formatTimeAgo(post.createdAt)
-                                  : "Unknown time"}
-                              </p>
-                              <p className="text-xs text-gray-500">
-                                {post.content
-                                  ? estimateReadTime(post.content)
-                                  : "1 min read"}
-                              </p>
-                            </div>
-                          </div>
-
-                          {/* Post Stats */}
-                          <div className="flex items-center justify-between pt-4 border-t border-gray-200">
-                            <div className="flex items-center space-x-4">
-                              <div
-                                onClick={() => handleLike(post.id)}
-                                className="flex items-center space-x-1 text-gray-600"
-                              >
-                                <ThumbsUp className="w-4 h-4" />
-                                <span className="text-sm">
-                                  {post.likes.length || 0}
-                                </span>
-                              </div>
-                              <div className="flex items-center space-x-1 text-gray-600">
-                                <MessageCircle className="w-4 h-4" />
-                                <span className="text-sm">
-                                  {post.comments.length || 0}
-                                </span>
-                              </div>
-                            </div>
-                            <button className="flex items-center space-x-1 text-black hover:bg-black hover:text-white px-3 py-1 border border-black transition-colors">
-                              <span className="text-sm font-medium">
-                                Read More
-                              </span>
-                              <Share2 className="w-3 h-3" />
-                            </button>
-                          </div>
-
-                          {/* Hover Effect Content */}
-                          <div className="hidden mt-4 pt-4 border-t border-gray-200">
-                            <p className="text-sm text-gray-600 italic">
-                              Click to read the full post and join the
-                              conversation
-                            </p>
-                          </div>
+                        <div key={post.id}>
+                          <PostCard
+                            post={post}
+                            currentUser={user}
+                            onPostUpdate={handlePostUpdate}
+                            onPostDelete={handlePostDelete}
+                            isViewingProfile={false}
+                          />
                         </div>
                       ))}
-                    </div>
-
-                    {/* Load More Button */}
-                    <div className="mt-12 text-center">
-                      <button className="px-8 py-3 border-2 border-black bg-white text-black font-semibold hover:bg-black hover:text-white transition-colors">
-                        Load More Posts
-                      </button>
                     </div>
                   </>
                 )}

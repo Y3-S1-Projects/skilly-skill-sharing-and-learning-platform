@@ -1,5 +1,6 @@
 package com.example.skilly.Repositories;
 
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
@@ -16,5 +17,7 @@ public interface PostRepository extends MongoRepository<Post, String> {
     List<Post> findAllByOrderByCreatedAtDesc();
 
     List<Post> findBySavedByContaining(String userId);
+
+    List<Post> findByCreatedAtAfter(Date date);
 
 }

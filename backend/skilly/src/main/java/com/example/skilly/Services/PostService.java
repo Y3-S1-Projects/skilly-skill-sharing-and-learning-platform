@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import com.example.skilly.Models.PostType;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +29,41 @@ public class PostService {
 
     @Value("${file.upload-dir:uploads}")
     private String uploadDir;
+
+    public double calculateTrendingScore(Post post) {
+        // First, check if the post is older than 30 days (exclude entirely)
+        long now = System.currentTimeMillis();
+        long postAgeMillis = now - post.getCreatedAt().getTime();
+        double ageInDays = postAgeMillis / (1000.0 * 60 * 60 * 24.0);
+
+        // Skip posts older than 30 days entirely
+        if (ageInDays > 30) {
+            return 0; // Return 0 instead of -1 to exclude from trending
+        }
+
+        int likesCount = post.getLikes() != null ? post.getLikes().size() : 0;
+        int savesCount = post.getSavedBy() != null ? post.getSavedBy().size() : 0;
+        int commentsCount = post.getComments() != null ? post.getComments().size() : 0;
+        int totalEngagement = likesCount + savesCount + commentsCount;
+
+        // Minimum engagement requirement: At least 2 interactions
+        if (totalEngagement < 2) {
+            return 0;
+        }
+
+        // Weights (saves & comments matter more than likes)
+        double w1 = 1.0;  // likes
+        double w2 = 2.5;  // saves (stronger signal)
+        double w3 = 2.0;  // comments
+
+        // Engagement score (weighted sum)
+        double engagementScore = (w1 * likesCount) + (w2 * savesCount) + (w3 * commentsCount);
+
+        // Recency boost (capped at 20 and scales with engagement)
+        double recencyBoost = 20.0 * (1 - ageInDays / 30.0) * Math.log1p(totalEngagement);
+
+        return engagementScore + recencyBoost;
+    }
 
     public List<Post> findAll() {
         return postRepository.findAllByOrderByCreatedAtDesc();
@@ -69,6 +105,65 @@ public class PostService {
     public List<Post> getSavedPostsByUser(String userId) {
         return postRepository.findBySavedByContaining(userId);
     }
+
+    public List<Post> getTrendingPosts() {
+        long now = System.currentTimeMillis();
+
+        return postRepository.findAll().stream()
+                // 1️⃣ FILTER posts older than 30 days
+                .filter(post -> {
+                    long ageMillis = now - post.getCreatedAt().getTime();
+                    double ageInDays = ageMillis / (1000.0 * 60 * 60 * 24.0);
+                    return ageInDays <= 30;
+                })
+                // 2️⃣ FILTER posts with very low engagement (optional, your choice)
+                .filter(post -> {
+                    int totalEngagement = (post.getLikes() != null ? post.getLikes().size() : 0)
+                            + (post.getSavedBy() != null ? post.getSavedBy().size() : 0)
+                            + (post.getComments() != null ? post.getComments().size() : 0);
+                    return totalEngagement >= 2;
+                })
+                // 3️⃣ SORT by score
+                .sorted((p1, p2) -> Double.compare(
+                        calculateTrendingScore(p2),
+                        calculateTrendingScore(p1)
+                ))
+                .collect(Collectors.toList());
+    }
+
+    public List<Post> getRecentPosts() {
+        // Calculate the cutoff date 30 days ago
+        long thirtyDaysMillis = 30L * 24 * 60 * 60 * 1000;
+        Date cutoffDate = new Date(System.currentTimeMillis() - thirtyDaysMillis);
+
+        // Use the repository query
+        return postRepository.findByCreatedAtAfter(cutoffDate)
+                .stream()
+                .sorted((p1, p2) -> p2.getCreatedAt().compareTo(p1.getCreatedAt()))
+                .collect(Collectors.toList());
+    }
+
+    public List<Post> getPopularPosts() {
+        // 30 days ago
+        long thirtyDaysMillis = 30L * 24 * 60 * 60 * 1000;
+        Date cutoffDate = new Date(System.currentTimeMillis() - thirtyDaysMillis);
+
+        // Get posts within last 30 days
+        return postRepository.findByCreatedAtAfter(cutoffDate)
+                .stream()
+                // Calculate total likes + comments
+                .sorted((p1, p2) -> {
+                    int p1Score = (p1.getLikes() != null ? p1.getLikes().size() : 0)
+                            + (p1.getComments() != null ? p1.getComments().size() : 0);
+
+                    int p2Score = (p2.getLikes() != null ? p2.getLikes().size() : 0)
+                            + (p2.getComments() != null ? p2.getComments().size() : 0);
+
+                    return Integer.compare(p2Score, p1Score);
+                })
+                .collect(Collectors.toList());
+    }
+
 
     public Optional<Post> likePost(String id, String userId) {
         return postRepository.findById(id).map(post -> {

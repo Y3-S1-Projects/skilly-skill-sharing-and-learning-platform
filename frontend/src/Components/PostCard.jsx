@@ -222,6 +222,24 @@ const PostCard = ({
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
 
+  const formatTimeAgo = (dateString) => {
+    const now = new Date();
+    const postDate = new Date(dateString);
+    const diffInMinutes = Math.floor((now - postDate) / (1000 * 60));
+
+    if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+    if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h ago`;
+    return `${Math.floor(diffInMinutes / 1440)}d ago`;
+  };
+
+  // Helper function to estimate read time
+  const estimateReadTime = (content) => {
+    const wordsPerMinute = 150;
+    const wordCount = content.split(" ").length;
+    const readTime = Math.ceil(wordCount / wordsPerMinute);
+    return `${readTime} min read`;
+  };
+
   // Post operations
   const handleLike = async () => {
     try {
@@ -290,233 +308,185 @@ const PostCard = ({
   };
   const isPostOwner = post.userId === loggedInUser?.id;
   return (
-    <div className="border-2 border-black bg-white shadow-sm overflow-hidden hover:shadow-lg transition-all duration-300">
-      <div className="p-4 sm:p-6">
+    <div className="border-2 border-black bg-white p-6 hover:shadow-lg transition-all duration-300 cursor-pointer group">
+      <div className="">
         {/* Post Header */}
-        <div className="flex items-center mb-4">
-          {/* Avatar */}
-          {postOwner?.profilePicUrl ? (
-            <img
-              src={postOwner.profilePicUrl}
-              alt={postOwner?.username || "User"}
-              className="h-10 w-10 border border-black object-cover mr-3"
-            />
-          ) : (
-            <div
-              className={`h-10 w-10 border border-black flex items-center justify-center ${getColorClass(
-                post.userId
-              )} font-medium`}
-            >
-              {getInitials(postOwner?.username || "User")}
-            </div>
-          )}
-
-          {/* Name and timestamp */}
-          <div>
-            <h3 className="font-medium text-black">
-              {isViewingProfile && post.userId === currentUser.id ? (
-                // Display as plain text if viewing own profile
-                postOwner?.username
-              ) : (
-                // Otherwise make it a link
-                <Link
-                  to={`/profile/${postOwner?.id}`}
-                  className="hover:underline"
+        <div className="">
+          <div className="flex items-center ">
+            {/* Post actions dropdown */}
+            {isPostOwner && (
+              <div className="ml-auto relative">
+                <button
+                  onClick={() => setActionsDropdownOpen(!actionsDropdownOpen)}
+                  className="text-black hover:text-gray-700"
                 >
-                  {postOwner?.username}
-                </Link>
-              )}
+                  <svg
+                    className="h-5 w-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={1.5}
+                      d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
+                    />
+                  </svg>
+                </button>
 
-              {post.originalUserId && post.originalUserId !== post.userId && (
-                <span className="text-sm text-gray-600 ml-1">
-                  (original post by{" "}
-                  {post.originalUserId === currentUser.id ? (
-                    "you"
-                  ) : (
-                    <Link
-                      to={`/profile/${post.originalUserId}`}
-                      className="hover:underline"
+                {actionsDropdownOpen && (
+                  <div
+                    ref={dropdownRef}
+                    className="absolute right-0 w-48 bg-white shadow-lg z-10 py-1 border-2 border-black"
+                  >
+                    <button
+                      onClick={() => {
+                        setIsEditing(true);
+                        setActionsDropdownOpen(false);
+                      }}
+                      className="flex items-center w-full px-4 py-2 text-sm text-black hover:bg-gray-100"
                     >
-                      {commentOwners[post.originalUserId]?.username}
-                    </Link>
-                  )}
-                  )
-                </span>
-              )}
-            </h3>
-            <p className="text-xs text-gray-600">
-              {formatDate(post.createdAt)}
-              {post.postType && (
-                <span
-                  className={`ml-2 inline-flex items-center px-2 py-0.5 text-xs font-medium border ${
-                    post.postType === "skill"
-                      ? "border-black bg-white text-black"
-                      : post.postType === "progress"
-                      ? "border-black bg-white text-black"
-                      : post.postType === "plan"
-                      ? "border-black bg-white text-black"
-                      : "border-black bg-white text-black"
-                  }`}
-                >
-                  {post.postType}
-                </span>
-              )}
-            </p>
+                      <svg
+                        className="h-4 w-4 mr-2"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={1.5}
+                          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                        />
+                      </svg>
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => {
+                        setIsEditing(true);
+                        setActionsDropdownOpen(false);
+                      }}
+                      className="flex items-center w-full px-4 py-2 text-sm text-black hover:bg-gray-100"
+                    >
+                      <svg
+                        className="h-4 w-4 mr-2"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={1.5}
+                          d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
+                        />
+                      </svg>
+                      Copy Link
+                    </button>
+                    <button
+                      onClick={() => {
+                        handleDeletePost();
+                        setActionsDropdownOpen(false);
+                      }}
+                      className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                    >
+                      <svg
+                        className="h-4 w-4 mr-2"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={1.5}
+                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                        />
+                      </svg>
+                      Delete
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
-          {/* Post actions dropdown */}
-          {isPostOwner && (
-            <div className="ml-auto relative">
-              <button
-                onClick={() => setActionsDropdownOpen(!actionsDropdownOpen)}
-                className="text-black hover:text-gray-700"
-              >
-                <svg
-                  className="h-5 w-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={1.5}
-                    d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
-                  />
-                </svg>
-              </button>
-
-              {actionsDropdownOpen && (
-                <div
-                  ref={dropdownRef}
-                  className="absolute right-0 w-48 bg-white shadow-lg z-10 py-1 border-2 border-black"
-                >
-                  <button
-                    onClick={() => {
-                      setIsEditing(true);
-                      setActionsDropdownOpen(false);
-                    }}
-                    className="flex items-center w-full px-4 py-2 text-sm text-black hover:bg-gray-100"
-                  >
-                    <svg
-                      className="h-4 w-4 mr-2"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={1.5}
-                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                      />
-                    </svg>
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => {
-                      setIsEditing(true);
-                      setActionsDropdownOpen(false);
-                    }}
-                    className="flex items-center w-full px-4 py-2 text-sm text-black hover:bg-gray-100"
-                  >
-                    <svg
-                      className="h-4 w-4 mr-2"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={1.5}
-                        d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
-                      />
-                    </svg>
-                    Copy Link
-                  </button>
-                  <button
-                    onClick={() => {
-                      handleDeletePost();
-                      setActionsDropdownOpen(false);
-                    }}
-                    className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50"
-                  >
-                    <svg
-                      className="h-4 w-4 mr-2"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={1.5}
-                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                      />
-                    </svg>
-                    Delete
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Post Content */}
-        <h2 className="text-xl font-bold text-black mb-2">
-          {isEditing ? (
-            <input
-              type="text"
-              value={editData.title}
-              onChange={(e) =>
-                setEditData({
-                  ...editData,
-                  title: e.target.value,
-                })
-              }
-              className="w-full border-2 border-black bg-white px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-all duration-200 placeholder-gray-400"
-              placeholder="Post title"
-            />
-          ) : (
-            <span
-              className="hover:underline transition-colors duration-200 cursor-pointer"
-              onClick={() => navigate(`/posts/${post.id}`)}
-            >
-              {post.title}
-            </span>
-          )}
-        </h2>
-
-        <p className="text-gray-700 mb-3 leading-relaxed">
-          {isEditing ? (
-            <textarea
-              value={editData.content}
-              onChange={(e) =>
-                setEditData({
-                  ...editData,
-                  content: e.target.value,
-                })
-              }
-              className="w-full border-2 border-black bg-white px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-all duration-200 resize-none placeholder-gray-400"
-              rows="3"
-              placeholder="Share your thoughts..."
-            />
-          ) : (
-            <>
+          {/* Post Content */}
+          <h2 className="text-xl font-bold text-black mb-2 group-hover:underline">
+            {isEditing ? (
+              <input
+                type="text"
+                value={editData.title}
+                onChange={(e) =>
+                  setEditData({
+                    ...editData,
+                    title: e.target.value,
+                  })
+                }
+                className="w-full border-2 border-black bg-white px-3 py-2 text-black focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-all duration-200 placeholder-gray-400"
+                placeholder="Post title"
+              />
+            ) : (
               <span
-                className="transition-colors duration-200 cursor-pointer"
+                className="hover:underline transition-colors duration-200 cursor-pointer"
                 onClick={() => navigate(`/posts/${post.id}`)}
               >
-                {post.content}
+                {post.title}
               </span>
-            </>
-          )}
-        </p>
+            )}
+          </h2>
+          <p className="text-gray-700 text-sm leading-relaxed line-clamp-3 mb-3">
+            {isEditing ? (
+              <textarea
+                value={editData.content}
+                onChange={(e) =>
+                  setEditData({
+                    ...editData,
+                    content: e.target.value,
+                  })
+                }
+                className="w-full border-2 border-black bg-white px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-all duration-200 resize-none placeholder-gray-400"
+                rows="3"
+                placeholder="Share your thoughts..."
+              />
+            ) : (
+              <>
+                <span
+                  className="transition-colors duration-200 cursor-pointer"
+                  onClick={() => navigate(`/posts/${post.id}`)}
+                >
+                  {post.content || "No content available"}
+                </span>
+              </>
+            )}
+          </p>
+        </div>
+
+        {/* Tags */}
+        {post.tags && post.tags.length > 0 && (
+          <div className="mb-4">
+            <div className="flex flex-wrap gap-2">
+              {post.tags.slice(0, 3).map((tag, index) => (
+                <span
+                  key={index}
+                  className="px-2 py-1 text-xs border border-black bg-white text-black"
+                >
+                  #{tag}
+                </span>
+              ))}
+              {post.tags.length > 3 && (
+                <span className="px-2 py-1 text-xs text-gray-500">
+                  +{post.tags.length - 3} more
+                </span>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Post Media */}
         {((post.mediaUrls && post.mediaUrls.length > 0) || post.videoUrl) && (
-          <div className="mt-3">
+          <div className="mb-4">
             {/* Video display with custom player - placed first for prominence */}
             {post.videoUrl && (
               <div className="mb-2">
@@ -553,50 +523,56 @@ const PostCard = ({
             )}
 
             {/* Image gallery - show in grid if there are multiple images */}
-            {post.mediaUrls && post.mediaUrls.length > 0 && (
-              <div
-                className={`grid ${
-                  post.mediaUrls.length > 1 ? "grid-cols-2" : "grid-cols-1"
-                } gap-2`}
-              >
-                {post.mediaUrls.map((url, index) => (
-                  <div key={`image-${index}`} className="relative">
-                    <img
-                      src={url}
-                      alt={`Post media ${index}`}
-                      className="object-cover w-full h-auto border border-black"
-                    />
-                    {isEditing && (
-                      <button
-                        onClick={() => {
-                          const updatedMediaUrls = [...editData.mediaUrls];
-                          updatedMediaUrls.splice(index, 1);
-                          setEditData({
-                            ...editData,
-                            mediaUrls: updatedMediaUrls,
-                          });
-                        }}
-                        className="absolute top-2 right-2 bg-red-500 text-white p-1 hover:bg-red-600"
-                      >
-                        <svg
-                          className="h-4 w-4"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
+            {post.mediaUrls &&
+              post.mediaUrls.length > 0 &&
+              (isViewingProfile ? (
+                <div
+                  className={`grid ${
+                    post.mediaUrls.length > 1 ? "grid-cols-2" : "grid-cols-1"
+                  } gap-2`}
+                >
+                  {post.mediaUrls.map((url, index) => (
+                    <div key={`image-${index}`} className="relative">
+                      <img
+                        src={url}
+                        alt={`Post media ${index}`}
+                        className="object-cover w-full h-auto border border-black"
+                      />
+                      {isEditing && (
+                        <button
+                          onClick={() => {
+                            const updatedMediaUrls = [...editData.mediaUrls];
+                            updatedMediaUrls.splice(index, 1);
+                            setEditData({
+                              ...editData,
+                              mediaUrls: updatedMediaUrls,
+                            });
+                          }}
+                          className="absolute top-2 right-2 bg-red-500 text-white p-1 hover:bg-red-600"
                         >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M6 18L18 6M6 6l12 12"
-                          />
-                        </svg>
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
+                          <svg
+                            className="h-4 w-4"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M6 18L18 6M6 6l12 12"
+                            />
+                          </svg>
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-gray-600">
+                  {post.mediaUrls.length} media files
+                </p>
+              ))}
 
             {/* Edit mode media upload section */}
             {isEditing && (
@@ -776,6 +752,66 @@ const PostCard = ({
           </div>
         )}
 
+        {/* Author Info */}
+        <div className="mb-4 flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            {postOwner?.profilePicUrl ? (
+              <img
+                src={postOwner.profilePicUrl}
+                alt={postOwner?.username || "User"}
+                className="h-10 w-10 border border-black object-cover mr-3"
+              />
+            ) : (
+              <div
+                className={`h-10 w-10 border border-black flex items-center justify-center ${getColorClass(
+                  post.userId
+                )} font-medium`}
+              >
+                {getInitials(postOwner?.username || "User")}
+              </div>
+            )}
+            <div>
+              <p className="font-semibold text-black">
+                {isViewingProfile && post.userId === currentUser.id ? (
+                  // Display as plain text if viewing own profile
+                  postOwner?.username
+                ) : (
+                  // Otherwise make it a link
+                  <Link
+                    to={`/profile/${postOwner?.id}`}
+                    className="hover:underline"
+                  >
+                    {postOwner?.username}
+                  </Link>
+                )}
+              </p>
+              {post.postType && (
+                <span
+                  className={` inline-flex items-center px-2  text-xs font-medium border ${
+                    post.postType === "skill"
+                      ? "border-black bg-white text-black"
+                      : post.postType === "progress"
+                      ? "border-black bg-white text-black"
+                      : post.postType === "plan"
+                      ? "border-black bg-white text-black"
+                      : "border-black bg-white text-black"
+                  }`}
+                >
+                  {post.postType}
+                </span>
+              )}
+            </div>
+          </div>
+          <div className="text-right">
+            <p className="text-sm text-gray-600">
+              {post.createdAt ? formatDate(post.createdAt) : "Unknown time"}
+            </p>
+            <p className="text-xs text-gray-500">
+              {post.content ? estimateReadTime(post.content) : "1 min read"}
+            </p>
+          </div>
+        </div>
+
         {/* Edit mode save/cancel buttons */}
         {isEditing && (
           <div className="mt-4 flex justify-end space-x-2">
@@ -810,26 +846,12 @@ const PostCard = ({
             onPostUpdate={onPostUpdate}
           />
         </div>
-        <div className="px-4 py-4 border-t border-black">
-          <div className="flex items-center justify-between text-sm">
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-1 text-gray-700">
-                <Users className="w-4 h-4" />
-                <span>1.2k learners</span>
-              </div>
-              <div className="flex items-center space-x-1 text-gray-700">
-                <Award className="w-4 h-4" />
-                <span>89% success rate</span>
-              </div>
-            </div>
-          </div>
-        </div>
 
-        <div className="px-2 py-4 border-black border-t">
+        <div className="py-4 border-gray-200 border-t">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-1">
               <button
-                className={`flex items-center space-x-2 px-4 py-2 transition-all cursor-pointer ${
+                className={`flex items-center space-x-2 py-2 transition-all cursor-pointer ${
                   post.likes.includes(loggedInUser?.id)
                     ? "text-black"
                     : "text-gray-600 hover:text-black"
@@ -846,9 +868,7 @@ const PostCard = ({
                   {post.likes?.length || 0}
                 </span>
               </button>
-            </div>
 
-            <div className="flex items-center space-x-1">
               <button
                 onClick={openModal}
                 className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-black transition-colors cursor-pointer"
@@ -858,7 +878,9 @@ const PostCard = ({
                   {post.comments?.length || 0}
                 </span>
               </button>
+            </div>
 
+            <div className="flex items-center space-x-1">
               <Tooltip title="Save this item to your collection" position="top">
                 <button
                   onClick={handleToggleSave}
