@@ -163,10 +163,10 @@ const Header = ({ onLogout }) => {
             <div className="flex items-center ">
               <div className="flex-shrink-0 flex items-center">
                 <img
-                  src="/skilly-new.png"
+                  src="/skilly-logo-blue-text.png"
                   alt="Skilly"
-                  width={60}
-                  height={60}
+                  width={40}
+                  height={40}
                 />
               </div>
               <nav className="hidden sm:ml-6 sm:flex sm:space-x-8">

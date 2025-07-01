@@ -74,8 +74,8 @@ const LandingHeader = () => {
       >
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl flex items-center justify-center">
-              <img src="/skilly-new.png" alt="Skilly Logo" />
+            <div className="w-8 h-8 rounded-2xl flex items-center justify-center">
+              <img src="/skilly-logo-blue-text.png" alt="Skilly Logo" />
             </div>
             <span className="text-3xl text-gray-800">Skilly</span>
           </div>

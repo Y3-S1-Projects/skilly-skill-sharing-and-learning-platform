@@ -14,6 +14,7 @@ const PostCard = ({
   onPostUpdate,
   onPostDelete,
   isViewingProfile = true,
+  showGallery = false,
 }) => {
   const [postOwner, setPostOwner] = useState(null);
   const modalRef = useRef();
@@ -525,7 +526,7 @@ const PostCard = ({
             {/* Image gallery - show in grid if there are multiple images */}
             {post.mediaUrls &&
               post.mediaUrls.length > 0 &&
-              (isViewingProfile ? (
+              (showGallery ? (
                 <div
                   className={`grid ${
                     post.mediaUrls.length > 1 ? "grid-cols-2" : "grid-cols-1"
