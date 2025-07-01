@@ -293,6 +293,7 @@ const PostView = () => {
                 onPostDelete={handlePostDelete}
                 isViewingProfile={false}
                 isDetailView={true}
+                showGallery={true}
               />
             </div>
 
@@ -460,6 +461,7 @@ const PostView = () => {
                       currentUser={user}
                       isViewingProfile={false}
                       isCompactView={true}
+                      showGallery={true}
                     />
                   </div>
                 ))}

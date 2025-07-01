@@ -451,6 +451,7 @@ const PublicProfile = () => {
                     currentUser={user}
                     onPostUpdate={handlePostUpdate}
                     onPostDelete={handlePostDelete}
+                    showGallery={false}
                   />
                 </div>
               ))}
